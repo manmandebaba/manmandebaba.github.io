@@ -1,98 +1,207 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行人</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello</title>
+<style>
+  .search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 400px;
+    margin: 20px auto;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    outline: none;
+  }
+
+  .search-select {
+    padding: 10px;
+    border: none;
+    outline: none;
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
+
+  .search-button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
         .container {
             width: 80%;
             margin: auto;
             text-align: center;
             padding-top: 100px;
         }
-        h1 {
+         h1 {
             font-size: 48px;
             font-weight: bold;
             font-family: 'Comic Sans MS', cursive, sans-serif;
             animation: fadeIn 4s forwards;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        @keyframes fadeIn {
-            from {
-                color: transparent;
-            }
-            to {
-                color: #000000;
-            }
+
+       /* 可选样式 */
+        .content-item {
+            margin-bottom: 20px; /* 每个内容项之间的间距 */
         }
-        .delay {
-            font-size: 16px;
+        .content-item h2 {
+            margin-bottom: 10px; /* 标题和内容之间的间距 */
         }
-        .error {
-            color: red;
+        .content-item ul {
+            list-style-type: none; /* 移除默认的列表样式 */
+            padding: 0; /* 移除默认的列表内边距 */
         }
-        .additional-content {
-            text-align: left;
-            margin-top: 50px;
-            padding: 20px;
-            border-radius: 10px;
+        .content-item li {
+            display: inline-block; /* 使列表项并排显示 */
+            margin-right: 20px; /* 列表项之间的间距 */
         }
-        .additional-personal {
-            text-align: left;
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 10px;
+        .content-item a {
+            text-decoration: none; /* 移除链接的下划线 */
+            color: black; /* 链接颜色 */
         }
-        .additional-content img {
-            width: 200px;
-            display: block;
-            margin: 20px auto;
-            border-radius: 5px;
-        }
-        .caption {
-            color: #888;
-            font-size: 14px;
-            margin-top: 2px;
-        }
-        code a {
-            color: #000000;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .copyright {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+</style>
 </head>
 <body>
+
     <div class="container">
         <h1>Hello</h1>
-        <div class="additional-content">
-            <h2>在线接口</h2>
-            <code>
-点播: <a href="http://175.178.251.183:6689/tv.txt">推荐!LR点播地址</a><br>
-直播: <a href="http://175.178.251.183:6689/live.m3u">推荐!LR直播地址</a><br>
-GitLab: <a href="https://gitlab.com/lr77/TVBox-url/-/raw/main/tv.txt">不推荐，更新缓慢!</a><br>
-Github: <a href="https://gh.con.sh/https://raw.githubusercontent.com/yuanzl77/TVBox-url/main/tv.txt">不推荐，更新缓慢!</a><br>
-            </code>
+
+<div class="search-container">
+
+  <select id="searchEngine" class="search-select">
+    <option value="https://www.baidu.com/s?wd=">百度</option>
+    <option value="https://www.so.com/s?q=">360搜索</option>
+    <option value="https://www.bing.com/search?q=">Bing</option>
+
+    <!-- 可以添加更多搜索引擎选项 -->
+  </select>
+  <input type="text" id="searchInput" class="search-input" placeholder="输入搜索关键词...">
+  <button id="searchButton" class="search-button">搜索</button>
+</div>
+
+<script>
+  document.getElementById('searchButton').addEventListener('click', function() {
+    var query = document.getElementById('searchInput').value;
+    var engineUrl = document.getElementById('searchEngine').value;
+    
+    if (query) {
+      window.location.href = engineUrl + encodeURIComponent(query);
+    }
+  });
+</script>
+
+    <div class="content-container">
+        <!-- 第零个标题和内容 -->
+        <div class="content-item">
+            <h2>推荐</h2>
+            <ul>
+<li><a href="https://www.xn--sss604efuw.top/jm/" class="link-3" target="_blank" rel="nofollow">解密</a></li>
+<li><a href="https://www.quark.cn/" class="link-3" target="_blank" rel="nofollow">夸克</a></li>
+<li><a href="https://manmandebaba.github.io/XR/" class="link-3" target="_blank" rel="nofollow">网址</a></li>
+            </ul>
+        </div> 
+        <!-- 第一个标题和内容 -->
+        <div class="content-item">
+            <h2>仓库   ·   云盘</h2>
+            <ul>
+<li><a href="https://github.com/" class="link-3" target="_blank" rel="nofollow">github项目</a></li>
+<li><a href="https://gitee.com/explore" class="link-3" target="_blank" rel="nofollow">gitee项目</a></li>
+<li><a href="https://gitcode.net/explore/projects/starred" class="link-3" target="_blank" rel="nofollow">gitcode项目</a></li>	
+<li><a href="https://gitea.com/explore/repos" class="link-3" target="_blank" rel="nofollow">gitea项目</a></li>
+<li><a href="https://gitlab.com/explore?sort=latest_activity_desc&name=tvbox&sort=latest_activity_desc" class="link-3" target="_blank" rel="nofollow">gitlab项目</a></li>
+<li><a href="https://www.gitlink.org.cn/explore" class="link-3" target="_blank" rel="nofollow">gitlink项目</a></li>
+<li><a href="https://notabug.org/explore/repos" class="link-3" target="_blank" rel="nofollow">notabug项目</a></li>
+<li><a href="https://www.aliyun.com/" class="link-3" target="_blank" rel="nofollow">阿里云</a></li>	
+<li><a href="https://cloud.tencent.com/" class="link-3" target="_blank" rel="nofollow">腾讯云</a></li>
+            </ul>
         </div>
-        <div class="additional-personal">
-            <h2>个人资料</h2>
-            <code>
-酷安: <a href="http://www.coolapk.com/u/3519354">查看最新动态</a><br>
-2G2H: <a href="http://175.178.251.183:6689/">LR</a><br>
-Github: <a href="https://github.com/yuanzl77">仓库</a><br>
-          </code>
+        <!-- 第二个标题和内容 -->
+        <div class="content-item">
+            <h2>聚合 · 导航</h2>
+            <ul>
+<li><a href="https://www.xn--sss604efuw.top/" class="link-3" target="_blank" rel="nofollow">饭太硬</a></li>
+<li><a href="http://xn--z7x900a.live/" class="link-3" target="_blank" rel="nofollow">肥猫</a></li>
+<li><a href="https://tv.菜妮丝.top" class="link-3" target="_blank" rel="nofollow">菜妮丝</a></li>
+<li><a href="https://www.lengniuge.cf/" class="link-3" target="_blank" rel="nofollow">lengniuge</a></li>
+<li><a href="https://yydsys.top/" class="link-3" target="_blank" rel="nofollow">多多</a></li>
+<li><a href="http://nxog.top/" class="link-3" target="_blank" rel="nofollow">欧歌</a></li>
+<li><a href="https://home.tvbox.xn--fiqs8s/" class="link-3" target="_blank" rel="nofollow">TVBox</a></li>
+<li><a href="https://m.n13.club/" class="link-3" target="_blank" rel="nofollow">超级商店</a></li>
+            </ul>
         </div>
+        <!-- 第三个标题和内容 -->
+        <div class="content-item">
+            <h2>工具 · 资源</h2>
+            <ul>
+<li><a href="https://greasyfork.org/zh-CN/scripts" class="link-3" target="_blank" rel="nofollow">脚本</a></li>
+<li><a href="https://www.bejson.com/" class="link-3" target="_blank" rel="nofollow">bejson</a></li>
+<li><a href="https://base64.us/" class="link-3" target="_blank" rel="nofollow">base64</a></li>
+<li><a href="https://www.jyshare.com/" class="link-3" target="_blank" rel="nofollow">菜鸟工具</a></li>
+<li><a href="https://www.tishi.top/?invite=3gKRJj" class="link-3" target="_blank" rel="nofollow">AI工具集</a></li>				
+<li><a href="https://www.mmhtml.com/zh/" class="link-3" target="_blank" rel="nofollow">文库下载</a></li>
+<li><a href="https://convertio.co/zh/" class="link-3" target="_blank" rel="nofollow">格式转换</a></li>
+<li><a href="https://weibomiaopai.com/" class="link-3" target="_blank" rel="nofollow">视频下载</a></li>
+<li><a href="https://www.photopea.com/" class="link-3" target="_blank" rel="nofollow">在线PS</a></li>
+<li><a href="https://tools.miku.ac/" class="link-3" target="_blank" rel="nofollow">MikuTools</a></li>
+<li><a href="https://daga.cc/yue/" class="link-3" target="_blank" rel="nofollow">音乐下载</a></li>
+            </ul>
+        </div>  
+        <!-- 第四个标题和内容 -->
+        <div class="content-item">
+            <h2>软件 · 搜索</h2>
+            <ul>
+<li><a href="http://bbs.qiqiv.cn/" class="link-3" target="_blank" rel="nofollow">奇奇分享网</a></li>
+<li><a href="http://www.wmdz.com/index.html" class="link-3" target="_blank" rel="nofollow">影视仓库</a></li>
+<li><a href="https://www.soukuzhan.com/" class="link-3" target="_blank" rel="nofollow">搜酷站</a></li>
+<li><a href="https://www.coolist.net/windows/" class="link-3" target="_blank" rel="nofollow">酷软清单</a></li>
+<li><a href="https://www.ghxi.com/" class="link-3" target="_blank" rel="nofollow">果核剥壳</a></li>
+<li><a href="https://www.pcoof.com/" class="link-3" target="_blank" rel="nofollow">pc软件库</a></li>
+<li><a href="https://zzzzz.tv/" class="link-3" target="_blank" rel="nofollow">电视软件导航</a></li>
+<li><a href="https://www.iptvkk.com/" class="link-3" target="_blank" rel="nofollow">tv软件</a></li>
+            </ul>
+        </div> 
+        <!-- 第五个标题和内容 -->
+        <div class="content-item">
+            <h2>影音 · 娱乐</h2>
+            <ul>
+<li><a href="https://www.iqiyi.com/" class="link-3" target="_blank" rel="nofollow">爱奇艺</a></li>
+<li><a href="https://v.qq.com/" class="link-3" target="_blank" rel="nofollow">腾讯视频</a></li>
+<li><a href="https://www.bilibili.com/" class="link-3" target="_blank" rel="nofollow">哔哩哔哩</a></li>
+<li><a href="https://www.mgtv.com/" class="link-3" target="_blank" rel="nofollow">芒果TV</a></li>
+<li><a href="https://www.youku.com/" class="link-3" target="_blank" rel="nofollow">优酷</a></li>
+<li><a href="https://www.360kan.com/" class="link-3" target="_blank" rel="nofollow">360影视</a></li>
+<li><a href="https://www.ixigua.com/" class="link-3" target="_blank" rel="nofollow">西瓜视频</a></li>
+<li><a href="https://dianyi.ng/" class="link-3" target="_blank" rel="nofollow">电影先生</a></li>
+<li><a href="https://ddys.pro/" class="link-3" target="_blank" rel="nofollow">低端影视</a></li>	
+<li><a href="https://y.qq.com/" class="link-3" target="_blank" rel="nofollow">QQ音乐</a></li>
+<li><a href="http://www.tvyan.com/" class="link-3" target="_blank" rel="nofollow">电视直播</a></li>
+            </ul>
+        </div> 
+        <!-- 第六个标题和内容 -->
+        <div class="content-item">
+            <h2>博客 · 资讯</h2>
+            <ul>
+<li><a href="https://weibo.com/" class="link-3" target="_blank" rel="nofollow">微博</a></li>
+<li><a href="https://www.zhihu.com/" class="link-3" target="_blank" rel="nofollow">知乎</a></li>
+<li><a href="https://tieba.baidu.com/" class="link-3" target="_blank" rel="nofollow">贴吧</a></li>
+<li><a href="https://www.douban.com/" class="link-3" target="_blank" rel="nofollow">豆瓣</a></li>
+            </ul>
+        </div>       
+        <!-- 以此类推，添加更多标题和内容 -->
     </div>
-    <div class="copyright">© 2024 Powered by LR</div>
 </body>
+<div class="copyright">© 2024 Powered by LR</div>
 </html>
