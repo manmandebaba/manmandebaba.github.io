@@ -1,0 +1,182 @@
+﻿
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星辰导航</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .link-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .link-card:hover .link-icon {
+            transform: translateY(-5px) scale(1.1);
+        }
+        .search-box:focus-within {
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 头部区域 -->
+        <header class="flex justify-between items-center mb-12">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-star text-blue-400 text-2xl"></i>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">星辰导航</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="datetime" class="text-sm bg-gray-800/50 px-3 py-1 rounded-full"></div>
+                <button class="p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 transition">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 搜索区域 -->
+        <div class="mb-16">
+            <div class="search-box glass-card max-w-2xl mx-auto rounded-full overflow-hidden transition-all">
+                <form action="https://www.baidu.com/s" method="get" target="_blank" class="flex">
+                    <input type="text" name="wd" placeholder="探索星辰大海..." 
+                           class="flex-grow bg-transparent px-6 py-4 focus:outline-none text-lg">
+                    <button type="submit" class="px-6 bg-blue-500 hover:bg-blue-600 transition">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 快捷链接区域 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-12">
+            <!-- 示例链接 - 实际使用时替换为你的常用网站 -->
+            <a href="https://www.baidu.com" target="_blank" class="link-card glass-card rounded-xl p-4 flex flex-col items-center text-center hover:bg-gray-700/20 transition">
+                <div class="link-icon mb-3 w-12 h-12 flex items-center justify-center bg-blue-500/20 rounded-lg text-blue-400">
+                    <i class="fab fa-baidu text-2xl"></i>
+                </div>
+                <span class="font-medium">百度</span>
+            </a>
+            <!-- 更多链接... -->
+        </div>
+
+        <!-- 分类导航 -->
+        <div class="mb-12">
+            <h2 class="text-xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-layer-group mr-2 text-purple-400"></i>
+                常用分类
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                        软件
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.fenxm.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">分享迷</a>
+                        <a href="https://www.hefentv.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">盒子汇</a>
+                        <a href="https://www.870q.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">百素网</a>
+                        <a href="https://www.52pojie.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">吾爱破解</a>
+                        <a href="https://bbs.qiqiv.cn/thread-11996-1-1.html" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">奇乐分享</a>
+                        <a href="https://bbs.leyuxyz.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">乐愚社区</a>
+                        <!-- 更多链接... -->
+                    </div>
+                </div>
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                        娱乐
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.iqiyi.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">爱奇艺</a>
+                        <a href="https://v.qq.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">腾讯视频</a>
+                        <a href="https://www.mgtv.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">芒果TV</a>
+                        <a href="https://www.youku.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">优酷网</a>
+                        <a href="https://www.douyin.com/?recommend=1" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">抖音</a>
+                        <a href="https://www.kuaishou.com/new-reco" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">快手</a>
+                        <a href="https://music.gdstudio.xyz/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">GD音乐</a>
+                        <!-- 更多链接... -->
+                    </div>
+                </div>
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                        工具
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.bejson.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">bejson</a>
+                        <a href="https://greasyfork.cc/zh-CN/scripts" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">油猴脚本</a>
+                        <a href="https://www.youxiaohou.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">油小猴</a>
+                        <a href="https://www.crxsoso.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">Crx搜搜</a>
+                        <!-- 更多链接... -->
+                    </div>
+                </div>
+
+                <!-- 更多分类... -->
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-400 text-sm mt-12">
+            <p>© 2025 星辰导航 | 探索无限可能</p>
+        </footer>
+    </div>
+
+    <script>
+        // 更新时间显示
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('datetime').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+        setInterval(updateDateTime, 60000);
+        updateDateTime();
+
+        // 示例数据 - 实际使用时替换为你的常用网站
+        const quickLinks = [
+            { name: "GitHub", icon: "fab fa-github", url: "https://github.com", color: "gray" },
+            { name: "知乎", icon: "fab fa-zhihu", url: "https://www.zhihu.com", color: "blue" },
+            { name: "哔哩哔哩", icon: "fas fa-play", url: "https://www.bilibili.com", color: "pink" },
+            { name: "gitee", icon: "fas fa-g", url: "https://gitee.com/", color: "red" },
+            { name: "网址大全", icon: "fab fa-e", url: "https://manmandebaba.github.io/X.html", color: "blue" }
+        ];
+
+        // 动态生成快捷链接
+        const linksContainer = document.querySelector('.grid.grid-cols-2');
+        quickLinks.forEach(link => {
+            const linkEl = document.createElement('a');
+            linkEl.href = link.url;
+            linkEl.target = "_blank";
+            linkEl.className = "link-card glass-card rounded-xl p-4 flex flex-col items-center text-center hover:bg-gray-700/20 transition";
+            linkEl.innerHTML = `
+                <div class="link-icon mb-3 w-12 h-12 flex items-center justify-center bg-${link.color}-500/20 rounded-lg text-${link.color}-400">
+                    <i class="${link.icon} text-2xl"></i>
+                </div>
+                <span class="font-medium">${link.name}</span>
+            `;
+            linksContainer.appendChild(linkEl);
+        });
+    </script>
+</body>
+</html>
