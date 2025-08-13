@@ -1,91 +1,202 @@
-﻿<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<!-- 优化版书签导航HTML -->
-<html>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的书签导航</title>
-    <style type="text/css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: #f5f5f5;
             color: #333;
-            margin: 0;
-            padding: 20px;
             line-height: 1.6;
+            padding: 20px;
         }
-        .bookmark-container {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .bookmark-folder {
-            background-color: white;
+            background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 15px;
-            transition: transform 0.2s;
+            padding: 20px;
         }
-        .bookmark-folder:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
         h1 {
-            text-align: center;
-            color: #2c3e50;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .search-box {
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        #searchInput:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.3);
+        }
+        .category {
             margin-bottom: 30px;
-            font-size: 2.2em;
         }
-        h3 {
-            color: #3498db;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 8px;
-            margin-top: 0;
-            font-size: 1.3em;
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #4285f4;
+            color: #4285f4;
         }
-        .bookmark-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .bookmarks {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
         }
-        .bookmark-item {
-            margin: 10px 0;
-            padding: 8px 0;
-            border-bottom: 1px dashed #eee;
+        .bookmark {
+            background: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s;
         }
-        .bookmark-item:last-child {
-            border-bottom: none;
+        .bookmark:hover {
+            background: #f0f0f0;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .bookmark-item a {
-            color: #555;
+        .bookmark a {
+            color: #333;
             text-decoration: none;
             display: flex;
             align-items: center;
-            transition: color 0.2s;
-            padding: 5px;
-            border-radius: 4px;
         }
-        .bookmark-item a:hover {
-            color: #e74c3c;
-            background-color: #f9f9f9;
+        .bookmark a:hover {
+            color: #4285f4;
         }
-        .bookmark-item a::before {
-            content: "→";
-            margin-right: 8px;
-            color: #3498db;
-            font-size: 0.9em;
+        .bookmark-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 14px;
         }
         @media (max-width: 768px) {
-            .bookmark-container {
-                grid-template-columns: 1fr;
+            .bookmarks {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
     </style>
 </head>
 <body>
-    <h1>📚 我的书签导航</h1>
-    
+    <div class="container">
+        <header>
+            <h1>我的书签导航</h1>
+            <p>快速访问常用网站</p>
+        </header>
+
+
+<div class="search-engine-box">
+  <!-- 搜索引擎选择 -->
+  <select id="engineSelect" class="engine-select">
+    <option value="https://www.baidu.com/s?wd=">百度</option>
+    <option value="https://www.google.com/search?q=">谷歌</option>
+    <option value="https://cn.bing.com/search?q=">必应</option>
+    <option value="https://www.sogou.com/web?query=">搜狗</option>
+  </select>
+  
+  <!-- 搜索输入框 -->
+  <input type="text" id="searchInput" placeholder="输入搜索内容..." class="search-input">
+  
+  <!-- 搜索按钮 -->
+  <button id="searchBtn" class="search-btn">搜索</button>
+</div>
+
+<style>
+.search-engine-box {
+  display: flex;
+  max-width: 800px;
+  margin: 20px auto;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.engine-select {
+  padding: 10px 15px;
+  border: none;
+  border-right: 1px solid #eee;
+  outline: none;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.search-btn {
+  padding: 10px 20px;
+  border: none;
+  background: #4e6ef2;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.search-btn:hover {
+  background: #3a56d0;
+}
+</style>
+
+<script>
+document.getElementById('searchBtn').addEventListener('click', function() {
+  const engine = document.getElementById('engineSelect').value;
+  const query = document.getElementById('searchInput').value;
+  if(query.trim()) {
+    window.open(engine + encodeURIComponent(query), '_blank');
+  }
+});
+
+// 支持回车键搜索
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+  if(e.key === 'Enter') {
+    document.getElementById('searchBtn').click();
+  }
+});
+</script>
+
+
+
     <div class="bookmark-container">
         <div class="bookmark-folder">
         <DT><H3 ADD_DATE="1737707226" LAST_MODIFIED="1754896382">我的收藏</H3>
@@ -592,6 +703,33 @@
         </DL><p>
         <DT><A HREF="https://szfilehelper.weixin.qq.com/" ADD_DATE="1752888577" ICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVklEQVQ4jYWTsYsdZRTFf+fO7LxdV4Vskfd2RfCPiMbCRpJKEKJZi9Q2sRMllQjTmUaxkVjZBjSiIAQ2REI6NdvaBAKmSPY9XWNYNc95M3OPxZuNm8pTfXzfveccvsOBQ9QER3GDcrwzXh/vjNe5QfnE25FZAWCEMMDWd1tnnH6NzifAx4exXym1q9DV+6/f//bojqgJanJ8eXyyeEqfEnqZAHpYUg4yBZBA+of+kd+dnZv9SE0I4Lmvxqc8im8Qz7g3MQo8N04ngEKhNZFNokJg/lSTb9x7a/a9ti5vPO+q+omSCdCpY9f4OsQ7hDcASD2AvCR02iUngJKOqRaLl4KquhCrMaGlUakSxcW9s7MPEdeiCkUVQlxb3sVFlSppaWI1JlTVBW1+PblDwQv0pFZUuPUt5OtynHf4GIBSf1j5OdZprehFt9lTKOj5RVtXNueWR49jqSSNhP82Tnv4A2lduDFe2P9FqCaQHwypWkheuPdBtk5bSEJy2j7I1gv3QgJMgO2HYemmKsl2GhsIi1JIxjZLIosSCGPbTlWSxM0g209o+EeFwjgHBQ0WdUgEHJ57lRItTdJ+HHvb+7uZfi+qCGnpBJOH6sMymMRuI6KM1Sgy/f707O+3gpqYbk8v5aPuvAq1iFCpkJbqQkusKPS0Vij4rfurf3v65vQzIIIaA5qXix0KRogDp29jGtsMLubu/HPO+ah/mCdn27MvhkJlSY2oyTXWXvHCV9pF98H+s/t3J81k0+mJQqnUbG9j7x6v0j1uY00+0VCuMuL/8CUFHho84F84lT/uunoxgAAAAABJRU5ErkJggg==">微信文件传输助手网页版</A>
     </DL><p>
+
+
+
+
+
+
+
+        <footer>
+            <p>© 2023 我的书签导航 | 冀ICP备2001&zwnj;****&zwnj;号</p>
+        </footer>
     </div>
+
+    <script>
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const bookmarks = document.querySelectorAll('.bookmark');
+            
+            bookmarks.forEach(bookmark => {
+                const text = bookmark.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    bookmark.style.display = 'block';
+                } else {
+                    bookmark.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
