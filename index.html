@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>星辰导航</title>
+    <title>53便签</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -36,7 +36,7 @@
         <header class="flex justify-between items-center mb-12">
             <div class="flex items-center space-x-2">
                 <i class="fas fa-star text-blue-400 text-2xl"></i>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">星辰导航</h1>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">53便签</h1>
             </div>
             <div class="flex items-center space-x-4">
                 <div id="datetime" class="text-sm bg-gray-800/50 px-3 py-1 rounded-full"></div>
@@ -50,7 +50,7 @@
         <div class="mb-16">
             <div class="search-box glass-card max-w-2xl mx-auto rounded-full overflow-hidden transition-all">
                 <form action="https://www.baidu.com/s" method="get" target="_blank" class="flex">
-                    <input type="text" name="wd" placeholder="探索星辰大海..." 
+                    <input type="text" name="wd" placeholder="53搜索..." 
                            class="flex-grow bg-transparent px-6 py-4 focus:outline-none text-lg">
                     <button type="submit" class="px-6 bg-blue-500 hover:bg-blue-600 transition">
                         <i class="fas fa-search"></i>
@@ -59,17 +59,16 @@
             </div>
         </div>
 
-        <!-- 快捷链接区域 -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-12">
-            <!-- 示例链接 - 实际使用时替换为你的常用网站 -->
-            <a href="https://www.baidu.com" target="_blank" class="link-card glass-card rounded-xl p-4 flex flex-col items-center text-center hover:bg-gray-700/20 transition">
-                <div class="link-icon mb-3 w-12 h-12 flex items-center justify-center bg-blue-500/20 rounded-lg text-blue-400">
-                    <i class="fab fa-baidu text-2xl"></i>
+            <!-- 快捷链接 -->
+            <div class="mb-16">
+                <h2 class="cosmic-text text-2xl font-bold mb-8 flex items-center">
+                    <i class="fas fa-compass mr-3 text-yellow-400"></i>
+                    53站点
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5" id="quick-links">
+                    <!-- 链接将通过JS动态生成 -->
                 </div>
-                <span class="font-medium">百度</span>
-            </a>
-            <!-- 更多链接... -->
-        </div>
+            </div>
 
         <!-- 分类导航 -->
         <div class="mb-12">
@@ -81,7 +80,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                    <i class="fas fa-code mr-2 text-blue-400"></i>
                         软件
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -97,7 +96,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                       <i class="fas fa-play mr-2 text-orange-400"></i>
                         娱乐
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -114,7 +113,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                        <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                      <i class="fas fa-wrench mr-2 text-orange-400"></i>
                         工具
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -132,7 +131,7 @@
 
         <!-- 页脚 -->
         <footer class="text-center text-gray-400 text-sm mt-12">
-            <p>© 2025 星辰导航 | 探索无限可能</p>
+            <p>© 2025 53便签 | 探索无限可能</p>
         </footer>
     </div>
 
