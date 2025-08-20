@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>53便签</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="./tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./all.min.css">
     <style>
         :root {
             --sidebar-width: 320px;
@@ -76,8 +76,8 @@
         <!-- 头部区域 -->
         <header class="flex justify-between items-center mb-12">
             <div class="flex items-center space-x-2">
-                <i class="fas fa-star-half text-blue-400 text-2xl"></i>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">53便签</h1>
+                <i class="fas fa-5 text-blue-400 text-2xl"></i>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">3 便 签</h1>
             </div>
             <div class="flex items-center space-x-4">
                 <div id="datetime" class="text-sm bg-gray-800/50 px-3 py-1 rounded-full"></div>
@@ -94,7 +94,7 @@
                     <input type="text" name="wd" placeholder="53搜索..." 
                            class="flex-grow bg-transparent px-6 py-4 focus:outline-none text-lg">
                     <button type="submit" class="px-6 bg-blue-500 hover:bg-blue-600 transition">
-                        <i class="fas fa-search"></i>
+                        <i class="fas fa-o"></i>
                     </button>
                 </form>
             </div>
@@ -103,7 +103,7 @@
             <!-- 快捷链接 -->
             <div class="mb-16">
                 <h2 class="cosmic-text text-2xl font-bold mb-8 flex items-center">
-                    <i class="fas fa-compass mr-3 text-yellow-400"></i>
+                    <i class="fas fa-k mr-3 text-green-400"></i>
                     快捷站点
                 </h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5" id="quick-links">
@@ -114,14 +114,14 @@
         <!-- 分类导航 -->
         <div class="mb-12">
             <h2 class="text-xl font-semibold mb-6 flex items-center">
-                <i class="fas fa-layer-group mr-2 text-purple-400"></i>
+                <i class="fas fa-f mr-2 text-purple-400"></i>
                 常用分类
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                    <i class="fas fa-code mr-2 text-blue-400"></i>
+                    <i class="fas fa-r mr-2 text-blue-400"></i>
                         软件
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -137,7 +137,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                       <i class="fas fa-play mr-2 text-red-400"></i>
+                       <i class="fas fa-y mr-2 text-red-400"></i>
                         娱乐
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -153,7 +153,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                      <i class="fas fa-tools mr-2 text-gray-400"></i>
+                      <i class="fas fa-g mr-2 text-gray-400"></i>
                         工具
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -167,7 +167,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                    <i class="fas fa-table mr-2 text-yellow-400"></i>
+                    <i class="fas fa-h mr-2 text-yellow-400"></i>
                         导航
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -183,7 +183,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                       <i class="fas fa-headphones-alt mr-2 text-green-400"></i>
+                       <i class="fas fa-t mr-2 text-green-400"></i>
                         音乐
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -197,7 +197,7 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                      <i class="fas fa-sliders-h mr-2 text-pink-400"></i>
+                      <i class="fas fa-q mr-2 text-pink-400"></i>
                         其它
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
@@ -237,12 +237,12 @@
 
         // 示例数据 - 实际使用时替换为你的常用网站
         const quickLinks = [
-            { name: "腾讯视频", icon: "fab fa-qq", url: "https://v.qq.com/", color: "red" },
-            { name: "GitHub", icon: "fab fa-github", url: "https://github.com", color: "gray" },
+            { name: "腾讯视频", icon: "fab fa-t", url: "https://v.qq.com/", color: "yellow" },
+            { name: "GitHub", icon: "fab fa-g", url: "https://github.com", color: "gray" },
             { name: "gitee", icon: "fas fa-g", url: "https://gitee.com/", color: "red" },
-            { name: "知乎", icon: "fab fa-zhihu", url: "https://www.zhihu.com", color: "blue" },
-            { name: "哔哩哔哩", icon: "fas fa-play", url: "https://www.bilibili.com", color: "pink" },
-            { name: "网址大全", icon: "fab fa-edge-legacy", url: "https://manmandebaba.github.io/X.html", color: "blue" }
+            { name: "知乎", icon: "fab fa-z", url: "https://www.zhihu.com", color: "blue" },
+            { name: "哔哩哔哩", icon: "fas fa-b", url: "https://www.bilibili.com", color: "pink" },
+            { name: "网址大全", icon: "fab fa-e", url: "https://manmandebaba.github.io/X.html", color: "green" }
         ];
 
         // 动态生成快捷链接
@@ -266,7 +266,7 @@
 <body class="min-h-screen font-sans">
     <!-- 侧边栏切换按钮 -->
     <button id="sidebarToggle" class="toggle-btn fixed right-6 top-6 z-50 bg-blue-500 hover:bg-blue-400 text-white p-3 rounded-full">
-        <i class="fas fa-bars"></i>
+        <i class="fas fa-o"></i>
     </button>
 
     <!-- 右侧隐藏书签侧边栏 -->
@@ -274,12 +274,12 @@
         <div class="p-6 h-full flex flex-col">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-blue-400 flex items-center justify-center">
-                    <i class="fas fa-star-half-alt mr-2"></i> 我的书签
+                    <i class="fas fa-o mr-2"></i> 我的书签
                 </h2>
                 <div class="mt-4 relative">
 <form action="https://www.baidu.com/s" method="get" target="_blank" class="flex">
                     <input type="text" placeholder="搜索..." class="w-full bg-gray-800 bg-opacity-50 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                    <i class="fas fa-o absolute right-3 top-3 text-gray-400"></i>
                 </div>
             </div>
             
