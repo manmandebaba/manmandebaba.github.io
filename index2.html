@@ -68,105 +68,6 @@
             transform: translateX(0);
             transition-delay: calc(0.1s * var(--i));
         }
-
-
-        .category {
-            background: white;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-        }
-        
-        .category-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-        }
-        
-        .category-title i {
-            margin-right: 10px;
-        }
-        
-        .site-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-        }
-        
-        .site-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            border-radius: var(--border-radius);
-            transition: all 0.3s;
-        }
-        
-        .site-item:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-3px);
-        }
-        
-        .site-icon {
-            width: 40px;
-            height: 40px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        
-        .site-name {
-            font-size: 14px;
-            text-align: center;
-            color: var(--text-color);
-            text-decoration: none;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #999;
-            font-size: 14px;
-        }
-        
-        @media (max-width: 768px) {
-            .logo-text {
-                font-size: 28px;
-            }
-            
-            .site-list {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-        }
-        .categories {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .category2 {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-        .category2-title {
-            font-size: 18px;
-            color: var(--primary);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .sites {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
     </style>
 </head>
 
@@ -192,54 +93,24 @@
                 <form action="https://www.baidu.com/s" method="get" target="_blank" class="flex">
                     <input type="text" name="wd" placeholder="53搜索..." 
                            class="flex-grow bg-transparent px-6 py-4 focus:outline-none text-lg">
-                    <button type="submit" class="px-6 bg-blue-300 hover:bg-blue-200 transition">
+                    <button type="submit" class="px-6 bg-blue-500 hover:bg-blue-600 transition">
                         <i class="fas fa-o"></i>
                     </button>
                 </form>
             </div>
         </div>
 
-
+            <!-- 快捷链接 -->
             <div class="mb-16">
                 <h2 class="cosmic-text text-2xl font-bold mb-8 flex items-center">
                     <i class="fas fa-k mr-3 text-green-400"></i>
                     快捷站点
                 </h2>
-            <div class="site-list">
-                <a href="https://adzhp.cc/" target="_blank" class="site-item">
-                    <img src="https://adzhp.cc/favicon.ico" alt="爱达杂货铺图标" class="site-icon">
-                    <span class="site-name">爱达杂货铺</span>
-                </a>
-                <a href="https://yinghezhinan.com/" target="_blank" class="site-item">
-                    <img src="https://yinghezhinan.com/statics/images/favicon.webp" alt="硬核指南图标" class="site-icon">
-                    <span class="site-name">硬核指南</span>
-                </a>
-                <a href="https://www.wangzhiku.com/" target="_blank" class="site-item">
-                    <img src="https://www.wangzhiku.com/favicon.ico" alt="网址库图标" class="site-icon">
-                    <span class="site-name">网址库</span>
-                </a>
-                <a href="https://www.tdboxs.cn/" target="_blank" class="site-item">
-                    <img src="https://www.tdboxs.cn/favicon.ico" alt="TD导航图标" class="site-icon">
-                    <span class="site-name">TD导航</span>
-                </a>
-                <a href="https://github.com" target="_blank" class="site-item">
-                    <img src="https://kkgithub.com/favicon.ico" alt="GitHub图标" class="site-icon">
-                    <span class="site-name">GitHub</span>
-                </a>
-                <a href="https://gitee.com/" target="_blank" class="site-item">
-                    <img src="https://gitee.com/favicon.ico" alt="gitee图标" class="site-icon">
-                    <span class="site-name">gitee</span>
-                </a>
-                <a href="https://www.bilibili.com" target="_blank" class="site-item">
-                    <img src="https://www.bilibili.com/favicon.ico" alt="哔哩哔哩图标" class="site-icon">
-                    <span class="site-name">哔哩哔哩</span>
-                </a>
-                <a href="https://manmandebaba.github.io/manman/" target="_blank" class="site-item">
-                    <img src="https://gitee.com/manmandebaba/ico/raw/master/favicon.ico" alt="网址大全图标" class="site-icon">
-                    <span class="site-name">网址大全</span>
-                </a>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5" id="quick-links">
+                    <!-- 链接将通过JS动态生成 -->
+                </div>
             </div>
-        </div>
+
         <!-- 分类导航 -->
         <div class="mb-12">
             <h2 class="text-xl font-semibold mb-6 flex items-center">
@@ -250,111 +121,96 @@
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                    <i class="fas fa-t mr-2 text-blue-400"></i>
-                        推荐
+                    <i class="fas fa-r mr-2 text-blue-400"></i>
+                        软件
                     </h3>
-                <div class="sites">
-                    <a href="https://www.fenxm.com/" class="site-item">
-                        <img src="https://www.fenxm.com/zb_users/theme/suiranx_air/image/favicon.ico" alt="分享迷" class="site-icon">
-                        <span class="site-name">分享迷</span>
-                    </a>
-                    <a href="https://www.hefentv.cn/" class="site-item">
-                        <img src="https://www.hefentv.cn/favicon.ico" alt="盒子汇" class="site-icon">
-                        <span class="site-name">盒子汇</span>
-                    </a>
-                    <a href="https://bbs.leyuxyz.com/" class="site-item">
-                        <img src="https://bbs.leyuxyz.com/favicon.ico" alt="乐愚社区" class="site-icon">
-                        <span class="site-name">乐愚社区</span>
-                    </a>
-                    <a href="https://www.870q.com/" class="site-item">
-                        <img src="https://www.870q.com/favicon.ico" alt="百素网" class="site-icon">
-                        <span class="site-name">百素网</span>
-                    </a>
-                    <a href="https://www.52pojie.cn/" class="site-item">
-                        <img src="https://www.52pojie.cn/favicon.ico" alt="吾爱破解" class="site-icon">
-                        <span class="site-name">吾爱破解</span>
-                    </a>
-                    <a href="https://bbs.qiqiv.cn/thread-11996-1-1.html" class="site-item">
-                        <img src="https://bbs.qiqiv.cn/favicon.ico" alt="奇乐分享" class="site-icon">
-                        <span class="site-name">奇乐分享</span>
-                    </a>
-
-                    <!-- 更多分类链接 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.fenxm.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">分享迷</a>
+                        <a href="https://www.hefentv.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">盒子汇</a>
+                        <a href="https://www.870q.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">百素网</a>
+                        <a href="https://www.52pojie.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">吾爱破解</a>
+                        <a href="https://bbs.qiqiv.cn/thread-11996-1-1.html" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">奇乐分享</a>
+                        <a href="https://bbs.leyuxyz.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">乐愚社区</a>
+                        <!-- 更多链接... -->
+                   </div>
                 </div>
-     </div>
-
                 <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                    <i class="fas fa-y mr-2 text-red-400"></i>
+                       <i class="fas fa-y mr-2 text-red-400"></i>
                         娱乐
                     </h3>
-                <div class="sites">
-                    <a href="https://www.iqiyi.com/" class="site-item">
-                        <img src="https://www.iqiyi.com/favicon.ico" alt="爱奇艺" class="site-icon">
-                        <span class="site-name">爱奇艺</span>
-                    </a>
-                    <a href="https://v.qq.com/" class="site-item">
-                        <img src="https://v.qq.com/favicon.ico" alt="腾讯视频" class="site-icon">
-                        <span class="site-name">腾讯视频</span>
-                    </a>
-                    <a href="https://www.mgtv.com/" class="site-item">
-                        <img src="https://www.mgtv.com/favicon.ico" alt="芒果TV" class="site-icon">
-                        <span class="site-name">芒果TV</span>
-                    </a>
-                    <a href="https://www.youku.com/" class="site-item">
-                        <img src="https://www.youku.com/favicon.ico" alt="优酷网" class="site-icon">
-                        <span class="site-name">优酷网</span>
-                    </a>
-                    <a href="https://www.douyin.com/?recommend=1" class="site-item">
-                        <img src="https://www.douyin.com/favicon.ico" alt="抖音" class="site-icon">
-                        <span class="site-name">抖音</span>
-                    </a>
-                    <a href="https://www.kuaishou.com/new-reco" class="site-item">
-                        <img src="https://www.kuaishou.com/favicon.ico" alt="快手" class="site-icon">
-                        <span class="site-name">快手</span>
-                    </a>
-                    <!-- 更多分类链接 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.iqiyi.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">爱奇艺</a>
+                        <a href="https://v.qq.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">腾讯视频</a>
+                        <a href="https://www.mgtv.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">芒果TV</a>
+                        <a href="https://www.youku.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">优酷网</a>
+                        <a href="https://www.douyin.com/?recommend=1" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">抖音</a>
+                        <a href="https://www.kuaishou.com/new-reco" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">快手</a>
+                        <!-- 更多链接... -->
+                    </div>
                 </div>
-      </div>
- <!-- 分类卡片 -->
+                <!-- 分类卡片 -->
                 <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
                     <h3 class="font-semibold mb-3 flex items-center">
-                    <i class="fas fa-q mr-2 text-yellow-400"></i>
+                      <i class="fas fa-g mr-2 text-gray-400"></i>
+                        工具
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://www.bejson.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">bejson</a>
+                        <a href="https://greasyfork.cc/zh-CN/scripts" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">油猴脚本</a>
+                        <a href="https://www.youxiaohou.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">油小猴</a>
+                        <a href="https://www.crxsoso.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">Crx搜搜</a>
+                        <!-- 更多链接... -->
+                    </div>
+                </div>
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                    <i class="fas fa-h mr-2 text-yellow-400"></i>
+                        导航
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://adzhp.cc/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">爱达杂货铺</a>
+                        <a href="https://93665.xin/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">苦心ios导航</a>
+                        <a href="https://yinghezhinan.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">硬核指南</a>
+                        <a href="https://www.wangzhiku.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">网址库</a>
+                        <a href="https://www.tdboxs.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">TD导航</a>
+                        <a href="https://www.jigdh.com/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">极光导航</a>
+
+                   </div>
+                </div>
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                       <i class="fas fa-t mr-2 text-green-400"></i>
+                        音乐
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://dy.guiguiya.com/yy/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">鬼鬼在线</a>
+                        <a href="https://music.gdstudio.xyz/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">GD音乐</a>
+                        <a href="https://www.qqmp3.vip/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">米兔音乐</a>
+                        <a href="http://qlisten.qytechs.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">轻听音乐</a>
+                        <!-- 更多链接... -->
+                    </div>
+                </div>
+                <!-- 分类卡片 -->
+                <div class="glass-card rounded-xl p-6 hover:bg-gray-700/20 transition">
+                    <h3 class="font-semibold mb-3 flex items-center">
+                      <i class="fas fa-q mr-2 text-pink-400"></i>
                         其它
                     </h3>
-                <div class="sites">
-                    <a href="https://www.bejson.com/" class="site-item">
-                        <img src="https://www.bejson.com/favicon.ico" alt="bejson" class="site-icon">
-                        <span class="site-name">bejson</span>
-                    </a>
-                    <a href="https://greasyfork.cc/zh-CN/scripts" class="site-item">
-                        <img src="https://greasyfork.cc/vite/assets/blacklogo16-DftkYuVe.png" alt="油猴" class="site-icon">
-                        <span class="site-name">油猴</span>
-                    </a>
-                    <a href="https://93665.xin/" class="site-item">
-                        <img src="https://93665.xin/favicon.ico" alt="苦心ios导航" class="site-icon">
-                        <span class="site-name">苦心ios导航</span>
-                    </a>
-                    <a href="https://dy.guiguiya.com/yy/" class="site-item">
-                        <img src="https://dy.guiguiya.com/yy/favicon.ico" alt="鬼鬼音乐" class="site-icon">
-                        <span class="site-name">鬼鬼音乐</span>
-                    </a>
-                    <a href="https://music.gdstudio.xyz/" class="site-item">
-                        <img src="https://music.gdstudio.xyz/favicon.ico" alt="GD音乐" class="site-icon">
-                        <span class="site-name">GD音乐</span>
-                    </a>
-                    <a href="https://alistgo.com/zh/guide/" class="site-item">
-                        <img src="https://alistgo.com/favicon.ico" alt="alistgo" class="site-icon">
-                        <span class="site-name">alistgo</span>
-                    </a>
-
-                    <!-- 更多分类链接 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="https://yd.miaogongzi.cc/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">阅读</a>
+                        <a href="https://mt2.cn/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">MT管理器</a>
+                        <a href="https://alistgo.com/zh/guide/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">AList文档</a>
+                        <a href="https://www.yecao.net/command/" target="_blank" class="text-sm py-1 px-2 rounded hover:bg-gray-700/30 transition">野草助手</a>
+                        <!-- 更多链接... -->
+                    </div>
                 </div>
-      </div>
-            <!-- 更多分类 -->
+                <!-- 更多分类... -->
+            </div>
         </div>
-
 
         <!-- 页脚 -->
         <footer class="text-center text-gray-400 text-sm mt-12">
