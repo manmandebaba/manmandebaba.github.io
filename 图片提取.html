@@ -1,0 +1,434 @@
+﻿
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站图标提取工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .result-icon {
+            transition: all 0.3s ease;
+        }
+        .result-icon:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-4xl">
+        <!-- 头部 -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-indigo-600 mb-2">
+                <i class="fas fa-icons mr-2"></i>网站图标提取工具
+            </h1>
+            <p class="text-gray-600">自动获取任意网站的favicon图标</p>
+        </header>
+
+        <!-- 主功能区 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="url" id="urlInput" placeholder="输入网站URL (如: https://baidu.com)" 
+                       class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <button id="fetchBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition flex items-center justify-center">
+                    <i class="fas fa-search mr-2"></i>提取图标
+                </button>
+            </div>
+            
+            <!-- 高级选项 -->
+            <div class="mt-4">
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="advancedToggle" class="mr-2">
+                    <label for="advancedToggle" class="text-sm text-gray-600 cursor-pointer">显示高级选项</label>
+                </div>
+                <div id="advancedOptions" class="hidden bg-gray-50 p-4 rounded-lg space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">获取方式</label>
+                        <select id="methodSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="auto">自动选择最佳方式</option>
+                            <option value="root">根目录favicon.ico</option>
+                            <option value="google">Google Favicon API</option>
+                            <option value="meta">解析HTML meta标签</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">图标尺寸</label>
+                        <select id="sizeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="16">16x16 (默认)</option>
+                            <option value="32">32x32</option>
+                            <option value="64">64x64</option>
+                            <option value="128">128x128</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果展示区 -->
+        <div id="resultSection" class="hidden bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-image mr-2 text-indigo-500"></i>提取结果
+                <span id="loadingIndicator" class="ml-auto hidden">
+                    <i class="fas fa-spinner loading-spinner text-indigo-500"></i>
+                </span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 图标预览 -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700 mb-3">图标预览</h3>
+                    <div class="flex flex-col items-center">
+                        <img id="iconPreview" src="" alt="网站图标预览" class="result-icon w-32 h-32 object-contain mb-3">
+                        <div id="iconInfo" class="text-center text-sm text-gray-600">
+                            <p>尺寸: <span id="iconSize">-</span></p>
+                            <p>格式: <span id="iconFormat">-</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 下载选项 -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700 mb-3">下载选项</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">下载格式</label>
+                            <select id="downloadFormat" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="original">原始格式</option>
+                                <option value="png">PNG</option>
+                                <option value="ico">ICO</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">下载尺寸</label>
+                            <select id="downloadSize" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="original">原始尺寸</option>
+                                <option value="16">16x16</option>
+                                <option value="32">32x32</option>
+                                <option value="64">64x64</option>
+                            </select>
+                        </div>
+                        <button id="downloadBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition">
+                            <i class="fas fa-download mr-2"></i>下载图标
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 技术详情 -->
+            <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-medium text-gray-700 mb-2">技术详情</h3>
+                <div id="techDetails" class="text-sm text-gray-600 space-y-2">
+                    <p>获取方式: <span id="methodUsed" class="font-medium">-</span></p>
+                    <p>原始URL: <span id="originalUrl" class="font-mono text-xs break-all">-</span></p>
+                    <p id="fallbackInfo" class="hidden text-yellow-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>使用了备用获取方式
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div id="historySection" class="mt-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-history mr-2 text-indigo-500"></i>历史记录
+            </h2>
+            <div id="historyList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <!-- 动态生成历史记录 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存储历史记录
+        let history = JSON.parse(localStorage.getItem('faviconHistory')) || [];
+        
+        // DOM元素
+        const urlInput = document.getElementById('urlInput');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const resultSection = document.getElementById('resultSection');
+        const iconPreview = document.getElementById('iconPreview');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const methodSelect = document.getElementById('methodSelect');
+        const advancedToggle = document.getElementById('advancedToggle');
+        const advancedOptions = document.getElementById('advancedOptions');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 提取按钮点击事件
+            fetchBtn.addEventListener('click', fetchFavicon);
+            
+            // 高级选项切换
+            advancedToggle.addEventListener('change', () => {
+                advancedOptions.classList.toggle('hidden', !advancedToggle.checked);
+            });
+            
+            // 回车键触发提取
+            urlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') fetchFavicon();
+            });
+            
+            // 下载按钮点击事件
+            downloadBtn.addEventListener('click', downloadFavicon);
+            
+            // 加载历史记录
+            renderHistory();
+        }
+        
+        // 获取favicon
+        async function fetchFavicon() {
+            const url = urlInput.value.trim();
+            if (!url) {
+                alert('请输入有效的网址');
+                return;
+            }
+            
+            try {
+                loadingIndicator.classList.remove('hidden');
+                resultSection.classList.add('hidden');
+                
+                // 标准化URL
+                let normalizedUrl = url;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    normalizedUrl = `https://${url}`;
+                }
+                
+                const method = methodSelect.value;
+                let faviconUrl = '';
+                let fallbackUsed = false;
+                
+                // 根据选择的方法获取图标
+                switch(method) {
+                    case 'root':
+                        faviconUrl = await getRootFavicon(normalizedUrl);
+                        break;
+                    case 'google':
+                        faviconUrl = getGoogleFavicon(normalizedUrl);
+                        break;
+                    case 'meta':
+                        faviconUrl = await getMetaFavicon(normalizedUrl);
+                        break;
+                    default: // auto
+                        faviconUrl = await getRootFavicon(normalizedUrl);
+                        if (!await checkImageExists(faviconUrl)) {
+                            faviconUrl = await getMetaFavicon(normalizedUrl);
+                            if (!await checkImageExists(faviconUrl)) {
+                                faviconUrl = getGoogleFavicon(normalizedUrl);
+                                fallbackUsed = true;
+                            }
+                        }
+                }
+                
+                // 显示结果
+                if (faviconUrl) {
+                    const size = document.getElementById('sizeSelect').value;
+                    const sizedUrl = size !== '16' ? `${faviconUrl}?size=${size}` : faviconUrl;
+                    
+                    iconPreview.src = sizedUrl;
+                    iconPreview.onload = () => {
+                        updateIconInfo(faviconUrl);
+                        document.getElementById('methodUsed').textContent = getMethodName(method);
+                        document.getElementById('originalUrl').textContent = faviconUrl;
+                        document.getElementById('fallbackInfo').classList.toggle('hidden', !fallbackUsed);
+                        
+                        // 添加到历史记录
+                        addToHistory(normalizedUrl, faviconUrl);
+                        
+                        loadingIndicator.classList.add('hidden');
+                        resultSection.classList.remove('hidden');
+                        historySection.classList.remove('hidden');
+                    };
+                    
+                    iconPreview.onerror = () => {
+                        showError('无法加载图标图像');
+                    };
+                } else {
+                    showError('未能找到该网站的图标');
+                }
+            } catch (error) {
+                console.error('获取图标失败:', error);
+                showError('获取图标时发生错误');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // 获取根目录favicon
+        async function getRootFavicon(url) {
+            try {
+                const urlObj = new URL(url);
+                return `${urlObj.protocol}//${urlObj.host}/favicon.ico`;
+            } catch {
+                return '';
+            }
+        }
+        
+        // 使用Google API获取favicon
+        function getGoogleFavicon(url) {
+            try {
+                const urlObj = new URL(url);
+                return `https://www.google.com/s2/favicons?domain=${urlObj.host}`;
+            } catch {
+                return '';
+            }
+        }
+        
+        // 解析HTML meta标签获取favicon
+        async function getMetaFavicon(url) {
+            try {
+                // 使用代理解决CORS问题
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                if (data.contents) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.contents, 'text/html');
+                    
+                    // 查找icon链接
+                    const iconLink = doc.querySelector('link[rel*="icon"]');
+                    if (iconLink) {
+                        const href = iconLink.getAttribute('href');
+                        if (href.startsWith('http')) {
+                            return href;
+                        } else {
+                            const urlObj = new URL(url);
+                            return `${urlObj.protocol}//${urlObj.host}${href.startsWith('/') ? '' : '/'}${href}`;
+                        }
+                    }
+                }
+                return '';
+            } catch {
+                return '';
+            }
+        }
+        
+        // 检查图片是否存在
+        function checkImageExists(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+        
+        // 更新图标信息
+        function updateIconInfo(url) {
+            const format = url.split('.').pop().toUpperCase();
+            document.getElementById('iconFormat').textContent = format;
+            
+            // 获取实际尺寸
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('iconSize').textContent = `${this.width}×${this.height} 像素`;
+            };
+            img.src = url;
+        }
+        
+        // 下载图标
+        function downloadFavicon() {
+            const format = document.getElementById('downloadFormat').value;
+            const size = document.getElementById('downloadSize').value;
+            let downloadUrl = iconPreview.src;
+            let filename = 'favicon';
+            
+            // 处理下载选项
+            if (format !== 'original') {
+                filename += `.${format}`;
+                // 实际项目中这里需要添加格式转换逻辑
+            } else {
+                const ext = downloadUrl.split('.').pop().split('?')[0];
+                filename += `.${ext}`;
+            }
+            
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // 添加到历史记录
+        function addToHistory(url, faviconUrl) {
+            // 检查是否已存在
+            const existingIndex = history.findIndex(item => item.url === url);
+            if (existingIndex >= 0) {
+                history.splice(existingIndex, 1);
+            }
+            
+            // 添加到开头
+            history.unshift({
+                url,
+                faviconUrl,
+                date: new Date().toISOString()
+            });
+            
+            // 限制历史记录数量
+            if (history.length > 12) {
+                history = history.slice(0, 12);
+            }
+            
+            // 保存并重新渲染
+            localStorage.setItem('faviconHistory', JSON.stringify(history));
+            renderHistory();
+        }
+        
+        // 渲染历史记录
+        function renderHistory() {
+            if (history.length === 0) return;
+            
+            historyList.innerHTML = '';
+            history.forEach((item, index) => {
+                const host = new URL(item.url).host;
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow p-3 flex flex-col items-center cursor-pointer hover:bg-indigo-50 transition';
+                card.innerHTML = `
+                    <img src="${item.faviconUrl}" alt="${host}图标" class="w-10 h-10 mb-2">
+                    <p class="text-xs text-center text-gray-700 truncate w-full">${host}</p>
+                    <p class="text-xs text-gray-400 mt-1">${new Date(item.date).toLocaleDateString()}</p>
+                `;
+                card.addEventListener('click', () => {
+                    urlInput.value = item.url;
+                    fetchFavicon();
+                });
+                historyList.appendChild(card);
+            });
+            
+            historySection.classList.remove('hidden');
+        }
+        
+        // 显示错误
+        function showError(message) {
+            alert(message);
+            loadingIndicator.classList.add('hidden');
+        }
+        
+        // 获取方法名称
+        function getMethodName(method) {
+            const methods = {
+                'root': '根目录favicon.ico',
+                'google': 'Google Favicon API',
+                'meta': 'HTML meta标签解析',
+                'auto': '自动检测'
+            };
+            return methods[method] || method;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', initEventListeners);
+    </script>
+</body>
+</html>
