@@ -31,10 +31,14 @@
 {"name":"999","type":0,"url":"https://huayong.net/999/?v="},
 {"name":"华勇","type":0,"url":"https://huayong.net/vip4/?url="},
 {"name":"华永","url":"https://huayong.net/jx5/?url=","type":0},
+{"name": "jx5","type": 0,"url": "https://huayong.net/jx5/?url="},
+{"name": "无尽","type": 0,"url": "https://jx.wujinkk.com/dplayer/?url=","ext": {"header": {"User-Agent": "Mozilla/5.0"}}},
 {"name":"盘古","url":"https://www.pangujiexi.com/pangu/?url=","type":0},
 {"name":"淘片","type":0,"url":"https://yparse.ik9.cc/index.php?url="},
 {"name":"虾米","url":"https://jx.xmflv.com/?url=","type":0},
 {"name":"虾米₂","url":"https://jx.xmflv.cc/?url=","type":0},
+{"name":"虾米₃","url":"https://jx.hls.one/?url=","type":0},
+{"name":"七哥","url":"https://jx.nnxv.cn/tv.php?url=","type":0},
 {"name":"觅友","url":"https://jx.m3u8.tv/jiexi/?url=","type":0},
 {"name":"蜜柚","url":"https://jx.m3u8.tv/jx/jx.php?url=","type":0},
 {"name":"8090g","url":"https://www.8090g.cn/jiexi/?url=","type":0},
@@ -43,6 +47,14 @@
 {"name":"冰豆₂","url":"https://bd.jx.cn/?url=","type":0}
 
   ],
+"rules": [
+{	"name": "虾米点击",
+	"hosts": ["jx.xmflv.cc", "jx.xmflv.com", "jx.hls.one"],
+	"script": ["document.querySelector('#clickText').click()"]}, 
+{	"name": "七哥点击",
+	"hosts": ["jx.nnxv.cn"],
+	"script": ["document.querySelector('#play-button-overlay').click()"]}
+],
 
 "flags":["youku","优酷","优 酷","优酷视频","qq","腾讯","腾 讯","腾讯视频","iqiyi","qiyi","奇艺","爱奇艺","爱 奇 艺","m1905","xigua","letv","leshi","乐视","乐 视","sohu","搜狐","搜 狐","搜狐视频","tudou","pptv","mgtv","芒果","imgo","芒果TV","芒 果 T V","bilibili","哔 哩","哔 哩 哔 哩"],
 
@@ -56,6 +68,5 @@
 ]
 
 }
-
 
 
