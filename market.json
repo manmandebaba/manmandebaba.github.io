@@ -4,43 +4,83 @@
      ]},
 {"name": "影视应用",
 "list": [
-{"name":"ok影视leanback","url":"https://d.kstore.dev/download/11532/OK%E5%BD%B1%E8%A7%86-%E7%94%B5%E8%A7%86%E7%89%88-3.1.8.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"电视版"},
-{"name":"ok影视leanback","url":"https://d.kstore.dev/download/11532/OK%E5%BD%B1%E8%A7%86-%E7%94%B5%E8%A7%86%E7%89%88-%E8%87%AA%E5%B8%A6X5-3.1.8.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"电视X5版"},
-{"name":"ok影视mobile","url":"https://d.kstore.dev/download/11532/OK%E5%BD%B1%E8%A7%86-%E6%89%8B%E6%9C%BA%E7%89%88-3.1.8.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"手机版"},
 {"name":"蜂蜜leanback","url":"https://cns.菜妮丝.top/https://github.com/FongMi/Release/raw/fongmi/apk/release/leanback-armeabi_v7a.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"电视版-armeabi_v7a(推荐)"},
 {"name":"蜂蜜leanback","url":"https://cns.菜妮丝.top/https://github.com/FongMi/Release/raw/fongmi/apk/release/leanback-arm64_v8a.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"电视版-arm64_v8a"},
 {"name":"蜂蜜mobile","url":"https://cns.菜妮丝.top/https://github.com/FongMi/Release/raw/fongmi/apk/release/mobile-armeabi_v7a.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"手机版-armeabi_v7a"},
 {"name":"蜂蜜mobile","url":"https://cns.菜妮丝.top/https://github.com/FongMi/Release/raw/fongmi/apk/release/mobile-arm64_v8a.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"手机版-arm64_v8a(推荐)"},
-{"name":"影视仓-TV","url":"https://d.kstore.dev/download/11532/%E5%BD%B1%E8%A7%86%E4%BB%93-6.1.7-32%E4%BD%8D.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/ysc.png","version":"6.1.7"},
-{"name":"影视仓-手机","url":"https://d.kstore.dev/download/11532/%E5%BD%B1%E8%A7%86%E4%BB%93-3.2.3-64%E4%BD%8D.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/ysc2.png","version":"3.2.3"},
-{"name":"takagen99","url":"https://cns.菜妮丝.top/https://github.com/o0HalfLife0o/TVBoxOSC/releases/download/20250706-1456/TVBox_takagen99_20250706-1456-armeabi-generic-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/taka.png","version":"黑盒py"},
-{"name":"takagen99海信版","url":"https://cns.菜妮丝.top/https://github.com/o0HalfLife0o/TVBoxOSC/releases/download/20250706-1456/TVBox_takagen99_20250706-1456-arm64-hisense-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/taka.png","version":"黑盒py"},
-{"name":"EasyBox-手机","url":"https://c1026.dmpdmp.com/99eb216efba2f5c7c851db235ad50b01/68b2a65d/2025/05/21/a32a64bcc5a604b0f7bc7ec9b234a223.apk?fn=EasyBox_160_250420_sign.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/easy.png","version":"1.6.0"},
-{"name":"TVBox_q","url":"https://cns.菜妮丝.top/https://github.com/o0HalfLife0o/TVBoxOSC/releases/download/20251016-2311/TVBox_q215613905_20251016-2311-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/tvboxq.png","version":"白盒py"}
+{"name":"ok影视","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-电视版-3.6.1.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"电视版3.6.1"},
+{"name":"ok影视","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-手机版-3.6.0.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"手机版3.6.1"},
+{"name":"ok影视","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/海信专版-OK影视-3.6.1.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/OK.png","version":"海信版3.6.1"},
+{"name":"影视仓-TV","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_6.1.8_opt.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/ysc.png","version":"6.1.8"},
+{"name":"影视仓-手机","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_3.2.6.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/ysc2.png","version":"3.2.6"},
+{"name":"takagen99","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20251127-1156-armeabi-generic-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/taka.png","version":"黑盒py"},
+{"name":"takagen99海信版","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20251127-1156-armeabi-hisense-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/taka.png","version":"黑盒py"},
+{"name":"TVBox_q","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_q215613905_20251016-2311-python.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/tvboxq.png","version":"白盒py"}
     ]},
-
+{"name": "影视APP",
+"list": [
+{"name":"及时雨","url":"https://down.jsybox.com/jsybox/JSYBOX-release1.0.7.apk","icon":"https://jsybox.com/img/jsylogo.png","version":"1.0.7"},
+{"name":"好好看","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/%E5%BD%B1%E8%A7%86/%E5%A5%BD%E5%A5%BD%E7%9C%8B_TV_1.1.2.apk","icon":"https://dl.hhkan0.com/hkan/01/images/favicon.ico","version":"1.1.2"}
+    ]},
 {"name": "直播TV",
 "list": [
-{"name":"WebViewTV","url":"https://cns.菜妮丝.top/https://raw.githubusercontent.com/manmandebaba/manman/main/WebViewTV_2.0.0.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/web.png","version":"1.13.3"},
-{"name":"mytv-android-tv","url":"https://cns.菜妮丝.top/https://github.com/mytv-android/mytv-android/releases/download/V1.3.0.172/mytv-android-tv-1.3.0.172-armeabi-v7a-sdk21-original.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/mytv.png","version":"V1.3.0.172"},
-{"name":"mytv-android-tv","url":"https://d.kstore.dev/download/11532/mytv-android-tv-2.0.0.177-armeabi-v7a-sdk21-%E6%AD%A3%E5%B8%B8%E7%89%88.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/mytv.png","version":"V2.0.0.177"},
-{"name":"油桃_20251014","url":"https://d.kstore.dev/download/11532/utao-20251014.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/utao.png","version":""},
-{"name":"油桃火狐版_20251014","url":"https://d.kstore.dev/download/11532/utao%E7%81%AB%E7%8B%90%E7%89%88%E5%AE%89%E5%8D%935%E4%BB%A5%E4%B8%8A-2025%E5%B9%B410%E6%9C%8814%E6%97%A5-v7a.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/utao.png","version":"仅直播"},
-{"name":"小飞电视","url":"https://y977.com/xiaofeitv-2.9.0.apk","icon":"https://y977.com/tv/images/icon.png","version":"2.9.0"},
+{"name":"WebViewTV","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/电视直播/WebViewTV/WebViewTV_2.1.1.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/web.png","version":"2.1.1"},
+{"name":"DongYuTV","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/DongYuTvWeb_1.0.4.apk","icon":"https://www.hybase.com/soft/UploadPic/2026-1/202611013523958714.png","version":"v1.0.4"},
+{"name":"DongYuTV","url":"https://d.kstore.dev/download/11532/TV/DongYuTV_x5_v1.0.3.apk","icon":"https://www.hybase.com/soft/UploadPic/2026-1/202611013523958714.png","version":"x5_v1.0.3"},
+{"name":"油桃_20260112","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/utao-2026-01-12.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/utao.png","version":"20260112"},
 {"name":"CCTV_Viewer浏览器","url":"https://cns.菜妮丝.top/https://github.com/Eanya-Tonic/CCTV_Viewer/releases/download/v1.8.0/1.8.0.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/cctv.png","version":"1.8.0"},
-{"name":"CCTV_ViewerX5内核","url":"https://cns.菜妮丝.top/https://github.com/Eanya-Tonic/CCTV_Viewer/releases/download/v1.8.0/1.8.0_no_X5.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/cctv.png","version":"1.8.0"}
+{"name":"CCTV_ViewerX5内核","url":"https://cns.菜妮丝.top/https://github.com/Eanya-Tonic/CCTV_Viewer/releases/download/v1.8.0/1.8.0_no_X5.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/cctv.png","version":"X5内核1.8.0"},
+{"name":"mytv-android-tv","url":"https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/电视直播/mytv-android/mytv-android-tv-1.3.0.172-all-sdk21-%E6%AD%A3%E5%B8%B8%E7%89%88.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/mytv.png","version":"V1.3.0.172"},
+{"name":"mytv-android-tv","url":"https://d.kstore.dev/download/11532/TV/mytv-android-tv-2.0.0.177-armeabi-v7a-sdk21-%E6%AD%A3%E5%B8%B8%E7%89%88.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/mytv.png","version":"V2.0.0.177"},
+{"name":"小飞电视","url":"https://y977.com/xiaofeitv-2.9.0.apk","icon":"https://y977.com/tv/images/icon.png","version":"2.9.0"}
+    ]},
+{"name": "音乐",
+"list": [
+{"name":"ikun音乐","url":"https://cns.菜妮丝.top/https://github.com/ikunshare/ikun-music-mobile/releases/download/v1.8.0/ikun-music-mobile-v1.8.0-armeabi-v7a.apk","icon":"https://bgithub.xyz/lyswhut/lx-music-mobile/raw/master/doc/images/icon.png","version":"1.8.0"},
+{"name":"MusicFree音乐","url":"https://cns.菜妮丝.top/https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-universal-release.apk","icon":"https://www.fenxm.com/zb_users/upload/2024/09/202409261727314844604625.png","version":"0.6.2"},
+{"name":"椒盐音乐","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/%E6%A4%92%E7%9B%90%E9%9F%B3%E4%B9%90Salt%20Player_10.10.2-2025102001-moriafly-arm64-v8a.apk","icon":"","version":"10"},
+{"name":"喜马拉雅TV版","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/%E5%96%9C%E9%A9%AC%E6%8B%89%E9%9B%85TV%E7%89%88.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/xmly.png","version":""}
     ]},
 {"name": "其它",
 "list": [
-{"name":"He Tool商店","url":"https://d.kstore.dev/download/11532/He+Tool-3.10.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/He Tool.png","version":""},
-{"name":"蓝牙遥控","url":"https://d.kstore.dev/download/11532/%E8%93%9D%E7%89%99%E9%81%A5%E6%8E%A7_2.0.9.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/lan.png","version":"2.0.9"},
-{"name":"X-plore","url":"https://d.kstore.dev/download/11532/X-plore-Donate-v4.44.06_build_44406-Mod.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/X-plore.png","version":"适配手机TV"},
-{"name":"当贝桌面","url":"https://d.kstore.dev/download/11532/%E5%BD%93%E8%B4%9D%E6%A1%8C%E9%9D%A2%E4%B9%90%E8%A7%86%E4%B8%93%E7%89%88%E7%B2%BE%E7%AE%80_letv_lite_%2820241221%29.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/db.png","version":"乐视专版精简_letv_lite_(20241221)"},
-{"name":"legado阅读","url":"https://legado.miaogongzi.org/App/legado_app_3.25.apk","icon":"","version":"3.25"},
-{"name":"椒盐音乐","url":"https://cns.菜妮丝.top/https://raw.githubusercontent.com/manmandebaba/manman/main/椒盐音乐Salt Player_10.10.2-2025102001-moriafly-arm64-v8a.apk","icon":"","version":"10"},
-{"name":"ikun音乐","url":"https://cns.菜妮丝.top/https://github.com/ikunshare/ikun-music-mobile/releases/download/v1.8.0/ikun-music-mobile-v1.8.0-armeabi-v7a.apk","icon":"","version":"1.8.0"},
-{"name":"MusicFree音乐","url":"https://cns.菜妮丝.top/https://github.com/maotoumao/MusicFree/releases/download/v0.6.2/app-universal-release.apk","icon":"https://www.fenxm.com/zb_users/upload/2024/09/202409261727314844604625.png","version":"0.6.2"},
-{"name":"喜马拉雅TV版","url":"https://cns.菜妮丝.top/https://raw.githubusercontent.com/manmandebaba/manman/main/%E5%96%9C%E9%A9%AC%E6%8B%89%E9%9B%85TV%E7%89%88.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/xmly.png","version":""}
-    ]}
+{"name":"He Tool商店","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/He%20Tool-3.10.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/He Tool.png","version":"3.10"},
+{"name":"蓝牙遥控","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/%E8%93%9D%E7%89%99%E9%81%A5%E6%8E%A7_2.0.9.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/lan.png","version":"2.0.9"},
+{"name":"蓝牙遥控","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/bt-remote-1.8.3.apk","icon":"https://gitlab.com/Atharok/BtRemote/-/raw/main/assets/icon_round.png","version":"bt-remote-1.8.3"},
+{"name":"X-plore","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/X-plore.apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/X-plore.png","version":"v4.45.03适配手机TV"},
+{"name":"X浏览器","url":"https://www.xbext.com/download/xbrowser-release.apk","icon":"https://www.xbext.com/icons/apple-touch-icon-114x114.png","version":""},
+{"name":"当贝桌面","url":"https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/%E5%BD%93%E8%B4%9D%E6%A1%8C%E9%9D%A2%E4%B9%90%E8%A7%86%E4%B8%93%E7%89%88%E7%B2%BE%E7%AE%80_letv_lite_(20241221).apk","icon":"https://gitee.com/manmandebaba/ico/raw/master/db.png","version":"乐视专版精简_letv_lite_(20241221)"},
+{"name":"legado阅读","url":"https://legado.miaogongzi.org/App/legado_app_3.25.apk","icon":"https://raw.bgithub.xyz/gedoor/legado/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png","version":"3.25"}
+    ]},
+    {
+        "name": "本地包",
+        "list": [
+            {
+                "name": "VOX",
+                "url": "http://xw.123234567.xyz:60255/jiduo/vox本地包.zip",
+                "icon": "http://xw.123234567.xyz:60255/jiduo/1.jpg",
+                "copy": "",
+                "version": "本地包"
+            },
+            {
+                "name": "柒豪",
+                "url": "https://gitee.com/qihaoyyds/qihao/raw/master/本地包.zip",
+                "icon": "http://127.0.0.1:9978/file/柒豪/logo/本地包.png",
+                "version": "1.15"
+            },
+            {
+                "name": "每月2号，16号更新",
+                "url": "http://bd.qiqiv.cn/测试包.zip",
+                "icon": "http://bd.qiqiv.cn/更新.jpg",
+                "version": "01.16"
+            },
+            {
+                "name": "潇洒",
+                "url": "https://bgithub.xyz/PizazzGY/NewTVBox/raw/refs/heads/main/%E5%8D%95%E7%BA%BF%E8%B7%AF.zip",
+                "icon": "https://avatars.githubusercontent.com/u/78096245?v=4",
+                "copy": "",
+                "version": "单线路"
+            }
+        ]
+    }
 ]
 	
