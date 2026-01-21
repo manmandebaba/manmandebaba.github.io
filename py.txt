@@ -37,15 +37,9 @@
 {"name":"尘墨","type":0,"url":"https://jx.52xiaobai.cn/?url="},
 {"name":"789","type":0,"url":"https://jiexi.789jiexi.icu:4433/?url="},
 {"name":"789₂","type":0,"url":"https://jx.789jiexi.com/?url="},
-{"name":"麒麟","type":0,"url":"https://svip.qlplayer.cyou/?url="},
 {"name":"虾米","url":"https://jx.xmflv.com/?url=","type":0},
 {"name":"虾米₂","url":"https://jx.xmflv.cc/?url=","type":0},
 {"name":"虾米₃","url":"https://jx.hls.one/?url=","type":0},
-{"name":"七哥","url":"https://jx.nnxv.cn/tv.php?url=","type":0},
-{"name":"七哥₂","url":"https://jx.mmkv.cn/tv.php?url=","type":0},
-{"name":"极速","url":"https://jx.2s0.cn/player/?url=","type":0},
-{"name":"973","url":"https://jx.973973.xyz/?url=","type":0},
-{"name":"wpsseo","url":"https://vip.wpsseo.cn/jx/?api=8006200660422484&url=","type":0},
 
 {"name":"巧技","type":1,"url":"https://zy.qiaoji8.com/xiafan.php?url=","ext":{"flag":["QD4K","iyf","duanju","gzcj","GTV","GZYS","weggz","Ace"],"header":{"User-Agent":"okhttp/4.9.1"}}}
 
