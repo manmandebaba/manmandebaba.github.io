@@ -7,7 +7,26 @@
 	},
 	{
 		"name": "影视应用",
-		"list": [{
+		"list": [
+			{
+				"name": "ok影视",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-电视版-5.0.3.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
+				"version": "电视版最新"
+			},
+			{
+				"name": "ok影视",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-手机版-5.0.3.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
+				"version": "手机版最新"
+			},
+			{
+				"name": "ok影视",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/海信专版-OK影视-5.0.3.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
+				"version": "海信版最新"
+			},
+                        {
 				"name": "蜂蜜leanback",
 				"url": "https://cns.菜妮丝.top/https://github.com/FongMi/Release/raw/fongmi/apk/release/leanback-armeabi_v7a.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
@@ -32,52 +51,52 @@
 				"version": "手机版-arm64_v8a(推荐)"
 			},
 			{
-				"name": "ok影视",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-电视版-3.6.6.apk",
-				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
-				"version": "电视版3.6.6"
-			},
-			{
-				"name": "ok影视",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/OK影视-手机版-3.6.6.apk",
-				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
-				"version": "手机版3.6.6"
-			},
-			{
-				"name": "ok影视",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/OK影视/海信专版-OK影视-3.6.6.apk",
-				"icon": "https://gitee.com/manmandebaba/ico/raw/master/OK.png",
-				"version": "海信版3.6.6"
-			},
-			{
-				"name": "PeekPili ",
-				"url": "https://bgithub.xyz/ingriddaleusag-dotcom/PeekPiliRelease/releases/download/V1.1.1/PeekPili_android_1.1.1+2_arm64.apk",
+				"name": "PeekPili",
+				"url": "https://bgithub.xyz/ingriddaleusag-dotcom/PeekPiliRelease/releases/download/V1.2.5/PeekPili_android_1.2.5+2_arm64.apk",
 				"icon": "https://raw.bgithub.xyz/ingriddaleusag-dotcom/PeekPiliRelease/main/assets/images/logo/logo.png",
-				"version": "1.1.1"
+				"version": "1.2.5"
 			},
 			{
 				"name": "影视仓-TV",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_6.1.8_opt.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_6.1.9_opt_sign.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/ysc.png",
-				"version": "6.1.8"
+				"version": "6.1.9"
+			},
+			{
+				"name": "影视仓-TV",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_6.1.7-32位_海信版.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/ysc.png",
+				"version": "6.1.7海信版"
 			},
 			{
 				"name": "影视仓-手机",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_3.2.7.1.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/影视仓/影视仓_3.2.8_opt.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/ysc2.png",
-				"version": "3.2.7.1"
+				"version": "3.2.8"
 			},
 			{
 				"name": "takagen99",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20251127-1156-armeabi-generic-python.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20260227-1116-arm64-generic-python.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/taka.png",
-				"version": "黑盒py"
+				"version": "黑盒arm64py"
+			},
+			{
+				"name": "takagen99",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20260227-1116-armeabi-generic-python.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/taka.png",
+				"version": "黑盒armeabi32py"
 			},
 			{
 				"name": "takagen99海信版",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20251127-1156-armeabi-hisense-python.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20260227-1116-arm64-hisense-python.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/taka.png",
-				"version": "黑盒py"
+				"version": "黑盒arm64py"
+			},
+			{
+				"name": "takagen99海信版",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/TVBox/TVBox_takagen99_20260227-1116-armeabi-hisense-python.apk",
+				"icon": "https://gitee.com/manmandebaba/ico/raw/master/taka.png",
+				"version": "黑盒armeabi32py"
 			},
 			{
 				"name": "TVBox_q",
@@ -91,13 +110,13 @@
 		"name": "影视APP",
 		"list": [{
 				"name": "及时雨",
-				"url": "https://down.jsybox.com/jsybox/JSYBOX-release1.0.8.apk",
-				"icon": "https://jsybox.com/img/jsylogo.png",
-				"version": "1.0.7"
+				"url": "http://jar.jsy666.xyz/jsybox/JSYBOX-release-1.0.8.apk",
+				"icon": "https://jsybox.com/static/images/jsylogo.png",
+				"version": "1.0.8"
 			},
 			{
 				"name": "小苹果",
-				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/影视/小苹果影视盒子-release-1.6.2.apk",
+				"url": "",
 				"icon": "https://www.fenxm.com/zb_users/upload/2022/09/202209091662688710830448.png",
 				"version": "1.6.2"
 			},
@@ -119,15 +138,21 @@
 			},
 			{
 				"name": "DongYuTV",
-				"url": "https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/DongYuTvWeb_1.0.6.1.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/%E7%94%B5%E8%A7%86%E7%9B%B4%E6%92%AD/DongYuTvWeb/app_arm32_release_v1.0.12_20260323_2210_all.apk",
 				"icon": "https://www.hybase.com/soft/UploadPic/2026-1/202611013523958714.png",
-				"version": "v1.0.6.1"
+				"version": "最新arm32"
+			},
+                        {
+				"name": "DongYuTV",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/%E7%94%B5%E8%A7%86%E7%9B%B4%E6%92%AD/DongYuTvWeb/app_arm64_release_v1.0.12_20260323_2206_all.apk",
+				"icon": "https://www.hybase.com/soft/UploadPic/2026-1/202611013523958714.png",
+				"version": "最新arm64"
 			},
 			{
 				"name": "DongYuTV",
-				"url": "https://d.kstore.dev/download/11532/TV/DongYuTV_x5_v1.0.3.apk",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/%E7%94%B5%E8%A7%86%E7%9B%B4%E6%92%AD/DongYuTvWeb/app_webview_release_v1.0.12_20260323_2207_all.apk",
 				"icon": "https://www.hybase.com/soft/UploadPic/2026-1/202611013523958714.png",
-				"version": "x5_v1.0.3"
+				"version": "最新webview"
 			},
 			{
 				"name": "油桃_20260112",
@@ -158,6 +183,12 @@
 				"url": "https://d.kstore.dev/download/11532/TV/mytv-android-tv-2.0.0.177-armeabi-v7a-sdk21-%E6%AD%A3%E5%B8%B8%E7%89%88.apk",
 				"icon": "https://gitee.com/manmandebaba/ico/raw/master/mytv.png",
 				"version": "V2.0.0.177"
+			},
+			{
+				"name": "云影空蒙",
+				"url": "https://bgithub.xyz/manmandebaba/TVAPP/raw/refs/heads/main/电视直播/云影空蒙/3.7.7-complete-armeabi-v7a.apk",
+				"icon": "https://pic.waitsun.com/images/59/bd/c37820d70cb994a59a38408c2af4065fb004bd59.png",
+				"version": "3.7.7"
 			},
 			{
 				"name": "小飞电视",
@@ -244,6 +275,12 @@
 				"url": "https://www.xbext.com/download/xbrowser-release.apk",
 				"icon": "https://www.xbext.com/icons/apple-touch-icon-114x114.png",
 				"version": "v5.5.2 build 1024"
+			},
+			{
+				"name": "X浏览器(谷歌版)",
+				"url": "https://bgithub.xyz/manmandebaba/manman/raw/refs/heads/main/X浏览器(谷歌版)-5.5.2(1015)-All.apk",
+				"icon": "https://www.xbext.com/icons/apple-touch-icon-114x114.png",
+				"version": "5.5.2(1015)"
 			},
 			{
 				"name": "当贝桌面",

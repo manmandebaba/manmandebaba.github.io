@@ -1,4 +1,4 @@
-{
+﻿{
 "spider":"./1.jar",
 "sites":[
 {"key":"央视影音","name":"CCTV央视","type":3,"api":"csp_CCTV"},
@@ -29,6 +29,7 @@
 
 {"key":"央视片库","name":"央视片库","type":3,"api":"./py/央视片库.py","searchable":1,"quickSearch":1,"changeable":1,"filterable":1},
 {"key":"csp_jar_易听音乐","name":"易听音乐","type":3,"api":"csp_MusicGuard","style":{"type":"rect","ratio":1},"playerType":2,"searchable":1,"quickSearch":0,"changeable":0},
+{"key":"csp_jar_央视直播","name":"央视直播","api":"csp_WvSpider","jar":"./jar/0.jar","type":"3","ext":"./open/央视.js","searchable":1,"filterable":1,"switchable":1},
 
 {"key":"应用商店","name":"应用商店","type":3,"api":"csp_Market","jar":"./pg.jar","searchable":0,"changeable":0,"ext":"./market.json"}
 ],
@@ -41,9 +42,15 @@
 {"name":"虾米₂","url":"https://jx.xmflv.cc/?url=","type":0},
 {"name":"虾米₃","url":"https://jx.hls.one/?url=","type":0},
 {"name":"J1","url":"https://kalbim.xatut.top/kalbim2025/781718/play/video_player.php?url=","type":1,"header":{"User-Agent":"Mozilla/5.0"}},
-
+    {
+      "name": "4k解析",
+      "type": 1,
+      "url": "http://103.163.47.120:7777/api/?key=Cm0WZpPeSVl0rsJhvC&url="
+    },
 {"name":"巧技","type":1,"url":"https://zy.qiaoji8.com/xiafan.php?url=","ext":{"flag":["QD4K","iyf","duanju","gzcj","GTV","GZYS","weggz","Ace"],"header":{"User-Agent":"okhttp/4.9.1"}}}
 
 ]
 
 }
+
+
