@@ -1,18 +1,18 @@
 ﻿{
-"spider":"./1.jar",
+"spider":"./fan.jar",
 "sites":[
-{"key":"央视影音","name":"CCTV央视","type":3,"api":"csp_CCTV"},
+{"key":"hipy__py_华夏央视","name":"华夏央视","type":3,"api":"./py/华夏央视.py","quickSearch":1,"searchable":1,"filterable":1},
 {"key":"哔哩影视","name":"哔哩影视","type":3,"api":"csp_Bilimd","jar":"./jar/Bilimd.jar","searchable":1,"quickSearch":1,"filterable":1,"style":{"type":"rect","ratio":1.597},"ext":{"cookie":"buvid3=961B1486-A9D6-BA43-B44F-E5105C2E681151551infoc; b_nut=1762271051; _uuid=D639891E-A1EC-DEDA-31010D-9107F211C79F852945infoc; CURRENT_FNVAL=4048; CURRENT_QUALITY=0; buvid_fp=fd3797d69b70a2dd13c1236f154c0f2b; rpdid=0zbfvSa2au|JrJRQMPU|2a8|3w1VgjcF; buvid4=D6A46F50-28C0-462D-D8BA-0EE7DBD8F43052850-025110423-ZiHCV7lF06Hrtxukykv/IAr68Rki7Yd2NZkhDNGoC9IDHRXRljk982RWyYEg/k4Z; b_lsid=2A6ED6EC_19AAB94B5FB; bsource=search_bing; home_feed_column=4; bmg_af_switch=1; bmg_src_def_domain=i1.hdslb.com; SESSDATA=d95d6456%2C1779367324%2C7b85d%2Ab2CjDaqoyhiE1Cm6vtOXSxyC8ANtsCgj-Glle4dx5Budy-rQf2KXT1XToUwxQFOFPqRoESVkpJSXlEc2IxRUtRdWh1TlpyOF9YZFRMaEtYbnpQcHBvWExEUkdfSXY0enhFYnk5Z25oTk5tXzlvMzVMaXZMbV8yVmtfNm9BRTBOby1wdUlTbXgzTllBIIEC; bili_jct=f94bd13b18d76339184d2033e1a9b574; DedeUserID=1475805666; DedeUserID__ckMd5=f58689ea373d2144; sid=qd0dn69e; theme-tip-show=SHOWED; theme-avatar-tip-show=SHOWED; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjQwNzQ1NTMsImlhdCI6MTc2MzgxNTI5MywicGx0IjotMX0.GRN5Ua_OahfiUTnt5Q_Ska3D025UsOjJbkxXWCK_Jw0; bili_ticket_expires=1764074493; browser_resolution=759-726"},"timeout":10},
 {"key":"哔哩合集","name":"哔哩合集","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili合集.json"}},
 {"key":"哔哩演唱","name":"哔哩演唱","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili演唱.json"}},
 {"key":"文艺综合","name":"文艺综合","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili文艺.json"}},
 {"key":"教育学习","name":"小初高学","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili教育.json"}},
 {"key":"幼儿大全","name":"幼儿大全","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili幼儿.json"}},
-{"key":"腾讯视频","name":"腾讯视频","type":3,"api":"csp_qq","searchable":1,"filterable":1,"changeable":1},
-{"key":"芒果电视","name":"芒果电视","type":3,"api":"csp_mgtv","searchable":1,"filterable":1,"changeable":1},
-{"key":"360影视","name":"360影视","type":3,"api":"csp_SP360","searchable":1,"quickSearch":1,"filterable":1,"changeable":0},
-{"key":"爱奇艺网","name":"爱奇艺网","type":3,"api":"csp_iqiyi","searchable":1,"filterable":1,"changeable":1},
-{"key":"优酷视频","name":"优酷视频","type":3,"api":"csp_youku","searchable":1,"filterable":1,"changeable":1},
+{"key":"腾讯视频","name":"腾讯视频","type":3,"api":"csp_qq","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
+{"key":"芒果电视","name":"芒果电视","type":3,"api":"csp_mgtv","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
+{"key":"360影视","name":"360影视","type":3,"api":"csp_SP360","jar":"./jar/G.jar","searchable":1,"quickSearch":1,"filterable":1,"changeable":0},
+{"key":"爱奇艺网","name":"爱奇艺网","type":3,"api":"csp_iqiyi","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
+{"key":"优酷视频","name":"优酷视频","type":3,"api":"csp_youku","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
 {"key":"爱看机器","name":"爱看机器","type":3,"api":"./cat/cat_爱看机器人.js","ext":{"tabsDeal":"@天堂>360>TY>极速@"}},
 {"key":"厂长秒播","name":"厂长秒播","type":3,"api":"csp_NewCzGuard","timeout":10,"playerType":2,"searchable":1,"quickSearch":1,"changeable":1},
 {"key":"文采秒播","name":"文采秒播","type":3,"api":"csp_JpysGuard","timeout":10,"playerType":2,"searchable":1,"quickSearch":1,"changeable":1},
@@ -33,6 +33,10 @@
 
 {"key":"应用商店","name":"应用商店","type":3,"api":"csp_Market","jar":"./pg.jar","searchable":0,"changeable":0,"ext":"./market.json"}
 ],
+    "hosts": [
+        "img1.wsyzy.org=danmu.888484.xyz",
+        "fiizvfck.top=danmu.888484.xyz"
+    ],
   "parses": [
 {"name":"淘片","type":0,"url":"https://yparse.ik9.cc/index.php?url="},
 {"name":"尘墨","type":0,"url":"https://jx.52xiaobai.cn/?url="},
