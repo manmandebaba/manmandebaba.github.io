@@ -14,13 +14,16 @@
 {"key":"py_四大影视","name":"四大ᵖʸ丨影视","type":3,"api":"./py/AppV2.py","ext":"http://114.66.55.28:4816/api.php/app/"},
 {"key":"py_天天美剧","name":"天天ᵖʸ丨美剧","type":3,"api":"./py/AppV2.py","ext":"https://www.ttmja.com//api.php/app/"},
 {"key":"py_闪影资源","name":"闪影ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"http://38.47.213.61:41271/mogai_api.php/v1.vod"},
+{"key":"get_蓝鹰秒播","name":"蓝鹰丨4K线","type":3,"api":"./lib/get.js","searchable":1,"ext":{"host":"http://154.219.117.157:6688","key":"ca94b06ca359d80e","init":"V122","api":2,"ua":"okhttp/3.10.0"}},
+{"key":"get_四叶草4K","name":"四叶草｜4K","type":3,"api":"./lib/get.js","ext":{"host":"http://107.151.244.162:6622","key":"wNCwbXzr0Bm6cS2C","init":"V122","api":2,"ua":"okhttp/3.10.0"}},
+{"key":"get_爱影4K线","name":"爱影｜4K线","type":3,"api":"./lib/get.js","ext":{"host":"http://222.211.75.252:26168","key":"nzEqOgYk3QzHuEP8","init":"V122","api":2,"ua":"okhttp/3.10.0"},"categories":["动漫","电视剧","电影","综艺","短剧","体育","少儿","纪录片"]},
+{"key":"get_首发4K线","name":"首发｜4K线","type":3,"api":"./lib/get.js","ext":{"host":"http://110.42.67.221:9003","key":"FTgP4Gq8zPiqbt7M","init":"V122","api":2,"ua":"okhttp/3.10.0"}},
 
 {"key":"jar_央视直播","name":"央视ʲᵃʳ丨直播","api":"csp_WvSpider","jar":"./jar/0.jar","type":"3","ext":"./open/央视.js","searchable":1,"filterable":1,"switchable":1}
 
  ],
 
 "parses": [
-{"name":"万千","type":"1","url":"http://106.12.58.21:5657/Vqq5656.php/?url="},
 
 {"name":"虾米","url":"https://jx.xmflv.com/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
 {"name":"米柚","url":"https://jx.m3u8.tv/jiexi/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
