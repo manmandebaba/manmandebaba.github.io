@@ -1,6 +1,7 @@
 ﻿{
   "sites": [
 {"key":"cat_央央[官]","name":"央央ᶜᵃᵗ丨视频","type":3,"api":"./cat/cat_央央[官].js"},
+{"key":"py_华数视频","name":"华数ᵖʸ丨视频","type":3,"api":"./py/华数.py","quickSearch":1,"searchable":1,"filterable":1},
 {"key":"cat_腾腾[官]","name":"腾腾ᶜᵃᵗ丨视频","type":3,"api":"./cat/cat_腾腾[官].js"},
 {"key":"cat_果果[官]","name":"果果ᶜᵃᵗ丨视频","type":3,"api":"./cat/cat_果果[官].js"},
 {"key":"cat_奇奇[官]","name":"奇奇ᶜᵃᵗ丨视频","type":3,"api":"./cat/cat_奇奇[官].js"},
@@ -17,7 +18,6 @@
 {"key":"py_久久资源","name":"久久ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"http://99cms.jj99.icu:8199/api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"py_飞飞资源","name":"飞飞ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"https://qpcj.69mini.com/api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"get_蓝鹰秒播","name":"蓝鹰丨4K线","type":3,"api":"./lib/get.js","ext":{"host":"http://154.219.117.157:6688","key":"ca94b06ca359d80e","init":"V122","api":2,"ua":"okhttp/3.10.0"},"searchable":1},
-{"key":"get_四叶草4K","name":"四叶草｜4K","type":3,"api":"./lib/get.js","ext":{"host":"http://107.151.244.162:6622","key":"wNCwbXzr0Bm6cS2C","init":"V122","api":2,"ua":"okhttp/3.10.0"}},
 {"key":"get_爱影4K线","name":"爱影｜4K线","type":3,"api":"./lib/get.js","ext":{"host":"http://222.211.75.252:26168","key":"nzEqOgYk3QzHuEP8","init":"V122","api":2,"ua":"okhttp/3.10.0"},"categories":["动漫","电视剧","电影","综艺","短剧","体育","少儿","纪录片"]},
 {"key":"get_首发4K线","name":"首发｜4K线","type":3,"api":"./lib/get.js","ext":{"host":"http://110.42.67.221:9003","key":"FTgP4Gq8zPiqbt7M","init":"V122","api":2,"ua":"okhttp/3.10.0"}},
 
@@ -27,14 +27,13 @@
 
 "parses": [
 
-{"name":"虾米","url":"https://jx.xmflv.com/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"米柚","url":"https://jx.m3u8.tv/jiexi/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"淘片","url":"https://yparse.ik9.cc/index.php?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"淘片₂","url":"https://jx.yparse.com/index.php?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"刨云","url":"https://www.pouyun.com/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"盘古","url":"https://www.pangujiexi.com/pangu/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"平乐","url":"https://www.playm3u8.cn/jiexi.php?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"},
-{"name":"789","url":"https://jx.789jiexi.com/?url=","type":"0","status":"normal","type_text":"Type 0","status_text":"正常"}
+{"name":"小蜜蜂","url":"https://jx.xmflv.cc/?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}},
+{"name":"虾米","url":"https://jx.xmflv.com/?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}},
+{"name":"冰豆","url":"https://bd.jx.cn/?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}},
+{"name":"ik9","url":"https://yparse.ik9.cc/index.php?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}},
+{"name":"淘片","url":"https://jx.yparse.com/index.php?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}},
+{"name":"盘古","url":"https://www.playm3u8.cn/jiexi.php?url=","type":0,"ext":{"flag":["qiyi","imgo","爱奇艺","奇艺","qq","qq 预告及花絮","腾讯","youku","优酷","pptv","PPTV","letv","乐视","leshi","mgtv","芒果","sohu","xigua","fun","风行"]},"header":{"User-Agent":"Mozilla/5.0"}}
+
 
 ]
 }
