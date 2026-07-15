@@ -1,63 +1,24 @@
 ﻿{
-"spider":"./jar/fan.jar",
-"sites":[
-{"key":"腾讯视频","name":"腾讯视频","type":3,"api":"csp_qq","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
-{"key":"芒果电视","name":"芒果电视","type":3,"api":"csp_mgtv","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
-{"key":"360影视","name":"360影视","type":3,"api":"csp_SP360","jar":"./jar/G.jar","searchable":1,"quickSearch":1,"filterable":1,"changeable":0},
-{"key":"爱奇艺网","name":"爱奇艺网","type":3,"api":"csp_iqiyi","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
-{"key":"优酷视频","name":"优酷视频","type":3,"api":"csp_youku","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
-{"key":"幼儿大全","name":"幼儿大全","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili幼儿.json"}},
-{"key":"小米儿童","name":"小米儿童","type":1,"api":"https://tt.666888.club/vod/tt.php/provide/vod/","searchable":1,"changeable":1,"quickSearch":1,"filterable":0},
-{"key":"奇妙资源","name":"奇妙资源","type":1,"api":"https://cj.jusj.top/api.php/provide/vod/?ac=list","searchable":1,"changeable":1},
-{"key":"央视片库","name":"央视片库","type":3,"api":"./py/央视片库.py","searchable":1,"quickSearch":1,"changeable":1,"filterable":1},
-{"key":"央视直播","name":"央视直播","api":"csp_WvSpider","jar":"./jar/0.jar","type":"3","ext":"./open/央视.js","searchable":1,"filterable":1,"switchable":1},
-{"key":"哔哩影视","name":"哔哩影视","type":3,"api":"csp_Bilimd","jar":"./jar/Bilimd.jar","searchable":1,"quickSearch":1,"filterable":1,"style":{"type":"rect","ratio":1.597},"ext":{"cookie":"buvid3=961B1486-A9D6-BA43-B44F-E5105C2E681151551infoc; b_nut=1762271051; _uuid=D639891E-A1EC-DEDA-31010D-9107F211C79F852945infoc; CURRENT_FNVAL=4048; CURRENT_QUALITY=0; buvid_fp=fd3797d69b70a2dd13c1236f154c0f2b; rpdid=0zbfvSa2au|JrJRQMPU|2a8|3w1VgjcF; buvid4=D6A46F50-28C0-462D-D8BA-0EE7DBD8F43052850-025110423-ZiHCV7lF06Hrtxukykv/IAr68Rki7Yd2NZkhDNGoC9IDHRXRljk982RWyYEg/k4Z; b_lsid=2A6ED6EC_19AAB94B5FB; bsource=search_bing; home_feed_column=4; bmg_af_switch=1; bmg_src_def_domain=i1.hdslb.com; SESSDATA=d95d6456%2C1779367324%2C7b85d%2Ab2CjDaqoyhiE1Cm6vtOXSxyC8ANtsCgj-Glle4dx5Budy-rQf2KXT1XToUwxQFOFPqRoESVkpJSXlEc2IxRUtRdWh1TlpyOF9YZFRMaEtYbnpQcHBvWExEUkdfSXY0enhFYnk5Z25oTk5tXzlvMzVMaXZMbV8yVmtfNm9BRTBOby1wdUlTbXgzTllBIIEC; bili_jct=f94bd13b18d76339184d2033e1a9b574; DedeUserID=1475805666; DedeUserID__ckMd5=f58689ea373d2144; sid=qd0dn69e; theme-tip-show=SHOWED; theme-avatar-tip-show=SHOWED; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjQwNzQ1NTMsImlhdCI6MTc2MzgxNTI5MywicGx0IjotMX0.GRN5Ua_OahfiUTnt5Q_Ska3D025UsOjJbkxXWCK_Jw0; bili_ticket_expires=1764074493; browser_resolution=759-726"},"timeout":10},
-{"key":"哔哩合集","name":"哔哩合集","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili合集.json"}},
-{"key":"哔哩演唱","name":"哔哩演唱","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili演唱.json"}},
-{"key":"文艺综合","name":"文艺综合","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili文艺.json"}},
-{"key":"教育学习","name":"小初高学","type":3,"api":"csp_BiliGuard","style":{"type":"rect","ratio":1.597},"searchable":1,"quickSearch":0,"changeable":0,"ext":{"json":"./open/Bili教育.json"}},
-{"key":"厂长不卡","name":"厂长不卡","type":3,"api":"csp_NewCzGuard","timeout":10,"playerType":2,"searchable":1,"quickSearch":1,"changeable":1},
-{"key":"原创不卡","name":"原创不卡","type":3,"api":"csp_YCyzGuard","timeout":15,"playerType":1,"searchable":1,"quickSearch":1,"changeable":1},
-{"key":"糯米秒播","name":"糯米秒播","type":3,"api":"csp_NmyswvGuard","timeout":15,"searchable":1,"quickSearch":1,"changeable":1},
-{"key":"文采秒播","name":"文采秒播","type":3,"api":"csp_JpysGuard","timeout":10,"playerType":2,"searchable":1,"quickSearch":1,"changeable":1},
-{"key":"聚合资源","name":"聚合资源","type":3,"api":"./py/聚合.py"},
 
+"sites":[
+{"key":"py_央视大全","name":"央视ᵖʸ丨大全","type":3,"api":"./py/央视大全.py","filterable":1,"timeout":60,"quickSearch":1,"searchable":1},
+{"key":"py_腾讯视频","name":"腾讯ᵖʸ丨视频","type":3,"api":"./py/腾讯视频.py","searchable":1,"quickSearch":0,"filterable":0,"changeable":0},
+{"key":"py_芒果视频","name":"芒果ᵖʸ丨视频","type":3,"api":"./py/芒果.py","searchable":1,"quickSearch":0,"filterable":0,"changeable":0},
+{"key":"py_优酷视频","name":"优酷ᵖʸ丨视频","type":3,"api":"./py/优酷视频.py","searchable":1,"quickSearch":0,"filterable":0,"changeable":0},
+{"key":"py_bilibili","name":"biliᵖʸ丨bili","type":3,"api":"./py/py_bilibili.py","searchable":1,"quickSearch":1,"filterable":1,"order_num":13,"ext":""},
+{"key":"py_华数视频","name":"华数ᵖʸ丨视频","type":3,"api":"./py/华数.py","quickSearch":1,"searchable":1,"filterable":1},
+{"key":"py_两个影视","name":"两个ᵖʸ丨影视","type":3,"api":"./py/两个BT.py"},
+{"key":"py_歪比影视","name":"歪比ᵖʸ丨影视","type":3,"api":"./py/歪比影视.py"},
+{"key":"py_聚合资源","name":"聚合ᵖʸ丨资源","type":3,"api":"./py/聚合.py"},
+{"key":"py_四大影视","name":"四大ᵖʸ丨影视","type":3,"api":"./py/AppV2.py","ext":"http://114.66.55.28:4816/api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
+{"key":"py_天天美剧","name":"天天ᵖʸ丨美剧","type":3,"api":"./py/AppV2.py","ext":"https://www.ttmja.com//api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
+{"key":"py_闪影资源","name":"闪影ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"http://38.47.213.61:41271/mogai_api.php/v1.vod","searchable":1,"quickSearch":0,"filterable":1},
+{"key":"py_久久资源","name":"久久ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"http://99cms.jj99.icu:8199/api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
+{"key":"py_飞飞资源","name":"飞飞ᵖʸ丨资源","type":3,"api":"./py/AppV2.py","ext":"https://qpcj.69mini.com/api.php/app/","searchable":1,"quickSearch":0,"filterable":1},
+
+{"key":"py_央视片库","name":"央视ᵖʸ丨片库","type":3,"api":"./py/央视片库.py","searchable":1,"quickSearch":1,"changeable":1,"filterable":1},
 {"key":"应用商店","name":"应用商店","type":3,"api":"csp_Market","jar":"./pg.jar","searchable":0,"changeable":0,"ext":"./market.json"}
 ],
-    "rules": [
-{	"name": "虾米点击",
-	"hosts": ["jx.xmflv.cc", "jx.xmflv.com", "jx.hls.one"],
-	"script": ["document.querySelector('#clickText').click()"]}, 
-{	"name": "七哥点击",
-	"hosts": ["jx.nnxv.cn"],
-	"script": ["document.querySelector('#play-button-overlay').click()"]},
-{
-	"name": "七哥点击",
-	"hosts": [
-		"jx.nnxv.cn/tv.php"
-	],
-	"script": [
-		"document.querySelector('#play-button-overlay').click()"
-	]
-},
-    {
-        "name": "cdn.ryplay",
-        "hosts": [
-            "cdn.ryplay"
-        ],
-        "regex": [
-            "5.480000",
-            "#EXT-X-DISCONTINUITY\\r*\\n*#EXTINF:5.480000,[\\s\\S]*?#EXT-X-DISCONTINUITY",
-            "#EXT-X-DISCONTINUITY\\s*\\r?\\n#EXTINF:5.320000,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n(?:#EXTINF:[\\d.]+,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n)*?#EXTINF:3.360000,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n#EXT-X-DISCONTINUITY",
-            "#EXT-X-DISCONTINUITY\\s*\\r?\\n#EXTINF:4.000000,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n(?:#EXTINF:[\\d.]+,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n)*?#EXTINF:0.560000,\\s*\\r?\\n.+\\.ts\\s*\\r?\\n#EXT-X-DISCONTINUITY",
-            "#EXTINF.*?\\s+.*?1o.*?\\.ts\\s+"
-        ]
-    }
-    ],
-    "hosts": [
-        "img1.wsyzy.org=danmu.888484.xyz",
-        "fiizvfck.top=danmu.888484.xyz"
-    ],
   "parses": [
 {"name":"聚合","type":3,"url":"Web"},
 {"name":"虾米","type":0,"url":"https://jx.xmflv.com/?url=","ext":{"header":{"user-agent":"Mozilla/5.0 (Linux; Android 13; V2049A Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36"}}},
