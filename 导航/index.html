@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的导航</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+  <style>
+    /* ===== Loading Skeleton ===== */
+    .loading-screen { position: fixed; inset: 0; z-index: 9999; background: var(--bg-primary);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+      transition: opacity .5s; }
+    .loading-screen.hide { opacity: 0; pointer-events: none; }
+    .loader { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-screen p { color: var(--text-tertiary); font-size: .9rem; letter-spacing: 1px; }
+  </style>
+</head>
+<body class="bg-aurora">
+  <!-- Loading -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loader"></div>
+    <p>正在加载导航…</p>
+  </div>
+
+  <div class="bg-canvas"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- 未绑定配置文件时的提示条 -->
+  <div class="bind-banner" id="bindBanner" style="display:none">
+    <span>💾 数据仅存本浏览器，绑定配置文件后可多浏览器同步。</span>
+    <button onclick="bindConfigFile()">绑定配置文件</button>
+    <button class="bind-close" onclick="this.parentNode.style.display='none'" title="关闭">✕</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings(event)"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h2>⚙️ 导航设置</h2>
+      <button class="settings-close" onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-body" id="settingsBody"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
+  <!-- 城市菜单（脱离 widget 层叠上下文，避免被遮挡） -->
+  <div class="city-menu" id="cityMenu"></div>
+
+  <!-- App -->
+  <div class="app" id="app">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="brand" id="brand"></div>
+        <div class="nav-tabs" id="navTabs"></div>
+      </div>
+      <div class="top-bar-right">
+        <div class="theme-toggle" id="themeToggle" onclick="cycleTheme()" title="切换主题">🌙</div>
+        <button class="icon-btn settings" onclick="openSettings()" title="设置">&#9881;</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="datetime" id="datetime">
+        <div class="clock" id="clock">--:--</div>
+        <div class="dt-right">
+          <div class="date" id="dateStr"></div>
+          <div class="greeting" id="greeting"></div>
+        </div>
+      </div>
+
+      <div class="search-box" id="searchBox">
+        <button class="engine-switch" id="engineBtn" onclick="toggleEngineMenu(event)">
+          <span id="engineName">百度</span><span class="caret">▾</span>
+        </button>
+        <input type="text" id="searchInput" placeholder="搜索网页，或输入网址直达…" onkeydown="onSearchKey(event)" oninput="onSearchInput()" autocomplete="off">
+        <button class="ai-btn" id="aiBtn" onclick="askAI()" title="问 AI">✦ 问AI</button>
+        <span class="search-icon">🔍</span>
+        <div class="engine-menu" id="engineMenu"></div>
+      </div>
+
+      <div class="favorites" id="favorites"></div>
+    </div>
+
+    <!-- Widgets -->
+    <div class="widgets" id="widgets">
+      <div class="widget weather" id="weatherWidget">
+        <div class="w-icon" id="wIcon">🌤️</div>
+        <div class="w-main">
+          <div class="w-temp" id="wTemp">--℃</div>
+          <div class="w-city" id="wCity" onclick="toggleCityMenu(event)" title="点击切换城市">--</div>
+        </div>
+        <div class="w-meta" id="wMeta"></div>
+      </div>
+      <div class="widget countdown" id="offWorkWidget">
+        <div class="w-label">⏰ 下班倒计时</div>
+        <div class="w-value" id="offWorkVal">--:--:--</div>
+        <div class="w-sub" id="offWorkSub"></div>
+      </div>
+      <div class="widget countdown" id="paydayWidget">
+        <div class="w-label">💰 发薪倒计时</div>
+        <div class="w-value" id="paydayVal">-- 天</div>
+        <div class="w-sub" id="paydaySub"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="content"></div>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer"></footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+  // =====================================================================
+  //  常量
+  // =====================================================================
+  const ENGINES = {
+    baidu:      { name: "百度",       url: "https://www.baidu.com/s?wd=" },
+    google:     { name: "Google",     url: "https://www.google.com/search?q=" },
+    bing:       { name: "Bing",       url: "https://www.bing.com/search?q=" },
+    duckduckgo: { name: "DuckDuckGo", url: "https://duckduckgo.com/?q=" },
+    sogou:      { name: "搜狗",       url: "https://www.sogou.com/web?query=" }
+  };
+  const AI_ASSISTANTS = {
+    deepseek:  { name: "DeepSeek",  url: "https://chat.deepseek.com" },
+    doubao:    { name: "豆包",      url: "https://www.doubao.com" },
+    kimi:      { name: "Kimi",      url: "https://kimi.moonshot.cn" },
+    chatgpt:   { name: "ChatGPT",   url: "https://chatgpt.com" },
+    yuanbao:   { name: "元宝",      url: "https://yuanbao.tencent.com" },
+    qwen:      { name: "通义千问",  url: "https://tongyi.aliyun.com" }
+  };
+  const BG_PRESETS = {
+    aurora:  "极光紫", sunset: "落日橙", ocean: "深海蓝",
+    forest:  "森林绿", midnight: "午夜黑", candy: "粉樱"
+  };
+  const FONT_STACKS = {
+    "":         "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    yahei:      "'Microsoft YaHei', 'PingFang SC', sans-serif",
+    pingfang:   "'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
+    song:       "'SimSun', 'Songti SC', serif",
+    kai:        "'KaiTi', 'Kaiti SC', serif",
+    hei:        "'SimHei', 'Heiti SC', sans-serif",
+    mono:       "'Consolas', 'Courier New', monospace"
+  };
+  const FONT_NAMES = { "": "系统默认", yahei: "微软雅黑", pingfang: "苹方", song: "宋体", kai: "楷体", hei: "黑体", mono: "等宽" };
+  // WMO 天气代码 -> 图标 + 文字
+  const WMO = {
+    0:["☀️","晴"],1:["🌤️","多云"],2:["⛅","局部多云"],3:["☁️","阴"],
+    45:["🌫️","雾"],48:["🌫️","雾凇"],51:["🌦️","毛毛雨"],53:["🌦️","毛毛雨"],55:["🌧️","毛毛雨"],
+    56:["🌧️","冻雨"],57:["🌧️","冻雨"],61:["🌧️","小雨"],63:["🌧️","中雨"],65:["🌧️","大雨"],
+    66:["🌧️","冻雨"],67:["🌧️","冻雨"],71:["🌨️","小雪"],73:["🌨️","中雪"],75:["❄️","大雪"],77:["🌨️","雪粒"],
+    80:["🌦️","阵雨"],81:["🌧️","阵雨"],82:["⛈️","强阵雨"],85:["🌨️","阵雪"],86:["❄️","阵雪"],
+    95:["⛈️","雷阵雨"],96:["⛈️","雷阵雨伴雹"],99:["⛈️","强雷暴"]
+  };
+
+  // =====================================================================
+  //  状态
+  // =====================================================================
+  let CONFIG = null;
+  let STORAGE_KEY = "navpage_config_v2";
+  let FS_HANDLE = null;
+  let activeCategory = "all";
+  let activeSearch = "";
+  let editState = null;
+  let editingEventId = null;
+  let tickTimer = null;
+
+  // =====================================================================
+  //  初始化
+  // =====================================================================
+  document.addEventListener("DOMContentLoaded", init);
+  function init() {
+    setTimeout(() => { const l = document.getElementById("loadingScreen"); if (l && !l.classList.contains("hide")) l.classList.add("hide"); }, 4000);
+    loadConfig().then(() => bootstrap()).catch(() => {
+      CONFIG = JSON.parse(JSON.stringify(window.NAV_CONFIG_DEFAULT || {}));
+      bootstrap();
+    });
+  }
+  // 配置加载优先级：已绑定磁盘 JSON（多浏览器共享）> localStorage > 默认配置
+  async function loadConfig() {
+    const h = await idbGetHandle();
+    if (h) {
+      FS_HANDLE = h;
+      const cfg = await fsReadConfig();
+      if (cfg) { CONFIG = cfg; return; }
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) { CONFIG = JSON.parse(saved); return; }
+    } catch (e) {}
+    CONFIG = JSON.parse(JSON.stringify(window.NAV_CONFIG_DEFAULT || {}));
+  }
+  function bootstrap() {
+    if (!CONFIG.settings) CONFIG.settings = {};
+    if (!CONFIG.categories) CONFIG.categories = [];
+    if (!CONFIG.favorites) CONFIG.favorites = [];
+    document.title = CONFIG.title || "我的导航";
+    applyTheme();
+    watchSystemTheme();
+    applyBackground();
+    applyFavicon();
+    render();
+    startTick();
+    updateBindBanner();
+    startFsPoll();
+    if (CONFIG.settings.showWeather && CONFIG.settings.weatherCity) loadWeather();
+    if (CONFIG.settings.theme === "sun") sunPosition();
+    setTimeout(hideLoader, 350);
+  }
+  function hideLoader() { const l = document.getElementById("loadingScreen"); if (l) l.classList.add("hide"); }
+  // 未绑定磁盘配置文件时，显示顶部提示条（不支持写文件的浏览器不显示）
+  function updateBindBanner() {
+    const b = document.getElementById("bindBanner");
+    if (b) b.style.display = (!FS_HANDLE && isFsSupported()) ? "flex" : "none";
+  }
+
+  function saveConfig() {
+    const data = JSON.stringify(CONFIG);
+    if (FS_HANDLE) {
+      // 已绑定磁盘文件：写盘（多浏览器共享），localStorage 仅作本地备份
+      try { localStorage.setItem(STORAGE_KEY, data); } catch (e) {}
+      fsWriteConfig(data).then(ok => {
+        if (!ok) { FS_HANDLE = null; idbRemoveHandle(); showToast("⚠ 配置文件失效，请在设置里重新绑定"); }
+      });
+      return;
+    }
+    try { localStorage.setItem(STORAGE_KEY, data); }
+    catch (e) {
+      try {
+        evictIconData(data.length);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(CONFIG));
+        showToast("⚠ 存储空间不足，已自动精简部分图标缓存");
+      } catch (e2) {
+        showToast("⚠ 保存失败：浏览器存储已满，请导出配置后重置");
+      }
+    }
+  }
+  // 存储不足时：按体积从大到小丢弃已固化的 dataURL 图标，退回自动抓取，腾出空间重试
+  function evictIconData(minSize) {
+    const all = [];
+    (CONFIG.favorites || []).forEach(f => all.push(f));
+    (CONFIG.categories || []).forEach(c => (c.items || []).forEach(i => all.push(i)));
+    const big = all.filter(x => x && /^data:/.test(x.iconUrl || "")).sort((a, b) => (b.iconUrl || "").length - (a.iconUrl || "").length);
+    for (const t of big) {
+      if (JSON.stringify(CONFIG).length <= minSize) break;
+      t.iconUrl = "";
+    }
+  }
+
+  // =====================================================================
+  //  主题 / 背景
+  // =====================================================================
+  function applyTheme() {
+    const t = CONFIG.settings.theme || "auto";
+    const dark = t === "dark" ? true : t === "light" ? false : t === "sun" ? isSunDark() : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    const btn = document.getElementById("themeToggle");
+    if (btn) btn.textContent = dark ? "🌙" : "☀️";
+    applyStyleSettings();
+  }
+  // 跟随系统模式：监听系统主题变化，自动切换
+  let systemThemeMql = null;
+  function watchSystemTheme() {
+    if (systemThemeMql) return;
+    systemThemeMql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => { if ((CONFIG.settings.theme || "auto") === "auto") applyTheme(); };
+    if (systemThemeMql.addEventListener) systemThemeMql.addEventListener("change", onChange);
+    else systemThemeMql.addListener(onChange);
+  }
+  // 日出日落模式：根据当前时区日出/日落时间自动切换深浅色
+  function isSunDark() {
+    const now = new Date();
+    const tz = -now.getTimezoneOffset(); // 分钟
+    try {
+      const saved = JSON.parse(localStorage.getItem("nav_sun_tz") || "null");
+      if (saved && saved.ts && Date.now() - saved.ts < 7 * 24 * 3600e3 && saved.min !== tz) {
+        localStorage.removeItem("nav_sun_tz");
+        localStorage.removeItem("nav_sun_pos");
+      }
+    } catch (e) {}
+    let pos = null;
+    try { pos = JSON.parse(localStorage.getItem("nav_sun_pos") || "null"); } catch (e) {}
+    if (pos && pos.lat != null && pos.lng != null) {
+      const st = sunTimes(now, pos.lat, pos.lng);
+      if (st) return now < st.rise || now >= st.set;
+    }
+    // 无定位信息时，回退跟随系统
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  // 计算某地当日日出/日落（本地时刻），纬度为北负南
+  function sunTimes(date, lat, lng) {
+    const toRad = d => d * Math.PI / 180;
+    const y = date.getFullYear(), mo = date.getMonth(), d = date.getDate();
+    const dayOfYear = Math.floor((new Date(y, mo, d) - new Date(y, 0, 0)) / 86400000);
+    const lngHour = lng / 15;
+    const tzHours = -date.getTimezoneOffset() / 60; // 时区相对 UTC 的小时数
+    const calc = (isRise) => {
+      const t = dayOfYear + ((isRise ? 6 : 18) - lngHour) / 24;
+      const M = (0.9856 * t) - 3.289;
+      let L = M + (1.916 * Math.sin(toRad(M))) + (0.020 * Math.sin(toRad(2 * M))) + 282.634;
+      L = ((L % 360) + 360) % 360;
+      let RA = Math.atan(0.91764 * Math.tan(toRad(L)));
+      RA = ((RA * 180 / Math.PI % 360) + 360) % 360;
+      const Lquad = Math.floor(L / 90) * 90, RAquad = Math.floor(RA / 90) * 90;
+      RA = (RA + (Lquad - RAquad)) / 15;
+      const sinDec = 0.39782 * Math.sin(toRad(L));
+      const cosDec = Math.cos(Math.asin(sinDec));
+      const cosH = (Math.cos(toRad(90.833)) - sinDec * Math.sin(toRad(lat))) / (cosDec * Math.cos(toRad(lat)));
+      if (cosH > 1 || cosH < -1) return null; // 极昼/极夜
+      let H = (isRise ? 360 - Math.acos(cosH) * 180 / Math.PI : Math.acos(cosH) * 180 / Math.PI) / 15;
+      let T = H + RA - (0.06571 * t) - 6.622;
+      let UT = T - lngHour;
+      UT = ((UT % 24) + 24) % 24;
+      let local = UT + tzHours;
+      local = ((local % 24) + 24) % 24;
+      const hh = Math.floor(local), mm = Math.round((local - hh) * 60);
+      return new Date(y, mo, d, hh, mm, 0, 0);
+    };
+    const rise = calc(true), set = calc(false);
+    if (rise == null || set == null) return null;
+    return { rise, set };
+  }
+  // 定位到经纬度（供日出日落模式使用）
+  function sunPosition() {
+    let pos = null;
+    try { pos = JSON.parse(localStorage.getItem("nav_sun_pos") || "null"); } catch (e) {}
+    if (pos && pos.lat != null && pos.lng != null) return pos;
+    const resolve = async () => {
+      let city = (CONFIG.settings.weatherCity || "").trim();
+      if (!city || city.toLowerCase() === "auto") {
+        try { city = await detectCityByIP(); } catch (e) {}
+      }
+      const c = await geocodeCity(city);
+      if (c) {
+        localStorage.setItem("nav_sun_pos", JSON.stringify(c));
+        localStorage.setItem("nav_sun_tz", JSON.stringify({ min: -new Date().getTimezoneOffset(), ts: Date.now() }));
+        applyTheme();
+      }
+    };
+    resolve();
+    return null;
+  }
+  async function geocodeCity(city) {
+    city = (city || "").trim();
+    if (!city) return null;
+    try {
+      const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(city) + "&count=1&language=zh&format=json");
+      const j = await r.json();
+      if (j.results && j.results[0]) return { lat: j.results[0].latitude, lng: j.results[0].longitude };
+    } catch (e) {}
+    return null;
+  }
+  function cycleTheme() {
+    const modes = ["auto", "sun", "dark", "light"];
+    CONFIG.settings.theme = modes[(modes.indexOf(CONFIG.settings.theme || "auto") + 1) % modes.length];
+    saveConfig(); applyTheme();
+    if (CONFIG.settings.theme === "sun") sunPosition();
+    showToast("主题：" + ({ auto: "跟随系统", sun: "日出日落", dark: "深色", light: "浅色" }[CONFIG.settings.theme]));
+  }
+  // 卡片透明度 / 字体 / 字号 应用到页面
+  function applyStyleSettings() {
+    const s = CONFIG.settings;
+    const root = document.documentElement;
+    // 字体
+    root.style.setProperty("--font-sans", FONT_STACKS[s.fontFamily] || FONT_STACKS[""]);
+    // 字体粗细
+    root.style.setProperty("--font-weight", (parseInt(s.fontWeight, 10) || 400) + "");
+    // 页面整体宽度
+    root.style.setProperty("--page-w", (parseInt(s.pageWidth, 10) || 1180) + "px");
+    // 卡片大小（列宽）
+    root.style.setProperty("--card-w", (parseInt(s.cardSize, 10) || 132) + "px");
+    // 全局字号（rem 基准）
+    root.style.fontSize = (parseInt(s.fontSize, 10) || 16) + "px";
+    // 卡片透明度
+    const a = Math.max(0.2, Math.min(1, (parseFloat(s.cardAlpha) || 100) / 100));
+    if (root.getAttribute("data-theme") === "light") {
+      root.style.setProperty("--card-bg", "rgba(255,255,255," + (0.78 * a).toFixed(3) + ")");
+      root.style.setProperty("--card-hover", "rgba(255,255,255," + (0.95 * a).toFixed(3) + ")");
+    } else {
+      const d = 0.02 + 0.13 * (a - 0.2) / 0.8;
+      root.style.setProperty("--card-bg", "rgba(255,255,255," + d.toFixed(3) + ")");
+      root.style.setProperty("--card-hover", "rgba(255,255,255," + Math.min(0.4, d * 1.8).toFixed(3) + ")");
+    }
+  }
+  function cycleTheme() {
+    const modes = ["auto", "dark", "light"];
+    CONFIG.settings.theme = modes[(modes.indexOf(CONFIG.settings.theme || "auto") + 1) % modes.length];
+    saveConfig(); applyTheme(); showToast("主题：" + ({ auto: "跟随系统", dark: "深色", light: "浅色" }[CONFIG.settings.theme]));
+  }
+  function applyBackground() {
+    const bg = CONFIG.settings.background || "aurora";
+    document.body.classList.remove("bg-aurora","bg-sunset","bg-ocean","bg-forest","bg-midnight","bg-candy","bg-custom");
+    const canvas = document.querySelector(".bg-canvas");
+    if (bg.startsWith("http")) {
+      document.body.classList.add("bg-custom");
+      canvas.style.backgroundImage = 'url("' + bg + '")';
+    } else {
+      canvas.style.backgroundImage = "";
+      document.body.classList.add("bg-" + bg);
+    }
+  }
+
+  // =====================================================================
+  //  渲染
+  // =====================================================================
+  function render() {
+    renderBrand(); renderNavTabs(); renderFavorites(); renderContent(); renderWidgets(); renderFooter();
+  }
+  function renderFooter() {
+    const el = document.getElementById("footer");
+    if (!el) return;
+    const t = CONFIG.settings.footer;
+    if (t) { el.textContent = t; el.style.display = ""; }
+    else el.style.display = "none";
+  }
+  function renderBrand() {
+    const el = document.getElementById("brand");
+    el.innerHTML = '<span class="brand-logo">' + escapeHtml((CONFIG.settings.brandIcon || "🌐").trim() || "🌐") + '</span><span class="brand-name">' + escapeHtml(CONFIG.title || "我的导航") + "</span>";
+  }
+  // 品牌图标同步到浏览器标签页 favicon
+  function applyFavicon() {
+    const icon = (CONFIG.settings.brandIcon || "🌐").trim() || "🌐";
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>" + icon + "</text></svg>";
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+  function renderNavTabs() {
+    const tabs = document.getElementById("navTabs");
+    tabs.innerHTML = "";
+    const mk = (id, label, icon) => {
+      const b = document.createElement("button");
+      b.className = "nav-tab" + (activeCategory === id ? " active" : "");
+      b.innerHTML = (icon ? icon + " " : "") + label;
+      b.onclick = () => { activeCategory = id; renderNavTabs(); renderContent(); };
+      return b;
+    };
+    tabs.appendChild(mk("all", "全部", "🏠"));
+    (CONFIG.categories || []).slice().sort((a, b) => a.sort - b.sort).forEach(c => tabs.appendChild(mk(c.id, c.name, c.icon)));
+  }
+  function renderFavorites() {
+    const el = document.getElementById("favorites");
+    el.innerHTML = "";
+    (CONFIG.favorites || []).slice(0, 12).forEach(f => {
+      const a = document.createElement("a");
+      a.className = "fav-chip";
+      a.href = normalizeUrl(f.url); a.target = "_blank"; a.title = f.name;
+      a.innerHTML = iconHtml(f, "🔗", { t: "f", i: f.id }) + '<span class="fc-name">' + escapeHtml(f.name) + "</span>";
+      el.appendChild(a);
+    });
+  }
+  function renderContent() {
+    const content = document.getElementById("content");
+    content.innerHTML = "";
+    const cats = (CONFIG.categories || []).slice().sort((a, b) => a.sort - b.sort);
+    if (!cats.length) { content.innerHTML = '<div class="empty-state"><span class="es-icon">📋</span>暂无分类，请在设置中添加</div>'; return; }
+    cats.forEach(cat => {
+      if (activeCategory !== "all" && activeCategory !== cat.id) return;
+      const items = cat.items || [];
+      const sec = document.createElement("div");
+      sec.className = "category-section";
+
+      const header = document.createElement("div");
+      header.className = "category-header";
+      header.innerHTML = '<span class="ch-icon">' + (cat.icon || "📁") + '</span><h2>' + escapeHtml(cat.name) + "</h2>";
+      const actions = document.createElement("div");
+      actions.className = "ch-actions";
+      actions.innerHTML =
+        '<button class="ch-btn" onclick="openItemModal(\'add\',\'' + cat.id + '\',null)">+ 添加导航</button>' +
+        '<button class="ch-btn" onclick="openCatEditModal(\'' + cat.id + '\')">✎ 编辑</button>' +
+        '<button class="ch-btn danger" onclick="deleteCategory(\'' + cat.id + '\')">删除</button>';
+      header.appendChild(actions);
+      sec.appendChild(header);
+
+      const grid = document.createElement("div");
+      grid.className = "card-grid";
+      if (!items.length) {
+        grid.innerHTML = '<div class="empty-state"><span class="es-icon">📭</span>该分类暂无导航，点击上方「添加导航」</div>';
+      } else {
+        items.forEach(it => {
+          const card = document.createElement("a");
+          card.className = "card";
+          card.href = normalizeUrl(it.url); card.target = "_blank";
+          card.innerHTML =
+            '<span class="card-icon">' + iconHtml(it, "🌐", { t: "c", c: cat.id, i: it.id }) + "</span>" +
+            '<span class="card-title">' + escapeHtml(it.name) + "</span>" +
+            (it.description ? '<span class="card-desc">' + escapeHtml(it.description) + "</span>" : "");
+          const actions = document.createElement("div");
+          actions.className = "card-actions";
+          const edit = document.createElement("button");
+          edit.className = "card-edit"; edit.innerHTML = "✎"; edit.title = "编辑";
+          edit.onclick = (e) => { e.preventDefault(); e.stopPropagation(); openItemModal("edit", cat.id, it.id); };
+          const del = document.createElement("button");
+          del.className = "card-delete"; del.innerHTML = "&times;"; del.title = "删除";
+          del.onclick = (e) => { e.preventDefault(); e.stopPropagation(); deleteItem(cat.id, it.id); };
+          actions.appendChild(edit); actions.appendChild(del);
+          card.appendChild(actions);
+          grid.appendChild(card);
+        });
+      }
+
+      sec.appendChild(grid);
+      content.appendChild(sec);
+    });
+    applySearchFilter();
+  }
+  function renderWidgets() {
+    const s = CONFIG.settings;
+    toggleEl("weatherWidget", s.showWeather && !!s.weatherCity);
+    toggleEl("offWorkWidget", s.showOffWork);
+    toggleEl("paydayWidget", s.showPayday);
+    renderEventWidgets();
+    const hasEv = (s.events || []).length > 0 && s.showEvents !== false;
+    const wrap = document.getElementById("widgets");
+    wrap.style.display = (s.showWeather && s.weatherCity) || s.showOffWork || s.showPayday || hasEv ? "flex" : "none";
+    toggleEl("searchBox", s.showSearch !== false);
+    toggleEl("datetime", s.showClock !== false);
+  }
+  function renderEventWidgets() {
+    const wrap = document.getElementById("widgets");
+    if (!wrap) return;
+    wrap.querySelectorAll(".event-card, .event-add").forEach(n => n.remove());
+    const s = CONFIG.settings;
+    (s.events || []).forEach(ev => {
+      const w = document.createElement("div");
+      w.className = "widget event-card";
+      w.dataset.id = ev.id;
+      w.onclick = () => openEventModal(ev);
+      w.innerHTML =
+        '<div class="w-label">' + escapeHtml(ev.name) + "</div>" +
+        '<div class="w-value">--</div>' +
+        '<div class="w-sub">' + escapeHtml(formatEventDate(ev.date)) + "</div>";
+      wrap.appendChild(w);
+    });
+    if (s.showEvents !== false) {
+      const add = document.createElement("div");
+      add.className = "widget event-add";
+      add.onclick = () => openEventModal(null);
+      add.innerHTML = '<div class="ea-plus">＋</div><div>添加事件</div>';
+      wrap.appendChild(add);
+    }
+    updateEvents(new Date());
+  }
+  function toggleEl(id, show) { const e = document.getElementById(id); if (e) e.style.display = show ? "" : "none"; }
+
+  // =====================================================================
+  //  时钟 / 问候 / 倒计时（统一 tick）
+  // =====================================================================
+  function startTick() {
+    if (tickTimer) clearInterval(tickTimer);
+    tick();
+    tickTimer = setInterval(tick, 1000);
+  }
+  function tick() {
+    const now = new Date();
+    if (CONFIG.settings.showClock !== false) {
+      const h = String(now.getHours()).padStart(2, "0");
+      const m = String(now.getMinutes()).padStart(2, "0");
+      const s = String(now.getSeconds()).padStart(2, "0");
+      document.getElementById("clock").textContent = h + ":" + m + ":" + s;
+      const days = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+      document.getElementById("dateStr").textContent = now.getFullYear() + "年" + (now.getMonth()+1) + "月" + now.getDate() + "日 " + days[now.getDay()];
+      document.getElementById("greeting").textContent = greeting(now);
+    }
+    if (CONFIG.settings.showOffWork) updateOffWork(now);
+    if (CONFIG.settings.showPayday) updatePayday(now);
+    if (CONFIG.settings.showEvents !== false) updateEvents(now);
+    // 日出日落主题：每分钟检查一次，到日出/日落时刻自动切换
+    if (CONFIG.settings.theme === "sun" && now.getSeconds() === 0) applyTheme();
+  }
+  function greeting(now) {
+    const h = now.getHours();
+    const m = now.getMinutes();
+    let base;
+    if (h < 5) base = "夜深了，注意休息 🌙";
+    else if (h < 9) base = "早上好，新的一天 ☀️";
+    else if (h < 12) base = "上午好，元气满满 ✨";
+    else if (h < 14) base = "中午好，记得吃饭 🍱";
+    else if (h < 18) base = "下午好，继续加油 💪";
+    else if (h < 23) base = "晚上好，放松一下 🌆";
+    else base = "夜深了，早点休息 🌙";
+    // 健康提醒：每 10 分钟自动轮换一条
+    const tips = [
+      "记得喝口水润润 🥤",
+      "看看远处，休息一下眼睛 👀",
+      "伸个懒腰，活动肩颈 🧘",
+      "保持好坐姿，别久坐 🪑",
+      "起身走一走，放松一下 🚶",
+      "深呼吸，放空一下 🍃",
+      "揉揉手腕，缓解疲劳 💆",
+      "来点水果补补能量 🍎"
+    ];
+    const idx = Math.floor((h * 60 + m) / 10) % tips.length;
+    return base + " · " + tips[idx];
+  }
+  function updateOffWork(now) {
+    const [h, m] = (CONFIG.settings.offWorkTime || "18:30").split(":").map(Number);
+    let target = new Date(now); target.setHours(h, m, 0, 0);
+    let passed = target <= now;
+    if (passed) target.setDate(target.getDate() + 1);
+    let diff = Math.max(0, Math.floor((target - now) / 1000));
+    const hh = String(Math.floor(diff / 3600)).padStart(2, "0");
+    const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+    const ss = String(diff % 60).padStart(2, "0");
+    document.getElementById("offWorkVal").textContent = hh + ":" + mm + ":" + ss;
+    document.getElementById("offWorkSub").textContent = passed ? "已过下班时间 🎉" : "距 " + CONFIG.settings.offWorkTime;
+  }
+  function getNextPayday(day, now) {
+    const clamp = (y, mo, d) => { const dim = new Date(y, mo + 1, 0).getDate(); return new Date(y, mo, Math.min(d, dim), 0, 0, 0); };
+    let y = now.getFullYear(), mo = now.getMonth();
+    let cand = clamp(y, mo, day);
+    if (cand <= now) { mo++; if (mo > 11) { mo = 0; y++; } cand = clamp(y, mo, day); }
+    return cand;
+  }
+  function updatePayday(now) {
+    const day = parseInt(CONFIG.settings.payDay || "10", 10);
+    const next = getNextPayday(day, now);
+    const days = Math.ceil((next - now) / 86400000);
+    document.getElementById("paydayVal").textContent = days + " 天";
+    document.getElementById("paydaySub").textContent = (next.getMonth() + 1) + "月" + next.getDate() + "日 发薪";
+  }
+
+  // =====================================================================
+  //  事件组件（累计 / 下一个节日）
+  // =====================================================================
+  function parseDateStr(str) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || "");
+    if (!m) return null;
+    return new Date(+m[1], +m[2] - 1, +m[3]);
+  }
+  function formatEventDate(dateStr) {
+    const t = parseDateStr(dateStr);
+    if (!t) return "";
+    return t.getFullYear() + "年" + (t.getMonth() + 1) + "月" + t.getDate() + "日";
+  }
+  function eventDays(ev, now) {
+    const t = parseDateStr(ev.date);
+    if (!t) return null;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (ev.type === "festival") {
+      let target = new Date(now.getFullYear(), t.getMonth(), t.getDate());
+      if (target < today) target = new Date(now.getFullYear() + 1, t.getMonth(), t.getDate());
+      return Math.round((target - today) / 86400000);
+    }
+    return Math.round((today - t) / 86400000);
+  }
+  function updateEvents(now) {
+    const s = CONFIG.settings;
+    if (s.showEvents === false) return;
+    const wrap = document.getElementById("widgets");
+    if (!wrap) return;
+    (s.events || []).forEach(ev => {
+      const el = wrap.querySelector('.event-card[data-id="' + ev.id + '"] .w-value');
+      if (!el) return;
+      const d = eventDays(ev, now);
+      el.textContent = d === null ? "--" : (d === 0 && ev.type === "festival" ? "今天 🎉" : d + " 天");
+    });
+  }
+  function openEventModal(ev) {
+    editingEventId = ev ? ev.id : null;
+    const isCount = !ev || ev.type !== "festival";
+    const m = document.getElementById("modalContent");
+    m.innerHTML =
+      "<h3>" + (ev ? "✏️ 编辑事件" : "➕ 添加事件") + "</h3>" +
+      '<div class="field"><label>类型</label><div class="type-toggle" id="evTypeToggle">' +
+      '<button type="button" class="tt-btn' + (isCount ? " active" : "") + '" data-type="count" onclick="setEventType(\'count\')">📅 累计</button>' +
+      '<button type="button" class="tt-btn' + (!isCount ? " active" : "") + '" data-type="festival" onclick="setEventType(\'festival\')">🎉 下一个节日</button>' +
+      "</div></div>" +
+      '<div class="field"><label>事件名称（最多 20 字）</label><input id="evName" maxlength="20" value="' + escapeHtml(ev ? ev.name : "") + '" placeholder="如：我在这个世界已经" oninput="evNameCount()"></div>' +
+      '<div class="field"><label>日期</label><input id="evDate" type="date" value="' + escapeHtml(ev ? ev.date : "") + '"><div class="settings-hint" id="evDateHint"></div></div>' +
+      '<div class="modal-actions">' +
+      (ev ? '<button class="btn btn-danger" onclick="deleteEvent()">删除</button>' : "") +
+      '<button class="btn btn-secondary" onclick="closeModal()">取消</button>' +
+      '<button class="btn btn-primary" onclick="saveEvent()">保存</button></div>';
+    document.getElementById("modalOverlay").classList.add("open");
+    evNameCount();
+    evTypeChanged();
+  }
+  function evNameCount() {
+    const inp = document.getElementById("evName");
+    const n = document.getElementById("evNameCountNum");
+    if (!inp) return;
+    if (!n) {
+      const lbl = inp.closest(".field");
+      if (lbl) lbl.insertAdjacentHTML("beforeend", '<div class="settings-hint">已输入 <b id="evNameCountNum">0</b>/20 字</div>');
+    }
+    const el = document.getElementById("evNameCountNum");
+    if (el) el.textContent = inp.value.length;
+  }
+  function setEventType(t) {
+    document.querySelectorAll("#evTypeToggle .tt-btn").forEach(b => b.classList.toggle("active", b.dataset.type === t));
+    evTypeChanged();
+  }
+  function evTypeChanged() {
+    const sel = document.querySelector("#evTypeToggle .tt-btn.active");
+    const hint = document.getElementById("evDateHint");
+    if (!hint) return;
+    hint.textContent = sel && sel.dataset.type === "festival"
+      ? "每年按此月日计算下一个节日，今年已过则自动顺延到明年。"
+      : "从该日期起算，累计到今天的天数。";
+  }
+  function saveEvent() {
+    const name = (document.getElementById("evName") || {}).value ? document.getElementById("evName").value.trim() : "";
+    const date = (document.getElementById("evDate") || {}).value || "";
+    const type = ((document.querySelector("#evTypeToggle .tt-btn.active") || {}).dataset || {}).type || "count";
+    if (!name) return showToast("请输入事件名称");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return showToast("请选择日期");
+    const s = CONFIG.settings;
+    if (!s.events) s.events = [];
+    const isEdit = !!editingEventId;
+    if (isEdit) {
+      const ev = s.events.find(e => e.id === editingEventId);
+      if (ev) { ev.name = name; ev.date = date; ev.type = type; }
+    } else {
+      s.events.push({ id: "ev_" + Date.now(), name, date, type });
+    }
+    editingEventId = null;
+    saveConfig(); renderWidgets(); closeModal();
+    showToast(isEdit ? "事件已更新" : "事件已添加");
+  }
+  function deleteEvent() {
+    if (!editingEventId) return;
+    const s = CONFIG.settings;
+    s.events = (s.events || []).filter(e => e.id !== editingEventId);
+    editingEventId = null;
+    saveConfig(); renderWidgets(); closeModal();
+    showToast("事件已删除");
+  }
+
+  // =====================================================================
+  //  天气（open-meteo，免密钥，支持 file://）
+  // =====================================================================
+  const PRESET_CITIES = ["北京", "天津", "上海", "重庆", "石家庄", "太原", "呼和浩特", "沈阳", "长春", "哈尔滨",
+    "南京", "杭州", "合肥", "福州", "南昌", "济南", "郑州", "武汉", "长沙", "广州",
+    "南宁", "海口", "成都", "贵阳", "昆明", "拉萨", "西安", "兰州", "西宁", "银川",
+    "乌鲁木齐", "香港", "澳门", "台北"];
+  function isAutoCity() { return (CONFIG.settings.weatherCity || "").trim().toLowerCase() === "auto"; }
+
+  function toggleCityMenu(e) {
+    e.stopPropagation();
+    const menu = document.getElementById("cityMenu");
+    if (menu.dataset.open === "1") { menu.dataset.open = "0"; menu.classList.remove("open"); return; }
+    const cur = (CONFIG.settings.weatherCity || "").trim();
+    menu.innerHTML = "";
+    const mk = (val, label, active) => {
+      const b = document.createElement("button");
+      b.className = "em-item" + (active ? " active" : "");
+      b.textContent = label;
+      b.onclick = (ev) => { ev.stopPropagation(); pickCity(val); };
+      menu.appendChild(b);
+    };
+    mk("auto", "📍 自动定位（IP）", isAutoCity());
+    const sep = document.createElement("div"); sep.className = "cm-sep"; menu.appendChild(sep);
+    const cities = PRESET_CITIES.slice();
+    if (cur && !isAutoCity() && cities.indexOf(cur) === -1) cities.unshift(cur);
+    cities.forEach(c => mk(c, c, c === cur && !isAutoCity()));
+    menu.dataset.open = "1"; menu.classList.add("open");
+    // fixed 定位：贴着城市名元素，向上弹出（空间不足则向下）
+    const cityEl = document.getElementById("wCity");
+    const r = cityEl.getBoundingClientRect();
+    menu.style.left = r.left + "px";
+    let top = r.top - menu.getBoundingClientRect().height - 8;
+    if (top < 8) top = r.bottom + 8;
+    menu.style.top = top + "px";
+  }
+  function pickCity(v) {
+    CONFIG.settings.weatherCity = v;
+    saveConfig();
+    const menu = document.getElementById("cityMenu");
+    menu.dataset.open = "0"; menu.classList.remove("open");
+    renderWidgets();
+    loadWeather();
+    showToast(v === "auto" ? "已切换为 IP 自动定位" : "已切换城市：" + v);
+  }
+
+  // 按 IP 定位城市：script 注入（无跨域限制，file:// 与国内直连可用）优先，fetch 兜底；结果缓存 6 小时
+  function loadScriptOnce(url, charset, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        s.onload = s.onerror = null;
+        if (s.parentNode) s.parentNode.removeChild(s);
+        ok ? resolve() : reject(new Error("load fail"));
+      };
+      const timer = setTimeout(() => finish(false), timeoutMs || 5000);
+      s.onload = () => finish(true);
+      s.onerror = () => finish(false);
+      if (charset) s.charset = charset;
+      s.src = url;
+      document.head.appendChild(s);
+    });
+  }
+  // 从「广东省深圳市 / 内蒙古自治区呼和浩特市 / 北京市」等字符串提取城市名
+  function parseCityName(raw) {
+    if (!raw) return "";
+    let s = String(raw).trim();
+    const zi = s.lastIndexOf("自治区");
+    const idx = Math.max(s.lastIndexOf("省"), zi);
+    if (idx > -1) s = s.slice(idx + (zi === idx ? 3 : 1));
+    s = s.replace(/(特别行政区|维吾尔自治区|壮族自治区|回族自治区|自治区|省|市|地区|盟|自治州|州)+$/g, "");
+    return s.trim();
+  }
+  // 校验定位结果：排除「未知」等无效值（代理环境下搜狐会返回 cname=未知）
+  function validCity(c) {
+    if (!c) return false;
+    const s = String(c).trim();
+    if (!s) return false;
+    const bad = ["未知", "unknown", "none", "null", "-", " reserved"];
+    return bad.indexOf(s.toLowerCase()) === -1;
+  }
+  async function detectCityByIP() {
+    try {
+      const cache = JSON.parse(localStorage.getItem("nav_ipcity") || "null");
+      if (cache && validCity(cache.city) && Date.now() - cache.ts < 6 * 3600e3) return cache.city;
+      localStorage.removeItem("nav_ipcity"); // 清掉无效/过期缓存
+    } catch (e) {}
+    const save = (c) => { localStorage.setItem("nav_ipcity", JSON.stringify({ city: c, ts: Date.now() })); return c; };
+    // 第一批：fetch 源（已实测返回 Access-Control-Allow-Origin:*，file:// 可用，国内直连）
+    const fetchSources = [
+      async () => { const r = await fetch("https://myip.ipip.net/json"); const j = await r.json(); return j.data && j.data.location && (j.data.location[2] || j.data.location[1]); },
+      async () => { const r = await fetch("https://api.ip.sb/geoip"); const j = await r.json(); return j.city; }
+    ];
+    for (const fn of fetchSources) {
+      try {
+        const c = parseCityName(await fn());
+        if (validCity(c)) return save(c);
+      } catch (e) {}
+    }
+    // 第二批：script 注入源（避开 CORS；代理下可能返回「未知」，已用 validCity 校验）
+    try {
+      await loadScriptOnce("https://pv.sohu.com/cityjson?ie=utf-8", "utf-8", 5000);
+      const c = parseCityName(window.returnCitySN && window.returnCitySN.cname);
+      if (validCity(c)) return save(c);
+    } catch (e) {}
+    // 第三批：其余 fetch 兜底（境外/代理环境）
+    const moreSources = [
+      async () => { const r = await fetch("https://ip.useragentinfo.com/json"); const j = await r.json(); return j.city; },
+      async () => { const r = await fetch("https://ipapi.co/json/"); const j = await r.json(); return j.city; }
+    ];
+    for (const fn of moreSources) {
+      try {
+        const c = parseCityName(await fn());
+        if (validCity(c)) return save(c);
+      } catch (e) {}
+    }
+    throw new Error("IP 定位失败");
+  }
+
+  async function loadWeather() {
+    let city = (CONFIG.settings.weatherCity || "").trim();
+    if (!city) return;
+    const auto = city.toLowerCase() === "auto";
+    document.getElementById("wCity").textContent = auto ? "📍 定位中…" : city;
+    document.getElementById("wTemp").textContent = "…";
+    document.getElementById("wMeta").textContent = "";
+    try {
+      if (auto) city = await detectCityByIP();
+      const geo = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(city) + "&count=1&language=zh&format=json");
+      const geoJ = await geo.json();
+      if (!geoJ.results || !geoJ.results.length) throw new Error("城市未找到");
+      const { latitude, longitude } = geoJ.results[0];
+      const [wRes, aRes] = await Promise.all([
+        fetch("https://api.open-meteo.com/v1/forecast?latitude=" + latitude + "&longitude=" + longitude + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto"),
+        fetch("https://air-quality-api.open-meteo.com/v1/air-quality?latitude=" + latitude + "&longitude=" + longitude + "&current=us_aqi")
+      ]);
+      const w = await wRes.json();
+      const a = await aRes.json();
+      const code = w.current.weather_code;
+      const info = WMO[code] || ["🌡️", "未知"];
+      document.getElementById("wIcon").textContent = info[0];
+      document.getElementById("wTemp").textContent = Math.round(w.current.temperature_2m) + "℃";
+      document.getElementById("wCity").textContent = (auto ? "📍 " : "") + city + " · " + info[1];
+      let meta = "湿度 " + w.current.relative_humidity_2m + "%";
+      if (a.current && a.current.us_aqi != null) meta += " · AQI " + Math.round(a.current.us_aqi);
+      document.getElementById("wMeta").textContent = meta;
+    } catch (e) {
+      document.getElementById("wTemp").textContent = "--℃";
+      if (auto) document.getElementById("wCity").textContent = "📍 定位失败";
+      document.getElementById("wMeta").textContent = auto ? "IP 定位失败，请手动选城市" : "天气获取失败";
+    }
+  }
+
+  // =====================================================================
+  //  搜索 / 问 AI
+  // =====================================================================
+  function toggleEngineMenu(e) {
+    e.stopPropagation();
+    const menu = document.getElementById("engineMenu");
+    if (menu.dataset.open === "1") { menu.dataset.open = "0"; menu.classList.remove("open"); return; }
+    menu.innerHTML = "";
+    Object.keys(ENGINES).forEach(k => {
+      const b = document.createElement("button");
+      b.className = "em-item" + (k === currentEngine() ? " active" : "");
+      b.textContent = ENGINES[k].name;
+      b.onclick = () => { selectEngine(k); };
+      menu.appendChild(b);
+    });
+    menu.dataset.open = "1"; menu.classList.add("open");
+  }
+  function currentEngine() {
+    const k = CONFIG.settings.searchEngine;
+    return ENGINES[k] ? k : "baidu";
+  }
+  function selectEngine(k) {
+    CONFIG.settings.searchEngine = k;
+    document.getElementById("engineName").textContent = ENGINES[k].name;
+    document.getElementById("engineMenu").dataset.open = "0";
+    document.getElementById("engineMenu").classList.remove("open");
+    saveConfig();
+  }
+  function onSearchKey(e) {
+    if (e.key === "Enter") doSearch();
+    if (e.key === "/" && e.target.id !== "searchInput") { e.preventDefault(); document.getElementById("searchInput").focus(); }
+  }
+  // 汇总所有已保存的收藏 + 分类导航
+  function allSavedSites() {
+    const list = [];
+    (CONFIG.favorites || []).forEach(f => list.push({ name: f.name, url: f.url, icon: f.icon }));
+    (CONFIG.categories || []).forEach(c => (c.items || []).forEach(i => list.push({ name: i.name, url: i.url, icon: i.icon })));
+    return list;
+  }
+  // 按名称检索已保存的网页：完全一致 > 前缀 > 包含，按 url 去重，最多 8 条
+  function searchSavedSites(q) {
+    const s = (q || "").trim().toLowerCase();
+    if (!s) return [];
+    const seen = {};
+    return allSavedSites()
+      .map(x => {
+        const name = (x.name || "").toLowerCase();
+        let score = -1;
+        if (name === s) score = 0;
+        else if (name.startsWith(s)) score = 1;
+        else if (name.indexOf(s) > -1) score = 2;
+        return { x, score };
+      })
+      .filter(a => a.score >= 0)
+      .sort((a, b) => a.score - b.score)
+      .filter(a => { const k = a.x.url; if (seen[k]) return false; seen[k] = 1; return true; })
+      .slice(0, 8)
+      .map(a => a.x);
+  }
+  function onSearchInput() {
+    activeSearch = (document.getElementById("searchInput").value || "").trim();
+    applySearchFilter();
+  }
+  // 实时过滤下方卡片：命中显示、未命中隐藏，无命中的分类整块隐藏
+  function applySearchFilter() {
+    const q = activeSearch;
+    const content = document.getElementById("content");
+    const es = document.getElementById("searchEmpty");
+    if (!q) {
+      content.querySelectorAll(".category-section").forEach(sec => { sec.style.display = ""; });
+      content.querySelectorAll(".card").forEach(c => { c.style.display = ""; });
+      if (es) es.remove();
+      return;
+    }
+    const ql = q.toLowerCase();
+    let anyVisible = false;
+    content.querySelectorAll(".category-section").forEach(sec => {
+      let any = false;
+      sec.querySelectorAll(".card").forEach(card => {
+        if (card.classList.contains("add-card")) { card.style.display = "none"; return; }
+        const title = (card.querySelector(".card-title") || {}).textContent || "";
+        const hit = title.toLowerCase().indexOf(ql) > -1;
+        card.style.display = hit ? "" : "none";
+        if (hit) any = true;
+      });
+      sec.style.display = any ? "" : "none";
+      if (any) anyVisible = true;
+    });
+    if (!anyVisible) {
+      if (!es) {
+        const d = document.createElement("div");
+        d.id = "searchEmpty";
+        d.className = "empty-state";
+        content.appendChild(d);
+      }
+      document.getElementById("searchEmpty").innerHTML = '<span class="es-icon">🔍</span>未找到与「' + escapeHtml(q) + '」匹配的导航';
+    } else if (es) es.remove();
+  }
+  function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (!q) return;
+    // 优先：完全匹配已保存的网页名称，直接打开
+    const exact = searchSavedSites(q).find(r => (r.name || "").toLowerCase() === q.toLowerCase());
+    if (exact) {
+      window.open(exact.url, "_blank");
+      showToast("已打开：" + exact.name);
+      return;
+    }
+    const engine = ENGINES[currentEngine()];
+    // 看起来像网址则直接打开
+    if (/^https?:\/\//i.test(q) || /^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(q)) {
+      const url = /^https?:\/\//i.test(q) ? q : "https://" + q;
+      window.open(url, "_blank");
+      return;
+    }
+    window.open(engine.url + encodeURIComponent(q), "_blank");
+  }
+  function askAI() {
+    const q = document.getElementById("searchInput").value.trim();
+    const ai = AI_ASSISTANTS[CONFIG.settings.aiAssistant] || AI_ASSISTANTS.deepseek;
+    window.open(ai.url, "_blank");
+    if (q) showToast("已用 " + ai.name + " 打开（请粘贴问题）");
+  }
+
+  // =====================================================================
+  //  设置面板
+  // =====================================================================
+  function openSettings() {
+    document.getElementById("settingsOverlay").classList.add("open");
+    document.getElementById("settingsPanel").classList.add("open");
+    renderSettingsBody();
+  }
+  function closeSettings(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById("settingsOverlay").classList.remove("open");
+    document.getElementById("settingsPanel").classList.remove("open");
+  }
+  function renderSettingsBody() {
+    const s = CONFIG.settings;
+    const opt = (obj, cur) => Object.keys(obj).map(k => '<option value="' + k + '"' + (k === cur ? " selected" : "") + ">" + obj[k].name + "</option>").join("");
+    const presetOpt = Object.keys(BG_PRESETS).map(k => '<option value="' + k + '"' + (k === s.background ? " selected" : "") + ">" + BG_PRESETS[k] + "</option>").join("");
+    const chk = (k, label) => '<label class="sw"><input type="checkbox" ' + (s[k] !== false ? "checked" : "") + ' onchange="toggleFlag(\'' + k + '\',this.checked)">' + label + "</label>";
+    let html = "";
+
+    html += section("外观与主题",
+      field("页面标题", '<input id="sTitle" value="' + escapeHtml(CONFIG.title || "") + '" onchange="setTitle(this.value)">') +
+      '<div class="settings-grid">' +
+      field("主题", '<select onchange="setTheme(this.value)">' + ["auto:跟随系统","sun:日出日落自动","dark:深色","light:浅色"].map(o => { const [v,n]=o.split(":"); return '<option value="'+v+'"'+(s.theme===v?" selected":"")+">"+n+"</option>"; }).join("") + "</select>") +
+      field("图标", '<input id="sBrandIcon" value="' + escapeHtml(s.brandIcon || "🌐") + '" placeholder="Emoji 或符号" onchange="setBrandIcon(this.value)">') +
+      "</div>" +
+      '<div class="settings-grid">' +
+      field("字体大小", '<div class="range-row"><input type="range" id="fontSize" min="13" max="20" value="' + (s.fontSize || 16) + '" oninput="setFontSize(this.value)"><span class="range-val" id="fontSizeVal">' + (s.fontSize || 16) + "px</span></div>") +
+      field("卡片透明度", '<div class="range-row"><input type="range" id="cardAlpha" min="20" max="100" value="' + (s.cardAlpha ?? 100) + '" oninput="setCardAlpha(this.value)"><span class="range-val" id="cardAlphaVal">' + (s.cardAlpha ?? 100) + "%</span></div>") +
+      "</div>" +
+      '<div class="settings-grid">' +
+      field("字体", '<select onchange="setFontFamily(this.value)">' + Object.keys(FONT_STACKS).map(k => '<option value="' + k + '"' + (s.fontFamily === k ? " selected" : "") + ">" + FONT_NAMES[k] + "</option>").join("") + "</select>") +
+      field("字体粗细", '<select onchange="setFontWeight(this.value)">' + [["400","常规"],["500","中等"],["700","加粗"],["900","特粗"]].map(o => '<option value="' + o[0] + '"' + ((parseInt(s.fontWeight,10)||400)+"" === o[0] ? " selected" : "") + ">" + o[1] + "</option>").join("") + "</select>") +
+      "</div>" +
+      '<div class="settings-grid">' +
+      field("卡片大小", '<div class="range-row"><input type="range" id="cardSize" min="100" max="200" step="2" value="' + (s.cardSize || 132) + '" oninput="setCardSize(this.value)"><span class="range-val" id="cardSizeVal">' + (s.cardSize || 132) + "px</span></div>") +
+      field("页面宽度", '<div class="range-row"><input type="range" id="pageWidth" min="1000" max="1920" step="20" value="' + (s.pageWidth || 1180) + '" oninput="setPageWidth(this.value)"><span class="range-val" id="pageWidthVal">' + (s.pageWidth || 1180) + "px</span></div>") +
+      "</div>" +
+      field("卡片图标", '<select onchange="setCardIcon(this.value)"><option value="favicon"'+(s.cardIcon!=="emoji"?" selected":"")+">自动抓取网站图标</option><option value=\"emoji\""+(s.cardIcon==="emoji"?" selected":"")+">仅用 Emoji</option></select>") +
+      field("背景", '<select id="sBgPreset" onchange="setBg(this.value)">' + presetOpt + "</select>" +
+        '<input id="sBgUrl" placeholder="或粘贴图片 URL" value="' + (s.background.startsWith("http") ? escapeHtml(s.background) : "") + '" onchange="setBgUrl(this.value)" style="margin-top:8px">') +
+      field("页脚署名", '<input value="' + escapeHtml(s.footer || "") + '" placeholder="显示在页面最底部，留空则不显示" onchange="setFooter(this.value)">')
+    );
+
+    html += section("搜索与 AI",
+      '<div class="settings-grid">' +
+      field("默认搜索引擎", '<select onchange="setEngine(this.value)">' + opt(ENGINES, currentEngine()) + "</select>") +
+      field("默认 AI 助手", '<select onchange="setAI(this.value)">' + opt(AI_ASSISTANTS, s.aiAssistant) + "</select>") +
+      "</div>"
+    );
+
+    html += section("小组件",
+      chk("showSearch", "显示搜索框") + chk("showClock", "显示时钟") +
+      chk("showWeather", "显示天气") + chk("showOffWork", "显示下班倒计时") + chk("showPayday", "显示发薪倒计时") +
+      chk("showEvents", "显示事件组件") +
+      '<div class="settings-grid">' +
+      field("下班时间", '<input type="time" value="' + escapeHtml(s.offWorkTime || "18:30") + '" onchange="setOffWork(this.value)">') +
+      field("每月发薪日", '<input type="number" min="1" max="31" value="' + escapeHtml(s.payDay || 10) + '" onchange="setPayday(this.value)">') +
+      "</div>" +
+      field("天气城市", '<input id="sCity" value="' + escapeHtml(s.weatherCity || "") + '" placeholder="城市名，或 auto 自动定位" onchange="setCity(this.value)">') +
+      '<div class="settings-hint">填城市名（如 北京）；填 auto 按 IP 自动定位。天气卡片上的城市名也可点击切换。</div>'
+    );
+
+    html += section("分类管理",
+      '<div id="catManageList">' + (CONFIG.categories||[]).slice().sort((a,b)=>a.sort-b.sort).map((c, i) =>
+        '<div class="cm-item" draggable="true" ondragstart="catDragStart(event,' + i + ')" ondragover="catDragOver(event)" ondragleave="catDragLeave(event)" ondrop="catDrop(event,' + i + ')" ondragend="catDragEnd(event)">' +
+        '<span class="cm-grip">⠿</span>' +
+        '<span class="cm-icon">' + (c.icon||"📁") + '</span><div class="cm-info"><div class="cm-name">' + escapeHtml(c.name) + '</div><div class="cm-count">' + (c.items||[]).length + " 个</div></div>" +
+        '<div class="cm-actions"><button class="ch-btn" onclick="openCatEditModal(\'' + c.id + '\')">✎</button><button class="ch-btn danger" onclick="deleteCategory(\'' + c.id + '\')">删除</button></div></div>'
+      ).join("") + "</div>" +
+      '<div class="settings-actions"><button class="btn btn-secondary btn-sm" onclick="addCategory()">+ 添加分类</button></div>' +
+      '<div class="settings-hint" style="margin-top:4px">按住行首 ⠿ 拖动可调整分类上下顺序，松开鼠标即保存。</div>'
+    );
+
+    html += section("收藏夹（搜索框下方）",
+      '<div id="favManageList">' + (CONFIG.favorites||[]).map((f, i) =>
+        '<div class="cm-item"><span class="cm-icon">' + iconHtml(f, "🔗") + '</span><div class="cm-info"><div class="cm-name">' + escapeHtml(f.name) + '</div><div class="cm-count">' + escapeHtml(f.url) + '</div></div>' +
+        '<div class="cm-actions"><button class="ch-btn danger" onclick="removeFavorite(' + i + ')">删除</button></div></div>'
+      ).join("") + "</div>" +
+      '<div class="settings-actions"><button class="btn btn-secondary btn-sm" onclick="addFavoritePrompt()">+ 添加收藏</button></div>'
+    );
+
+    html += section("配置管理",
+      '<div class="settings-hint" style="margin-bottom:12px">' + (FS_HANDLE
+        ? "💾 已绑定配置文件：" + escapeHtml(FS_HANDLE.name) + "，配置实时写入磁盘。多个浏览器（Chrome/Edge）绑定同一文件即可共享数据。"
+        : (isFsSupported()
+          ? "ℹ️ 未绑定配置文件，数据仅存当前浏览器缓存。点击「📁 绑定配置文件」即可写入磁盘 JSON，多浏览器共享。"
+          : "ℹ️ 当前浏览器不支持写文件，数据仅存当前浏览器缓存。建议用 Chrome 或 Edge 打开。")) + "</div>" +
+      '<div class="settings-actions">' +
+      '<button class="btn btn-primary btn-sm" onclick="exportConfig()">📥 导出</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'importInput\').click()">📤 导入</button>' +
+      '<input type="file" id="importInput" accept=".json" style="display:none" onchange="importConfig(event)">' +
+      '<button class="btn btn-secondary btn-sm" onclick="bindConfigFile()">📁 绑定配置文件</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="resetConfig()">🔄 重置</button></div>'
+    );
+
+    document.getElementById("settingsBody").innerHTML = html;
+    document.getElementById("engineName").textContent = ENGINES[currentEngine()].name;
+  }
+  function section(t, body) { return '<div class="settings-section"><div class="settings-section-title">' + t + "</div>" + body + "</div>"; }
+  function field(label, control) { return '<div class="settings-field"><label>' + label + "</label>" + control + "</div>"; }
+
+  function setTitle(v) { CONFIG.title = v; document.title = v || "我的导航"; renderBrand(); saveConfig(); }
+  function setBrandIcon(v) { CONFIG.settings.brandIcon = (v || "").trim() || "🌐"; saveConfig(); renderBrand(); applyFavicon(); }
+  function setTheme(v) { CONFIG.settings.theme = v; applyTheme(); saveConfig(); if (v === "sun") sunPosition(); }
+  function setRangeLabel(id, text) { const el = document.getElementById(id + "Val"); if (el) el.textContent = text; }
+  function setCardAlpha(v) { CONFIG.settings.cardAlpha = parseInt(v, 10) || 100; applyStyleSettings(); saveConfig(); setRangeLabel("cardAlpha", CONFIG.settings.cardAlpha + "%"); }
+  function setFontFamily(v) { CONFIG.settings.fontFamily = v; applyStyleSettings(); saveConfig(); }
+  function setFontSize(v) { CONFIG.settings.fontSize = parseInt(v, 10) || 16; applyStyleSettings(); saveConfig(); setRangeLabel("fontSize", CONFIG.settings.fontSize + "px"); }
+  function setFontWeight(v) { CONFIG.settings.fontWeight = parseInt(v, 10) || 400; applyStyleSettings(); saveConfig(); }
+  function setCardSize(v) { CONFIG.settings.cardSize = parseInt(v, 10) || 132; applyStyleSettings(); saveConfig(); setRangeLabel("cardSize", CONFIG.settings.cardSize + "px"); }
+  function setPageWidth(v) { CONFIG.settings.pageWidth = parseInt(v, 10) || 1180; applyStyleSettings(); saveConfig(); setRangeLabel("pageWidth", CONFIG.settings.pageWidth + "px"); }
+  function setFooter(v) { CONFIG.settings.footer = v; saveConfig(); renderFooter(); }
+  function setCardIcon(v) { CONFIG.settings.cardIcon = v; saveConfig(); render(); showToast("图标已更新"); }
+  function setBg(v) { CONFIG.settings.background = v; document.getElementById("sBgUrl").value = ""; applyBackground(); saveConfig(); }
+  function setBgUrl(v) {
+    v = (v || "").trim();
+    if (!v) {
+      const sel = document.getElementById("sBgPreset");
+      CONFIG.settings.background = (sel && sel.value) ? sel.value : "aurora";
+    } else {
+      CONFIG.settings.background = v;
+    }
+    applyBackground(); saveConfig();
+  }
+  function setEngine(v) { CONFIG.settings.searchEngine = v; saveConfig(); }
+  function setAI(v) { CONFIG.settings.aiAssistant = v; saveConfig(); }
+  function setCity(v) { CONFIG.settings.weatherCity = v.trim(); saveConfig(); renderWidgets(); if (v.trim()) loadWeather(); }
+  function setOffWork(v) { CONFIG.settings.offWorkTime = v; saveConfig(); updateOffWork(new Date()); }
+  function setPayday(v) { CONFIG.settings.payDay = v; saveConfig(); updatePayday(new Date()); }
+  function toggleFlag(k, val) { CONFIG.settings[k] = val; saveConfig(); render(); renderWidgets(); if (k === "showWeather" && val && CONFIG.settings.weatherCity) loadWeather(); showToast(val ? "已显示" : "已隐藏"); }
+
+  // =====================================================================
+  //  导航项 / 分类 / 收藏 CRUD
+  // =====================================================================
+  function openItemModal(mode, catId, itemId) {
+    editState = { mode, categoryId: catId, itemId };
+    const cat = findCategory(catId);
+    const item = mode === "edit" && itemId ? findItem(catId, itemId) : null;
+    const m = document.getElementById("modalContent");
+    m.innerHTML =
+      "<h3>" + (mode === "edit" ? "✏️ 编辑导航" : "➕ 添加导航") + "</h3>" +
+      '<div class="field"><label>名称</label><input id="fName" value="' + escapeHtml(item ? item.name : "") + '"></div>' +
+      '<div class="field"><label>网址</label><input id="fUrl" value="' + escapeHtml(item ? item.url : "https://") + '" placeholder="https://..." oninput="renderModalIcon()"></div>' +
+      '<div class="field"><label>图标（留空则用网站图标）</label>' +
+        '<div class="icon-row">' +
+          '<div class="icon-preview" id="iconPreview"></div>' +
+          '<div class="icon-controls">' +
+            '<input id="fIcon" value="' + escapeHtml(item ? item.icon : "") + '" placeholder="Emoji，如 🚀" oninput="renderModalIcon()">' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="fetchFaviconFromModal()">🔄 抓取网站图标</button>' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="clearModalIcon()">清除</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<input type="hidden" id="fIconUrl" value="' + escapeHtml(item && item.iconUrl ? item.iconUrl : "") + '">' +
+      '<div class="field"><label>描述（可选）</label><input id="fDesc" value="' + escapeHtml(item ? item.description : "") + '"></div>' +
+      '<div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveItem()">保存</button></div>';
+    if (mode === "add") m.dataset.newId = "nav_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+    renderModalIcon();
+    document.getElementById("modalOverlay").classList.add("open");
+  }
+  function renderModalIcon() {
+    const prev = document.getElementById("iconPreview"); if (!prev) return;
+    const url = (document.getElementById("fIconUrl") || {}).value || "";
+    const emoji = (document.getElementById("fIcon") || {}).value || "";
+    if (url) prev.innerHTML = '<img class="fav" src="' + escapeHtml(url) + '">';
+    else if (emoji) prev.innerHTML = '<span class="fav-fallback" style="display:flex">' + escapeHtml(emoji) + "</span>";
+    else prev.innerHTML = '<span class="fav-fallback" style="display:flex">🌐</span>';
+  }
+  function clearModalIcon() {
+    const u = document.getElementById("fIconUrl"); const e = document.getElementById("fIcon");
+    if (u) u.value = ""; if (e) e.value = ""; renderModalIcon();
+  }
+  function fetchFaviconFromModal() {
+    const url = (document.getElementById("fUrl") || {}).value || "";
+    const host = getHost(url);
+    if (!host) return showToast("请先填写有效网址");
+    const prev = document.getElementById("iconPreview");
+    if (prev) prev.innerHTML = '<span class="fav-fallback" style="display:flex">⏳</span>';
+    const srcs = faviconCandidates(host);
+    let i = 0;
+    (function tryNext() {
+      if (i >= srcs.length) {
+        if (prev) prev.innerHTML = '<span class="fav-fallback" style="display:flex">🌐</span>';
+        // img 全部失败：改用 fetch 抓支持 CORS 的服务
+        fetchFaviconDataUrl(srcs).then(d => {
+          if (!d) return showToast("图标抓取失败，将使用 Emoji/自动");
+          const u = document.getElementById("fIconUrl");
+          if (u) u.value = d;
+          const e = document.getElementById("fIcon");
+          if (e) e.value = "";
+          renderModalIcon();
+          showToast("已抓取网站图标");
+        });
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        if (!img.naturalWidth) { i++; tryNext(); return; } // 空占位图视为失败，切下一个候选
+        freezeIcon(host, srcs[i]).then(val => {
+          const u = document.getElementById("fIconUrl");
+          if (u) u.value = val;
+          const e = document.getElementById("fIcon");
+          if (e) e.value = "";
+          renderModalIcon();
+          showToast(/^data:/.test(val) ? "已抓取并固化图标，刷新不丢" : "已抓取网站图标");
+        });
+      };
+      img.onerror = () => { i++; tryNext(); };
+      img.src = srcs[i];
+    })();
+  }
+  function saveItem() {
+    const name = document.getElementById("fName").value.trim();
+    const url = document.getElementById("fUrl").value.trim();
+    const icon = document.getElementById("fIcon").value.trim();
+    const iconUrl = document.getElementById("fIconUrl").value.trim();
+    const desc = document.getElementById("fDesc").value.trim();
+    if (!name) return showToast("请输入名称");
+    if (!url || url === "https://") return showToast("请输入有效网址");
+    const normUrl = normalizeUrl(url);
+    if (!normUrl) return showToast("请输入有效网址");
+    // 填了自定义图标：仅该卡片锁定为 Emoji（并清空其 favicon）；没填则保持自动抓取 favicon
+    const finalIconUrl = icon ? "" : iconUrl;
+    const cat = findCategory(editState.categoryId);
+    if (!cat) return showToast("分类不存在");
+    if (editState.mode === "add") {
+      if (!cat.items) cat.items = [];
+      const item = { id: (document.getElementById("modalContent").dataset.newId || "nav_" + Date.now()), name, url: normUrl, icon, iconUrl: finalIconUrl, description: desc };
+      if (icon) item.useEmoji = true;
+      cat.items.push(item);
+      showToast("已添加：" + name);
+    } else {
+      const it = findItem(editState.categoryId, editState.itemId);
+      if (it) {
+        it.name = name; it.url = normUrl; it.icon = icon; it.iconUrl = finalIconUrl; it.description = desc;
+        if (icon) it.useEmoji = true; else delete it.useEmoji;
+      }
+      showToast("已更新：" + name);
+    }
+    saveConfig(); closeModal(); render();
+  }
+  function deleteItem(catId, itemId) {
+    if (!confirm("确定删除此导航吗？")) return;
+    const cat = findCategory(catId);
+    if (cat && cat.items) cat.items = cat.items.filter(i => i.id !== itemId);
+    saveConfig(); render(); showToast("已删除");
+  }
+  function deleteCategory(catId) {
+    if (!confirm("确定删除此分类及其所有导航吗？")) return;
+    CONFIG.categories = (CONFIG.categories || []).filter(c => c.id !== catId);
+    if (activeCategory === catId) activeCategory = "all";
+    saveConfig(); render(); ifOpenRefresh(); showToast("分类已删除");
+  }
+  const CATEGORY_ICONS = ["🤖","💻","🎮","🛒","⚡","🎬","📚","📁","📝","🛠️","🔧","🎨","💼","🎵","📷","🏠","💡","🚀","🌐","💰","⏰","🏋️","🍔","🛍️","✈️","🧳","🏫","📊","🧭","🔍","🎯","📈","🗂️","📋","🧠","🎹"];
+  function openCategoryModal(catId) {
+    const cat = catId ? findCategory(catId) : null;
+    editState = { mode: "cat", catId: catId || null };
+    const curName = cat ? cat.name : "";
+    const curIcon = cat ? cat.icon : "📁";
+    const grid = CATEGORY_ICONS.map(ic =>
+      '<button type="button" class="ci-item' + (ic === curIcon ? " active" : "") + '" data-icon="' + ic + '" onclick="pickCategoryIcon(this)">' + ic + '</button>'
+    ).join("");
+    const m = document.getElementById("modalContent");
+    m.innerHTML =
+      "<h3>" + (cat ? "✏️ 编辑分类" : "➕ 添加分类") + "</h3>" +
+      '<div class="field"><label>分类名称</label><input id="catName" value="' + escapeHtml(curName) + '" placeholder="如：影音视频"></div>' +
+      '<div class="field"><label>分类图标（点选或手动输入）</label>' +
+        '<div class="ci-grid">' + grid + "</div>" +
+        '<input id="catIcon" value="' + escapeHtml(curIcon) + '" placeholder="手动输入 Emoji" oninput="syncCategoryIcon(this)">' +
+      "</div>" +
+      '<div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveCategory()">保存</button></div>';
+    document.getElementById("modalOverlay").classList.add("open");
+  }
+  function pickCategoryIcon(btn) {
+    document.querySelectorAll(".ci-item").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("catIcon").value = btn.dataset.icon;
+  }
+  function syncCategoryIcon(input) {
+    const v = input.value.trim();
+    document.querySelectorAll(".ci-item").forEach(b => b.classList.toggle("active", b.dataset.icon === v));
+  }
+  function saveCategory() {
+    const name = document.getElementById("catName").value.trim();
+    const icon = document.getElementById("catIcon").value.trim() || "📁";
+    if (!name) return showToast("请输入分类名称");
+    if (editState.mode === "cat" && editState.catId) {
+      const cat = findCategory(editState.catId);
+      if (cat) { cat.name = name; cat.icon = icon; showToast("分类已更新"); }
+    } else {
+      CONFIG.categories.push({ id: "cat_" + Date.now(), name, icon, sort: (CONFIG.categories.length + 1), items: [] });
+      showToast("已添加分类");
+    }
+    saveConfig(); closeModal(); render(); ifOpenRefresh();
+  }
+  function addCategory() { openCategoryModal(null); }
+  function openCatEditModal(catId) { openCategoryModal(catId); }
+  function ifOpenRefresh() { if (document.getElementById("settingsPanel").classList.contains("open")) renderSettingsBody(); }
+
+  // 分类管理：拖拽排序（按 sort 字段重新编号，主页面与导航栏随之更新）
+  let dragCatIndex = -1;
+  function catDragStart(ev, idx) {
+    dragCatIndex = idx;
+    ev.dataTransfer.effectAllowed = "move";
+    try { ev.dataTransfer.setData("text/plain", String(idx)); } catch (e) {}
+    const row = document.querySelectorAll("#catManageList .cm-item")[idx];
+    if (row) row.classList.add("dragging");
+  }
+  function catDragOver(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move";
+    ev.currentTarget.classList.add("drag-over");
+  }
+  function catDragLeave(ev) { ev.currentTarget.classList.remove("drag-over"); }
+  function catDrop(ev, targetIdx) {
+    ev.preventDefault();
+    if (dragCatIndex < 0 || dragCatIndex === targetIdx) { catDragEnd(); return; }
+    const sorted = (CONFIG.categories || []).slice().sort((a, b) => a.sort - b.sort);
+    if (dragCatIndex >= sorted.length || targetIdx < 0 || targetIdx >= sorted.length) { catDragEnd(); return; }
+    const moved = sorted.splice(dragCatIndex, 1)[0];
+    sorted.splice(targetIdx, 0, moved);
+    sorted.forEach((c, i) => { c.sort = i + 1; });
+    dragCatIndex = -1;
+    saveConfig(); render(); ifOpenRefresh(); showToast("分类顺序已更新");
+  }
+  function catDragEnd() {
+    dragCatIndex = -1;
+    document.querySelectorAll("#catManageList .cm-item").forEach(r => r.classList.remove("dragging", "drag-over"));
+  }
+
+  function addFavoritePrompt() {
+    const name = prompt("收藏名称："); if (!name || !name.trim()) return;
+    const url = normalizeUrl(prompt("网址：")); if (!url) return;
+    const icon = prompt("图标（Emoji，可选）：", "🔗") || "🔗";
+    if (!CONFIG.favorites) CONFIG.favorites = [];
+    CONFIG.favorites.push({ id: "fav_" + Date.now(), name: name.trim(), url, icon: icon.trim() });
+    saveConfig(); render(); ifOpenRefresh(); showToast("收藏已添加");
+  }
+  function removeFavorite(i) {
+    if (!confirm("确定删除此收藏吗？")) return;
+    CONFIG.favorites.splice(i, 1); saveConfig(); render(); ifOpenRefresh(); showToast("已删除");
+  }
+
+  function exportConfig() {
+    const blob = new Blob([JSON.stringify(CONFIG, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "navpage-config.json"; a.click();
+    URL.revokeObjectURL(a.href); showToast("配置已导出");
+  }
+  function importConfig(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = () => { try {
+      const cfg = JSON.parse(r.result);
+      if (!cfg.categories) return showToast("无效的配置文件");
+      CONFIG = cfg; if (!CONFIG.favorites) CONFIG.favorites = [];
+      saveConfig(); applyTheme(); applyBackground(); render(); ifOpenRefresh();
+      if (CONFIG.settings.showWeather && CONFIG.settings.weatherCity) loadWeather();
+      showToast("配置已导入");
+    } catch (err) { showToast("导入失败：" + err.message); } };
+    r.readAsText(file); e.target.value = "";
+  }
+  function resetConfig() {
+    if (!confirm("重置将清空所有自定义，恢复到默认配置，确定吗？")) return;
+    CONFIG = JSON.parse(JSON.stringify(window.NAV_CONFIG_DEFAULT || {}));
+    saveConfig(); applyTheme(); applyBackground(); render(); ifOpenRefresh();
+    if (CONFIG.settings.showWeather && CONFIG.settings.weatherCity) loadWeather();
+    showToast("已重置为默认");
+  }
+
+  function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); editState = null; }
+  document.getElementById("modalOverlay").onclick = (e) => { if (e.target === e.currentTarget) closeModal(); };
+  document.addEventListener("click", () => { ["engineMenu", "cityMenu"].forEach(id => { const m = document.getElementById(id); if (m) { m.dataset.open = "0"; m.classList.remove("open"); } }); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeSettings(); } });
+  // 顶部导航分类过多时，支持滚轮 / 触控板横向滚动
+  const tabsEl = document.getElementById("navTabs");
+  if (tabsEl) tabsEl.addEventListener("wheel", (e) => {
+    if (tabsEl.scrollWidth > tabsEl.clientWidth) {
+      e.preventDefault();
+      tabsEl.scrollLeft += e.deltaY || e.deltaX;
+    }
+  }, { passive: false });
+
+  // =====================================================================
+  //  工具
+  // =====================================================================
+  function findCategory(id) { return (CONFIG.categories || []).find(c => c.id === id); }
+  function findItem(catId, itemId) { const c = findCategory(catId); return c && c.items ? c.items.find(i => i.id === itemId) : null; }
+  // 无协议的域名地址自动补 https://，避免被当成相对路径打开
+  function normalizeUrl(u) {
+    u = (u || "").trim();
+    if (!u) return "";
+    if (/^https?:\/\//i.test(u)) return u;
+    if (/^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(u)) return "https://" + u;
+    return u;
+  }
+  function getHost(url) { try { return new URL(url).hostname; } catch (e) { return ""; } }
+
+  // =====================================================================
+  //  磁盘文件持久化（File System Access API，需 Chrome / Edge）
+  //  绑定一次后，配置自动读写磁盘 JSON，多个浏览器绑定同一文件即共享
+  // =====================================================================
+  const IDB_NAME = "navpage_fs";
+  const IDB_STORE = "handles";
+  function idbOpen() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function idbReq(mode, fn) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+      req.onsuccess = () => {
+        const db = req.result;
+        const t = db.transaction(IDB_STORE, mode);
+        const r = fn(t.objectStore(IDB_STORE));
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function idbGetHandle() {
+    try { return (await idbReq("readonly", s => s.get("config"))) || null; }
+    catch (e) { return null; }
+  }
+  async function idbPutHandle(h) {
+    try { await idbReq("readwrite", s => s.put(h, "config")); } catch (e) {}
+  }
+  async function idbRemoveHandle() {
+    try { await idbReq("readwrite", s => s.delete("config")); } catch (e) {}
+  }
+  async function fsReadConfig() {
+    if (!FS_HANDLE) return null;
+    try {
+      const file = await FS_HANDLE.getFile();
+      if (file.size > 20 * 1024 * 1024) return null;
+      const cfg = JSON.parse(await file.text());
+      return cfg && typeof cfg === "object" ? cfg : null;
+    } catch (e) { return null; }
+  }
+  async function fsWriteConfig(data) {
+    if (!FS_HANDLE) return false;
+    try {
+      const w = await FS_HANDLE.createWritable();
+      await w.write(data);
+      await w.close();
+      return true;
+    } catch (e) { return false; }
+  }
+  // 绑定配置文件：用 showOpenFilePicker(readwrite) 打开已有文件，避免 showSaveFilePicker 清空已存在文件导致内容丢失
+  async function bindConfigFile() {
+    if (!window.showOpenFilePicker) { showToast("当前浏览器不支持，请用 Chrome / Edge 打开"); return; }
+    let handle;
+    try {
+      [handle] = await window.showOpenFilePicker({
+        types: [{ description: "JSON 配置", accept: { "application/json": [".json"] } }],
+        mode: "readwrite"
+      });
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      showToast("绑定失败：" + (e && e.message ? e.message : "")); return;
+    }
+    // 请求持久化读写权限，避免刷新后失效
+    try {
+      const perm = await handle.queryPermission({ mode: "readwrite" });
+      if (perm !== "granted") await handle.requestPermission({ mode: "readwrite" });
+    } catch (e) {}
+    FS_HANDLE = handle;
+    await idbPutHandle(handle);
+    let adopted = false;
+    try {
+      const file = await handle.getFile();
+      const cfg = JSON.parse(await file.text());
+      if (cfg && typeof cfg === "object" && (cfg.categories || cfg.settings)) {
+        CONFIG = cfg;
+        adopted = true;
+      }
+    } catch (e) {}
+    if (adopted) {
+      saveConfig(); applyTheme(); applyBackground(); render();
+      showToast("已绑定并载入配置：" + handle.name);
+    } else {
+      await fsWriteConfig(JSON.stringify(CONFIG));
+      showToast("已创建并绑定配置：" + handle.name);
+    }
+    updateBindBanner();
+    startFsPoll();
+    ifOpenRefresh();
+  }
+  function isFsSupported() { return !!window.showOpenFilePicker; }
+  // 已绑定文件时，定期检查文件是否被其他浏览器修改（轻量轮询，实现多浏览器实时同步）
+  let fsPollTimer = null;
+  function startFsPoll() {
+    if (fsPollTimer || !FS_HANDLE) return;
+    fsPollTimer = setInterval(async () => {
+      if (!FS_HANDLE) { clearInterval(fsPollTimer); fsPollTimer = null; return; }
+      if (document.getElementById("modalOverlay").classList.contains("open")) return; // 弹窗编辑中跳过
+      const remote = await fsReadConfig();
+      if (!remote) return;
+      if (JSON.stringify(remote) !== JSON.stringify(CONFIG)) {
+        CONFIG = remote;
+        applyTheme(); applyBackground(); render(); startTick();
+        showToast("已同步其他浏览器的修改");
+      }
+    }, 5000);
+  }
+
+  function faviconCandidates(host) {
+    if (!host) return [];
+    // 顺序即优先级：真实站点图标在前，通用占位服务（icon.horse 对部分站点返回同一占位图）靠后
+    return [
+      "https://" + host + "/favicon.ico",
+      "https://" + host + "/favicon.png",
+      "https://favicon.cccyun.cc/" + host,
+      "https://www.google.com/s2/favicons?domain=" + host + "&sz=64",
+      "https://favicon.yandex.net/favicon/" + host,
+      "https://www.bing.com/favicon.ico?name=" + host,
+      "https://icons.duckduckgo.com/ip3/" + host + ".ico",
+      "https://favicon.im/" + host,
+      "https://icon.horse/icon/" + host
+    ];
+  }
+  function faviconUrl(url) { const c = faviconCandidates(getHost(url)); return c.length ? c[0] : ""; }
+  function favErrorNext(img) {
+    let cands = [];
+    try { cands = JSON.parse(img.dataset.cands || "[]"); } catch (e) {}
+    if (cands.length) { img.dataset.cands = JSON.stringify(cands.slice(1)); img.src = cands[0]; }
+    else {
+      img.style.display = "none";
+      if (!img.dataset.fetched) {
+        img.dataset.fetched = "1";
+        let all = [];
+        try { all = JSON.parse(img.dataset.all || "[]"); } catch (e) {}
+        // 先 2 秒后重试 img 一轮（瞬时失败兜底）
+        if (all.length) {
+          const re = all.filter(u => u !== img.src);
+          img.dataset.cands = JSON.stringify(re.slice(1));
+          const timer = setTimeout(() => {
+            // fetch 若已成功（src 已是 base64），不再用可能失败的远程地址覆盖
+            if (img.parentNode && !/^data:/.test(img.src)) img.src = re[0];
+          }, 2000);
+          // 同时用 fetch 抓支持 CORS 的服务转 base64（绕开跨域图片加载问题）
+          fetchFaviconDataUrl(all).then(d => {
+            if (d) {
+              clearTimeout(timer);
+              if (img.src !== d) img.src = d;
+            }
+          });
+        }
+      }
+    }
+  }
+  // 兜底：img 跨域加载被防盗链/网络拦截时，用 fetch 直接抓支持 CORS 的服务转 base64。
+  // 按传入候选顺序尝试，仅保留实测支持 CORS 的源（cccyun/yandex 返回真实图标，bing/icon.horse 部分站点为占位图）
+  async function fetchFaviconDataUrl(all) {
+    if (!all || !all.length) return "";
+    for (const u of all) {
+      if (!u || /^data:/.test(u)) continue;
+      if (!/cccyun|yandex\.net|bing\.com|icon\.horse/.test(u)) continue;
+      const d = await iconDataUrlFetch(u);
+      if (d) return d;
+    }
+    return "";
+  }
+  // 把图标转成 base64 dataURL 存进 localStorage（仅限返回 CORS 许可的源，如 cccyun/yandex/icon.horse）；
+  // 固化后刷新零网络依赖，彻底解决「刷新后图标复原」
+  function iconDataUrlFetch(url) {
+    // AbortController 超时：防止某些图标源 hang 住导致 fetch 永久 pending、worker 卡死
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    return fetch(url, { signal: ctrl.signal }).then(r => { if (!r.ok) throw 0; return r.blob(); }).then(blob => new Promise(res => {
+      // 上限放宽到 100KB：chatgpt 真实图标约 32KB，之前 20KB 会被拒而回落到通用占位图
+      if (!/^image\//.test(blob.type) || blob.size > 100 * 1024) return res("");
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result || ""));
+      fr.onerror = () => res("");
+      fr.readAsDataURL(blob);
+    })).catch(() => "").finally(() => clearTimeout(timer));
+  }
+  // 用 crossOrigin img + canvas 把图标固化为 base64（仅对返回 CORS 头的源有效，如 cccyun/icon.horse）。
+  // 比 fetch 更稳：file:// 协议下 fetch 跨域常被浏览器拦截，但 crossOrigin img 加载不受影响，
+  // 加载成功后 canvas 可直接导出 dataURL，彻底绕开 fetch 的 CORS 限制。
+  function freezeViaCanvas(url) {
+    return new Promise(res => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          if (!img.naturalWidth) return res("");
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          c.getContext("2d").drawImage(img, 0, 0);
+          res(c.toDataURL("image/png"));
+        } catch (e) { res(""); }
+      };
+      img.onerror = () => res("");
+      img.src = url;
+    });
+  }
+  function freezeIcon(host, loadedUrl) {
+    if (/^data:/.test(loadedUrl)) return Promise.resolve(loadedUrl);
+    const cccyun = host ? "https://favicon.cccyun.cc/" + host : "";
+    const horse = host ? "https://icon.horse/icon/" + host : "";
+    // 固化单地址：canvas 优先（绕过 file:// fetch 限制），fetch 兜底
+    const freezeOne = u => freezeViaCanvas(u).then(d => d || iconDataUrlFetch(u));
+    return freezeOne(loadedUrl).then(d => {
+      if (d) return d;
+      // 原地址固化失败：用支持 CORS 的服务补抓，跳过与 loadedUrl 相同的源避免重复请求
+      if (cccyun && loadedUrl !== cccyun) return freezeOne(cccyun);
+      return "";
+    }).then(d => {
+      if (d) return d;
+      if (horse && loadedUrl !== horse) return freezeOne(horse);
+      return "";
+    }).then(d => d || loadedUrl);
+  }
+  // 图标成功加载后，把可用地址（尽量固化为 base64）写回 item.iconUrl 并落盘，刷新后直接复用
+  let iconSaveTimer = null;
+  function persistIconOk(img) {
+    const key = img.dataset.pkey;
+    if (!key) return;
+    try {
+      const p = JSON.parse(key);
+      let it = null;
+      if (p.t === "c") { const cat = findCategory(p.c); it = cat && cat.items ? cat.items.find(i => i.id === p.i) : null; }
+      else if (p.t === "f") { it = (CONFIG.favorites || []).find(f => f.id === p.i); }
+      if (!it) return;
+      const src = img.src;
+      if (it.iconUrl === src && /^data:/.test(src)) return; // 已固化，跳过
+      freezeIcon(getHost(it.url), src).then(val => {
+        if (val && it.iconUrl !== val) {
+          it.iconUrl = val;
+          clearTimeout(iconSaveTimer);
+          iconSaveTimer = setTimeout(saveConfig, 800); // 防抖：一批图标只写一次 localStorage
+        }
+      });
+    } catch (e) {}
+  }
+  function validIconUrl(u) {
+    if (!u) return false;
+    // 过短的 dataURL 是无效占位图（旧版本可能固化了 0KB 空图），跳过
+    if (/^data:image\//.test(u)) return u.length > 300;
+    return true;
+  }
+  function iconHtml(item, fallback, persist) {
+    const emoji = item.icon || fallback || "🌐";
+    const fb = '<span class="fav-fallback">' + escapeHtml(emoji) + "</span>";
+    // 仅当该卡片被显式锁定为自定义 Emoji 图标时，才只显示 Emoji；其余卡片保持 favicon 优先 + Emoji 兜底
+    if (item.useEmoji) return fb;
+    const useFav = CONFIG.settings.cardIcon !== "emoji" && item.url;
+    const host = getHost(item.url);
+    let cands = [];
+    if (validIconUrl(item.iconUrl)) {
+      // 已持久化的可用地址放最前，其余候选做兜底（源失效时可自愈并重新持久化）
+      cands = [item.iconUrl];
+      if (useFav && host) cands = cands.concat(faviconCandidates(host).filter(u => u !== item.iconUrl));
+    } else if (useFav && host) cands = faviconCandidates(host);
+    if (!cands.length) return fb;
+    const all = JSON.stringify(cands);
+    const rest = JSON.stringify(cands.slice(1));
+    const pkey = persist ? escapeHtml(JSON.stringify(persist)) : "";
+    return fb + '<img class="fav" src="' + escapeHtml(cands[0]) + '" data-all="' + escapeHtml(all) + '" data-cands="' + escapeHtml(rest) + '" data-pkey="' + pkey + '" alt="" style="display:none" onload="if(!this.naturalWidth){favErrorNext(this);return}this.style.display=\'\'; this.previousElementSibling.style.display=\'none\'; persistIconOk(this)" onerror="favErrorNext(this)">';
+  }
+  function escapeHtml(str) { if (!str) return ""; return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+  function showToast(msg) {
+    const el = document.getElementById("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 2500);
+  }
+  </script>
+</body>
+</html>
