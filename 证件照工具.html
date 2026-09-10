@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>证件照工具 V1.2.2 - 尺寸修改 / 换底色 / 相纸排版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: linear-gradient(180deg, #f6f4fd 0%, #eef1f8 100%); color: #333; min-height: 100vh; }
+  header { padding: 16px 28px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #8b7cf6, #6a5ae0); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: 0 4px 12px rgba(124,108,240,.35); flex-shrink: 0; }
+  header h1 { font-size: 20px; color: #2d2a4a; }
+  header p { font-size: 12px; color: #8a87a8; margin-top: 2px; }
+  .container { display: flex; gap: 18px; padding: 0 24px 24px; max-width: 1440px; margin: 0 auto; }
+  .panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(90,80,160,.08); padding: 18px; }
+  .controls { width: 370px; flex-shrink: 0; max-height: calc(100vh - 110px); overflow-y: auto; }
+  .controls::-webkit-scrollbar { width: 6px; }
+  .controls::-webkit-scrollbar-thumb { background: #d8d4ee; border-radius: 3px; }
+  .preview { flex: 1; display: flex; flex-direction: column; }
+  .step { border: 1px solid #eceaf6; border-radius: 12px; padding: 14px; margin-bottom: 14px; background: #fbfbfe; }
+  .step-title { font-size: 14px; font-weight: bold; color: #4c4569; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .step-title .num { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  /* 上传拖拽区 */
+  .dropzone { border: 2px dashed #c9c3ea; border-radius: 12px; padding: 26px 12px; text-align: center; cursor: pointer; background: #f8f7fd; transition: all .2s; }
+  .dropzone:hover, .dropzone.dragover { border-color: #8b7cf6; background: #f1eefe; }
+  .dropzone .dz-icon { font-size: 28px; margin-bottom: 6px; }
+  .dropzone .dz-main { font-size: 14px; color: #4c4569; font-weight: bold; }
+  .dropzone .dz-sub { font-size: 11px; color: #9b97b5; margin-top: 5px; }
+  /* 规格卡片 */
+  .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 300px; overflow-y: auto; padding: 2px; }
+  .spec-grid::-webkit-scrollbar { width: 5px; }
+  .spec-grid::-webkit-scrollbar-thumb { background: #d8d4ee; border-radius: 3px; }
+  .spec-card { border: 1.5px solid #e4e1f3; border-radius: 10px; padding: 8px 10px; cursor: pointer; background: #fff; transition: all .15s; }
+  .spec-card:hover { border-color: #b3a9ec; }
+  .spec-card.active { border-color: #7c6cf0; background: #f1eefe; box-shadow: 0 0 0 2px rgba(124,108,240,.15); }
+  .spec-card .spec-name { font-size: 13px; font-weight: bold; color: #3a3555; display: flex; align-items: center; gap: 5px; }
+  .spec-card .spec-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #d8d4ee; border: 1px solid #c9c3ea; box-shadow: inset 0 0 0 1px rgba(255,255,255,.5); transition: all .15s; }
+  .spec-card.active .spec-dot { background: #7c6cf0; border-color: #7c6cf0; box-shadow: 0 0 0 2px rgba(124,108,240,.28); }
+  .spec-card .spec-size { font-size: 10px; color: #9b97b5; margin-top: 3px; }
+  .spec-card .spec-desc { font-size: 10px; color: #7c76a0; margin-top: 2px; }
+  select, input[type="number"], input[type="text"] { width: 100%; padding: 7px 9px; border: 1px solid #ddd9ee; border-radius: 8px; font-size: 13px; background: #fff; }
+  #exportFormat { flex: 1 1 auto; width: auto; min-width: 92px; }
+  select:focus, input:focus { outline: none; border-color: #7c6cf0; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row label { font-size: 13px; white-space: nowrap; min-width: 56px; }
+  .mm-info { font-size: 12px; color: #8a87a8; margin-top: 8px; background: #f3f1fb; border-radius: 8px; padding: 7px 10px; }
+  /* 底色 */
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .swatch { width: 36px; height: 36px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; position: relative; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .swatch.active { border-color: #7c6cf0; box-shadow: 0 0 0 3px rgba(124,108,240,.2); }
+  .swatch span { position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #8a87a8; white-space: nowrap; }
+  .swatch-wrap { margin-bottom: 24px; }
+  .hex-row { display: flex; gap: 8px; align-items: center; }
+  .hex-row input[type="color"] { width: 44px; height: 34px; padding: 2px; border: 1px solid #ddd9ee; border-radius: 8px; cursor: pointer; background: #fff; }
+  .hex-row input[type="text"] { font-family: Consolas, monospace; }
+  button { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 14px; cursor: pointer; width: 100%; transition: opacity .15s; }
+  button:hover { opacity: .9; }
+  button:disabled { background: #c5c1d8; cursor: not-allowed; }
+  button.secondary { background: #fff; color: #7c6cf0; border: 1.5px solid #b3a9ec; }
+  button.secondary:hover { background: #f6f4fe; opacity: 1; }
+  button.green { background: linear-gradient(135deg, #34d399, #10b981); }
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .slider-row label { font-size: 12px; min-width: 56px; color: #4c4569; }
+  .slider-row input[type="range"] { flex: 1; accent-color: #7c6cf0; }
+  .slider-row .val { font-size: 12px; min-width: 40px; text-align: right; color: #8a87a8; }
+  .status { font-size: 12px; color: #6f6b8c; background: #f3f1fb; border-radius: 8px; padding: 9px 10px; margin-top: 10px; min-height: 34px; line-height: 1.5; white-space: pre-wrap; }
+  .status.err { color: #dc2626; background: #fef2f2; }
+  /* 标签页 */
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab { padding: 9px 22px; border-radius: 999px; background: #fff; cursor: pointer; font-size: 14px; border: 1.5px solid #e4e1f3; width: auto; color: #4c4569; }
+  .tab.active { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; border-color: transparent; font-weight: bold; }
+  .tab-body { background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(90,80,160,.08); padding: 22px; flex: 1; display: none; flex-direction: column; align-items: center; }
+  .tab-body.active { display: flex; }
+  .canvas-holder { background: repeating-conic-gradient(#eceaf6 0% 25%, #fff 0% 50%) 0 0/20px 20px; border: 1px solid #e4e1f3; border-radius: 12px; display: inline-block; line-height: 0; max-width: 100%; }
+  canvas { max-width: 100%; max-height: calc(100vh - 300px); height: auto; border-radius: 10px; }
+  .print-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; width: 100%; }
+  .print-controls .field { display: flex; flex-direction: column; gap: 4px; }
+  .print-controls .field label { font-size: 12px; color: #8a87a8; }
+  .print-controls select { width: auto; min-width: 110px; }
+  .print-controls button { width: auto; }
+  .print-info { font-size: 13px; color: #4c4569; margin-bottom: 12px; width: 100%; background: #f8f7fd; border-radius: 8px; padding: 8px 12px; }
+  .hint { font-size: 12px; color: #9b97b5; margin-top: 8px; line-height: 1.5; }
+  /* 极速换底色 */
+  .quick-row { display: flex; gap: 8px; margin-bottom: 4px; }
+  .quick-btn { flex: 1; padding: 10px 6px; border-radius: 10px; border: 2px solid #e4e1f3; background: #fff; color: #4c4569; font-size: 13px; font-weight: bold; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .quick-btn:hover { border-color: #b3a9ec; background: #f6f4fe; opacity: 1; }
+  .quick-btn:disabled { border-color: #e4e1f3; color: #b3a9ec; cursor: not-allowed; opacity: .7; }
+  /* 修复前后对比 */
+  .seg-row { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
+  .seg-btn { background: #fff; color: #4c4569; border: 1.5px solid #e4e1f3; border-radius: 999px; padding: 6px 16px; font-size: 12px; cursor: pointer; transition: all .15s; }
+  .seg-btn:hover { border-color: #b3a9ec; }
+  .seg-btn.active { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; border-color: transparent; font-weight: bold; }
+  .ba-wrap { position: relative; display: inline-block; line-height: 0; border-radius: 12px; overflow: hidden; user-select: none; touch-action: none; box-shadow: 0 2px 16px rgba(90,80,160,.12); }
+  .ba-wrap canvas { display: block; border-radius: 10px; max-width: 100%; }
+  .ba-before, .ba-after { position: absolute; inset: 0; }
+  .ba-after { clip-path: inset(0 0 0 50%); }
+  .ba-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #fff; box-shadow: 0 0 4px rgba(0,0,0,.45); transform: translateX(-50%); cursor: ew-resize; z-index: 3; }
+  .ba-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: ew-resize; z-index: 4; box-shadow: 0 2px 8px rgba(124,108,240,.5); }
+  .ba-tag { position: absolute; top: 8px; font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(0,0,0,.5); color: #fff; z-index: 2; }
+  .ba-tag.left { left: 8px; } .ba-tag.right { right: 8px; }
+  /* 美化开关 */
+  .toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #4c4569; }
+  .toggle-row input[type="checkbox"] { accent-color: #7c6cf0; width: 16px; height: 16px; }
+  /* 批量导出 */
+  .batch-pick { margin-bottom: 8px; }
+  .batch-pick .lbl { font-size: 12px; color: #8a87a8; margin: 8px 0 6px; }
+  .batch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1.5px solid #e4e1f3; border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; background: #fff; color: #4c4569; transition: all .15s; }
+  .chip:hover { border-color: #b3a9ec; }
+  .chip.active { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); color: #fff; border-color: transparent; font-weight: bold; }
+  .batch-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; margin-top: 8px; }
+  .batch-preview .bp { background: #f8f7fd; border-radius: 8px; padding: 4px; text-align: center; }
+  .batch-preview canvas { width: 100%; height: auto; border-radius: 6px; display: block; }
+  .batch-preview .bp-label { font-size: 10px; color: #8a87a8; margin-top: 3px; line-height: 1.3; word-break: break-all; }
+  .batch-sum { font-size: 12px; color: #6f6b8c; background: #f3f1fb; border-radius: 8px; padding: 7px 10px; margin-top: 8px; line-height: 1.5; }
+  /* 页脚品牌 */
+  footer { text-align: center; padding: 22px 16px 34px; color: #8a87a8; font-size: 12px; line-height: 1.9; }
+  footer .brand { font-size: 16px; font-weight: bold; color: #4c4569; }
+  footer .brand span { background: linear-gradient(135deg, #8b7cf6, #6a5ae0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  footer .desc { margin-top: 4px; }
+  footer .contact { margin-top: 6px; }
+  footer .contact strong { color: #7c6cf0; }
+  footer .tag { display: inline-block; margin-top: 12px; background: #f1eefe; color: #7c6cf0; padding: 6px 16px; border-radius: 999px; font-size: 12px; }
+  .hidden { display: none !important; }
+  /* 吸顶生成条：滚动时始终可触达 */
+  .ai-sticky-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    margin: -18px -18px 14px -18px;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid #eceaf6;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 2px 10px rgba(90,80,160,0.08);
+  }
+  .ai-sticky-bar.visible { display: flex; }
+  .ai-sticky-bar button { width: auto; padding: 8px 16px; font-size: 13px; flex-shrink: 0; }
+  .ai-sticky-status { flex: 1; font-size: 12px; color: #6f6b8c; line-height: 1.4; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">📷</div>
+  <div>
+    <h1>AI 证件照工具 V1.2.2</h1>
+    <p>尺寸修改 · AI 换底色 · 文件大小控制 · 相纸排版打印 —— 全部本地完成，照片不上传</p>
+  </div>
+</header>
+
+<div class="container">
+  <!-- 左侧控制面板 -->
+  <div class="panel controls">
+    <!-- 吸顶生成条：滚动时始终可触达 -->
+    <div class="ai-sticky-bar" id="aiStickyBar">
+      <span class="ai-sticky-status" id="aiStickyStatus">请先上传照片</span>
+      <button id="btnStickyAI" disabled>一键 AI 生成</button>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">1</span>打开照片</div>
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon">📤</div>
+        <div class="dz-main">点击或拖拽照片到这里</div>
+        <div class="dz-sub" id="dzSub">支持 JPG / PNG / WEBP ｜ 建议相对正面照，手机自拍即可</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" capture="user" class="hidden">
+    </div>
+
+    <div class="step" id="quickStep" style="display:none;">
+      <div class="step-title"><span class="num">⚡</span>极速换底色（已抠图时秒级切换）</div>
+      <div class="quick-row" id="quickRow">
+        <button class="quick-btn" data-bg="#FFFFFF">🤍 白底</button>
+        <button class="quick-btn" data-bg="#438EDB">💙 蓝底</button>
+        <button class="quick-btn" data-bg="#FF0000">❤️ 红底</button>
+      </div>
+      <div class="hint" id="quickHint">先点击「一键 AI 生成」抠图一次，之后点这里换底色无需重复抠图，秒级出图。</div>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">2</span>选择证件规格</div>
+      <div class="spec-grid" id="specGrid"></div>
+      <div class="row" id="customSizeRow" style="margin-top:10px;display:none;">
+        <label>宽(px)</label><input type="number" id="customW" min="1">
+        <label>高(px)</label><input type="number" id="customH" min="1">
+      </div>
+      <div class="mm-info" id="mmInfo"></div>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">3</span>选择证件底色</div>
+      <div class="swatch-wrap">
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <div class="hex-row">
+        <input type="color" id="customColor" value="#ffffff">
+        <input type="text" id="hexColor" value="#FFFFFF" maxlength="7" spellcheck="false">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#4c4569;white-space:nowrap;">
+          <input type="checkbox" id="keepBg"> 保留原背景
+        </label>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">4</span>手动调整（所见即所得预览）</div>
+      <div class="slider-row"><label>缩放</label><input type="range" id="adjZoom" min="50" max="250" value="100"><span class="val" id="adjZoomVal">100%</span></div>
+      <div class="slider-row"><label>水平</label><input type="range" id="adjX" min="-100" max="100" value="0"><span class="val" id="adjXVal">0</span></div>
+      <div class="slider-row"><label>垂直</label><input type="range" id="adjY" min="-100" max="100" value="0"><span class="val" id="adjYVal">0</span></div>
+      <div class="toggle-row" style="margin-top:10px;"><input type="checkbox" id="beautyOn"><label for="beautyOn" style="cursor:pointer;">轻度去瑕疵美化（不联网）</label></div>
+      <div class="slider-row"><label>美化强度</label><input type="range" id="beautyStrength" min="0" max="100" value="0"><span class="val" id="beautyStrengthVal">0%</span></div>
+      <button id="btnResetAdj" class="secondary">重置调整</button>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">5</span>一键 AI 生成</div>
+      <button id="btnAI" disabled>一键 AI 生成（抠图 + 定位）</button>
+      <div class="hint">先把 规格、底色、微调 都选好，再到这里统一生成成品。首次使用需联网下载 AI 模型（约 88MB，之后离线可用）；或勾选「保留原背景」后点「仅裁剪排版」跳过 AI。</div>
+      <button id="btnCropOnly" class="secondary" style="margin-top:8px;" disabled>仅裁剪排版（不抠图）</button>
+      <div class="status" id="status">请先打开照片。</div>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">6</span>导出证件照</div>
+      <div class="row">
+        <label>格式</label>
+        <select id="exportFormat">
+          <option value="jpeg">JPG</option>
+          <option value="png">PNG</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>文件大小</label>
+        <input type="number" id="maxKB" min="0" value="0" style="width:80px;">
+        <span style="font-size:12px; white-space:nowrap;">KB（0=不限）</span>
+      </div>
+      <div class="hint">PNG 无损最清晰；JPG 兼容性最好。若导出发虚/有马赛克，多半是 KB 上限压得太低。</div>
+      <button id="btnExport" class="green" disabled>导出证件照</button>
+      <div class="mm-info" id="exportInfo"></div>
+    </div>
+
+    <div class="step">
+      <div class="step-title"><span class="num">7</span>批量导出（规格 × 底色）</div>
+      <div class="batch-pick">
+        <div class="lbl">选择规格（可多选）：</div>
+        <div class="batch-chips" id="batchSpecChips"></div>
+      </div>
+      <div class="batch-pick">
+        <div class="lbl">选择底色（可多选）：</div>
+        <div class="batch-chips" id="batchBgChips"></div>
+      </div>
+      <div class="batch-preview" id="batchPreview"></div>
+      <div class="batch-sum" id="batchSum">勾选规格与底色，预览组合并一键打包下载。</div>
+      <button id="btnBatchExport" class="green" style="margin-top:8px;">打包下载全部（ZIP）</button>
+    </div>
+  </div>
+
+  <!-- 右侧预览 -->
+  <div class="preview">
+    <div class="tabs">
+      <button class="tab active" data-tab="photo">证件照预览</button>
+      <button class="tab" data-tab="print">相纸排版打印</button>
+    </div>
+
+    <div class="tab-body active" id="tab-photo">
+      <div class="seg-row" id="segRow">
+        <button class="seg-btn active" data-seg="after">成品</button>
+        <button class="seg-btn" data-seg="before">原图</button>
+        <button class="seg-btn" data-seg="compare">前后对比</button>
+      </div>
+      <div id="viewAfter" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+        <div class="canvas-holder"><canvas id="resultCanvas" width="295" height="413"></canvas></div>
+      </div>
+      <div id="viewBefore" style="display:none;flex-direction:column;align-items:center;width:100%;">
+        <div class="canvas-holder"><canvas id="rawCanvas" width="295" height="413"></canvas></div>
+      </div>
+      <div id="viewCompare" style="display:none;flex-direction:column;align-items:center;width:100%;">
+        <div class="ba-wrap" id="baWrap">
+          <canvas id="baBefore" width="295" height="413"></canvas>
+          <canvas id="baAfter" class="ba-after" width="295" height="413"></canvas>
+          <div class="ba-line" id="baLine"></div>
+          <div class="ba-handle" id="baHandle">‹›</div>
+          <div class="ba-tag left">原图</div>
+          <div class="ba-tag right">成品</div>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px;">左侧第 5 步生成后，此处显示最终效果；「前后对比」拖动中缝查看改动。① 生成 ② 换底色 ③ 微调 ④ 美化。</div>
+    </div>
+
+    <div class="tab-body" id="tab-print">
+      <div class="print-controls">
+        <div class="field"><label>相纸</label>
+          <select id="paperSize">
+            <option value="4R">6寸相纸 (102×152mm)</option>
+            <option value="A6">A6 (105×148mm)</option>
+            <option value="A5">A5 (148×210mm)</option>
+            <option value="A4" selected>A4 (210×297mm)</option>
+          </select>
+        </div>
+        <div class="field"><label>相纸方向</label>
+          <select id="paperOrient">
+            <option value="portrait">竖向</option>
+            <option value="landscape">横向</option>
+          </select>
+        </div>
+        <div class="field"><label>照片方向</label>
+          <select id="photoOrient">
+            <option value="portrait">竖向</option>
+            <option value="landscape">横向</option>
+          </select>
+        </div>
+        <button id="btnLayout">生成排版</button>
+        <button id="btnExportPrint" class="green" disabled>导出排版图</button>
+      </div>
+      <div class="print-info" id="printInfo">生成证件照后，点击「生成排版」。排版按 300 DPI 输出，可直接送打印店或用家用打印机打印。</div>
+      <div class="canvas-holder"><canvas id="printCanvas" width="600" height="400"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// face-api.js 多 CDN 源容错加载：jsdelivr 在部分网络（公司网/校园网/部分运营商）下不可达时自动换源
+(function () {
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js",
+    "https://fastly.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js",
+    "https://gcore.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js",
+    "https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js",
+  ];
+  (function tryLoad(i) {
+    if (i >= urls.length) { console.warn("face-api.js 所有 CDN 源均加载失败，将跳过人脸检测（不影响 AI 抠图）"); return; }
+    const s = document.createElement("script");
+    s.src = urls[i];
+    s.onload = () => console.log("face-api.js 已加载：" + urls[i]);
+    s.onerror = () => tryLoad(i + 1);
+    document.head.appendChild(s);
+  })(0);
+})();
+</script>
+<script type="module">
+// ==================== 数据定义 ====================
+const SIZE_PRESETS = [
+  { name: "一寸", w: 295, h: 413, wmm: 24.98, hmm: 34.97, desc: "简历/学生证常用", dot: "#438EDB" },
+  { name: "二寸", w: 413, h: 579, wmm: 34.97, hmm: 49.02, desc: "毕业证/简历常用", dot: "#438EDB" },
+  { name: "小一寸", w: 260, h: 378, wmm: 22.01, hmm: 32.00, desc: "驾驶证/体检表", dot: "#FFFFFF" },
+  { name: "小二寸", w: 413, h: 531, wmm: 34.97, hmm: 44.96, desc: "护照/签证常用", dot: "#FFFFFF" },
+  { name: "大一寸", w: 390, h: 567, wmm: 33.02, hmm: 48.01, desc: "部分考试报名", dot: "#438EDB" },
+  { name: "大二寸", w: 413, h: 626, wmm: 34.97, hmm: 53.00, desc: "部分资格考试", dot: "#438EDB" },
+  { name: "教师资格证", w: 295, h: 413, wmm: 24.98, hmm: 34.97, desc: "教资报名专用", dot: "#FFFFFF" },
+  { name: "国家公务员考试", w: 295, h: 413, wmm: 24.98, hmm: 34.97, desc: "国考报名专用", dot: "#438EDB" },
+  { name: "初级会计考试", w: 295, h: 413, wmm: 24.98, hmm: 34.97, desc: "会计资格报名", dot: "#FFFFFF" },
+  { name: "英语四六级考试", w: 144, h: 192, wmm: 12.19, hmm: 16.26, desc: "四六级报名", dot: "#438EDB" },
+  { name: "计算机等级考试", w: 390, h: 567, wmm: 33.02, hmm: 48.01, desc: "NCRE 报名", dot: "#FFFFFF" },
+  { name: "研究生考试", w: 531, h: 709, wmm: 44.96, hmm: 60.03, desc: "考研报名", dot: "#FFFFFF" },
+  { name: "社保卡", w: 358, h: 441, wmm: 30.31, hmm: 37.34, desc: "社保卡照片", dot: "#FFFFFF" },
+  { name: "电子驾驶证", w: 260, h: 378, wmm: 22.01, hmm: 32.00, desc: "交管12123", dot: "#FFFFFF" },
+  { name: "五寸", w: 1050, h: 1499, wmm: 88.90, hmm: 126.92, desc: "生活照打印", dot: "#FFFFFF" },
+  { name: "自定义", w: 0, h: 0, wmm: 0, hmm: 0, desc: "自由设置宽高", dot: "#D3D3D3" },
+];
+const BG_COLORS = [
+  { name: "白色", value: "#FFFFFF" },
+  { name: "红色", value: "#FF0000" },
+  { name: "蓝色", value: "#438EDB" },
+  { name: "深蓝", value: "#2D3A8C" },
+  { name: "浅灰", value: "#D3D3D3" },
+];
+const PAPERS = {
+  "4R": { wmm: 102, hmm: 152 },
+  "A6": { wmm: 105, hmm: 148 },
+  "A5": { wmm: 148, hmm: 210 },
+  "A4": { wmm: 210, hmm: 297 },
+};
+const DPI = 300;
+const mm2px = mm => Math.round(mm / 25.4 * DPI);
+
+// ==================== 状态 ====================
+const state = {
+  srcImg: null,        // 原始照片 Image（低清照片经 AI 高清修复后会被替换为修复版）
+  origImg: null,       // 用户上传的最初原图（仅用于「原图/前后对比」视图展示）
+  cutImg: null,        // 抠图后 Image（透明底），null 表示用原图
+  faceBox: null,       // {x,y,w,h} 源图像素坐标
+  personTop: null,
+  personBounds: null,     // 人物真实头顶（源图 y 坐标，来自抠图轮廓）
+  base: null,          // {scale, x, y} 基础摆放参数
+  bgColor: "#FFFFFF",
+  keepBg: false,
+  faceModelReady: false,
+  landmarkReady: false,
+  resultReady: false,
+  aiBusy: false,
+};
+
+// ==================== DOM ====================
+const $ = id => document.getElementById(id);
+window.__state = state; // 调试钩子：bsk 自动化测试时检查抠图中间结果
+const statusEl = $("status");
+function setStatus(msg, isErr = false) {
+  statusEl.textContent = msg;
+  statusEl.classList.toggle("err", isErr);
+}
+
+// ==================== 初始化 UI ====================
+state.presetIdx = 0;
+// 规格卡片
+const specGrid = $("specGrid");
+SIZE_PRESETS.forEach((p, i) => {
+  const card = document.createElement("div");
+  card.className = "spec-card" + (i === 0 ? " active" : "");
+  const sizeText = p.name === "自定义" ? "自由宽高" : `${p.w}×${p.h}px`;
+  card.innerHTML = `<div class="spec-name"><span class="spec-dot"></span>${p.name}</div>
+    <div class="spec-size">${sizeText}</div>
+    <div class="spec-desc">${p.desc}</div>`;
+  card.onclick = () => {
+    document.querySelectorAll(".spec-card").forEach(s => s.classList.remove("active"));
+    card.classList.add("active");
+    state.presetIdx = i;
+    if (p.name !== "自定义") { $("customW").value = p.w; $("customH").value = p.h; }
+    $("customSizeRow").style.display = p.name === "自定义" ? "flex" : "none";
+    updateMmInfo();
+    computeBase();
+    render();
+  };
+  specGrid.appendChild(card);
+});
+// 底色色块
+const swatchBox = $("swatches");
+BG_COLORS.forEach((c, i) => {
+  const d = document.createElement("div");
+  d.className = "swatch" + (i === 0 ? " active" : "");
+  d.style.background = c.value;
+  d.title = c.name;
+  d.innerHTML = `<span>${c.name}</span>`;
+  d.onclick = () => {
+    document.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+    d.classList.add("active");
+    setBgColor(c.value);
+  };
+  swatchBox.appendChild(d);
+});
+// 底色统一入口（色块/取色器/hex 共用）
+function setBgColor(value) {
+  state.bgColor = value;
+  state.keepBg = false;
+  $("keepBg").checked = false;
+  $("customColor").value = value;
+  $("hexColor").value = value.toUpperCase();
+  render();
+  hintNeedAI();
+}
+$("customColor").oninput = e => {
+  document.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+  setBgColor(e.target.value);
+};
+$("hexColor").onchange = e => {
+  let v = e.target.value.trim();
+  if (!v.startsWith("#")) v = "#" + v;
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    document.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+    setBgColor(v);
+  } else {
+    e.target.value = state.bgColor.toUpperCase();
+  }
+};
+
+function currentSize() {
+  const p = SIZE_PRESETS[state.presetIdx];
+  if (p.name === "自定义") {
+    const w = Math.max(1, +$("customW").value || 295);
+    const h = Math.max(1, +$("customH").value || 413);
+    return { name: "自定义", w, h, wmm: w / DPI * 25.4, hmm: h / DPI * 25.4 };
+  }
+  return p;
+}
+function updateMmInfo() {
+  const s = currentSize();
+  $("mmInfo").textContent = `像素 ${s.w}×${s.h} ｜ 约 ${s.wmm.toFixed(1)}×${s.hmm.toFixed(1)} mm（按300DPI）`;
+}
+$("customW").oninput = $("customH").oninput = () => { updateMmInfo(); computeBase(); render(); };
+// 换底色立即生效；仅在还没抠图时提示需要先点第 5 步（不自动触发，避免点颜色卡几分钟）
+function hintNeedAI() {
+  if (state.srcImg && !state.cutImg && !state.keepBg && !state.aiBusy) {
+    setStatus("换底色需要先抠图：请点击第 5 步「一键 AI 生成」。\n只需抠图一次，之后切换底色都是即时生效。");
+  }
+}
+$("keepBg").onchange = e => { state.keepBg = e.target.checked; render(); };
+updateMmInfo();
+$("customW").value = SIZE_PRESETS[0].w;
+$("customH").value = SIZE_PRESETS[0].h;
+
+// ==================== 图片加载（点击 + 拖拽） ====================
+const dropzone = $("dropzone");
+dropzone.onclick = () => $("fileInput").click();
+dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
+dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+dropzone.ondrop = e => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  const file = e.dataTransfer.files[0];
+  if (file) loadPhotoFile(file);
+};
+$("fileInput").onchange = e => {
+  const file = e.target.files[0];
+  if (file) loadPhotoFile(file);
+};
+function loadPhotoFile(file) {
+  if (!file.type.startsWith("image/")) { setStatus("请选择图片文件。", true); return; }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    state.srcImg = img;
+    state.origImg = null;
+    state.cutImg = null;
+    state.faceBox = null;
+    state.personTop = null;
+    state.resultReady = false;
+    $("btnAI").disabled = false;
+    $("btnCropOnly").disabled = false;
+    $("btnExport").disabled = true;
+    $("btnExportPrint").disabled = true;
+    $("dzSub").textContent = `已选择：${file.name}（${img.naturalWidth}×${img.naturalHeight}px）`;
+    const lowRes = Math.min(img.naturalWidth, img.naturalHeight) < 300;
+    setStatus(`已加载照片：${file.name}\n点击「一键 AI 生成」或「仅裁剪排版」。` + (lowRes
+      ? `\n⚠️ 照片分辨率较低，点「一键 AI 生成」时会自动先做 AI 高清修复再抠图（首次需下载修复模型）。修复有上限，正式报名仍建议尽量用更高清的照片。`
+      : ""));
+    computeBase();
+    render();
+    if (typeof refreshBatch === "function") refreshBatch();
+  };
+  img.onerror = () => setStatus("图片加载失败，请换一张试试。", true);
+  img.src = url;
+}
+
+// ==================== AI 模型 ====================
+// 给 promise 加超时：模型权重 a.loadFromUri 一旦网络挂起会无限等，必须兜底超时
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("模型下载超时 " + Math.round(ms / 1000) + "s")), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
+async function ensureFaceModel() {
+  if (state.faceModelReady) return true;
+  if (typeof faceapi === "undefined") return false;
+  // 人脸检测模型权重：多 CDN 源容错，任一源不可达自动换下一个
+  const WEIGHT_URLS = [
+    "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights",
+    "https://fastly.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights",
+    "https://gcore.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights",
+    "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights",
+  ];
+  for (const url of WEIGHT_URLS) {
+    try {
+      await withTimeout(faceapi.nets.tinyFaceDetector.loadFromUri(url), 8000);
+      // 人脸关键点模型：用于「两眼中点」精准定位；超时/失败不阻塞，回退用检测框中心
+      try {
+        await withTimeout(faceapi.nets.faceLandmark68Net.loadFromUri(url), 6000);
+        state.landmarkReady = true;
+      } catch (e) {
+        state.landmarkReady = false;
+        console.warn("人脸关键点模型加载失败/超时，将用检测框定位", url, e && e.message);
+      }
+      state.faceModelReady = true;
+      return true;
+    } catch (e) {
+      console.warn("人脸检测模型加载失败/超时，换源重试", url, e && e.message);
+    }
+  }
+  console.warn("人脸模型所有源均加载失败，将跳过人脸检测（不影响 AI 抠图）");
+  return false;
+}
+
+let __segPipe = null;
+
+// 遮罩清理管线（双阈值磁滞重建 + 闭运算填孔 + 羽化）：
+// 强阈值(a>140)取"确定是人"的核心并保留其最大连通块；弱阈值(a>40)区域仅当与核心相连才保留。
+// 外围斑块与人体核心不相连 → 被清除；不确定但与身体相连的部位（浅色头发/脸边缘）→ 保留。
+function cleanMask(px, rw, rh) {
+  const MW = 512, MH = Math.max(1, Math.round(MW * rh / rw));
+  const strong = new Uint8Array(MW * MH);
+  const weak = new Uint8Array(MW * MH);
+  for (let my = 0; my < MH; my++)
+    for (let mx = 0; mx < MW; mx++) {
+      const sx = Math.min(rw - 1, (mx * rw / MW) | 0);
+      const sy = Math.min(rh - 1, (my * rh / MH) | 0);
+      const a = px[(sy * rw + sx) * 4 + 3];
+      strong[my * MW + mx] = a > 140 ? 1 : 0;
+      weak[my * MW + mx] = a > 40 ? 1 : 0;
+    }
+  // 1) 强核心的最大连通块
+  const label = new Int32Array(MW * MH).fill(-1);
+  const area = [];
+  let nComp = 0;
+  const stack = [];
+  for (let i = 0; i < MW * MH; i++) {
+    if (!strong[i] || label[i] >= 0) continue;
+    const id = nComp++;
+    let cnt = 0;
+    stack.length = 0; stack.push(i); label[i] = id;
+    while (stack.length) {
+      const cur = stack.pop(); cnt++;
+      const cx0 = cur % MW, cy0 = (cur / MW) | 0;
+      if (cx0 > 0 && strong[cur - 1] && label[cur - 1] < 0) { label[cur - 1] = id; stack.push(cur - 1); }
+      if (cx0 < MW - 1 && strong[cur + 1] && label[cur + 1] < 0) { label[cur + 1] = id; stack.push(cur + 1); }
+      if (cy0 > 0 && strong[cur - MW] && label[cur - MW] < 0) { label[cur - MW] = id; stack.push(cur - MW); }
+      if (cy0 < MH - 1 && strong[cur + MW] && label[cur + MW] < 0) { label[cur + MW] = id; stack.push(cur + MW); }
+    }
+    area[id] = cnt;
+  }
+  if (!nComp) return; // 没有可靠核心就不动遮罩
+  let best = 0;
+  for (let i = 1; i < nComp; i++) if (area[i] > area[best]) best = i;
+  // 2) 从核心出发在弱遮罩上生长（磁滞重建）
+  let m = new Uint8Array(MW * MH);
+  stack.length = 0;
+  for (let i = 0; i < MW * MH; i++) if (label[i] === best) { m[i] = 1; stack.push(i); }
+  while (stack.length) {
+    const cur = stack.pop();
+    const cx0 = cur % MW, cy0 = (cur / MW) | 0;
+    if (cx0 > 0 && weak[cur - 1] && !m[cur - 1]) { m[cur - 1] = 1; stack.push(cur - 1); }
+    if (cx0 < MW - 1 && weak[cur + 1] && !m[cur + 1]) { m[cur + 1] = 1; stack.push(cur + 1); }
+    if (cy0 > 0 && weak[cur - MW] && !m[cur - MW]) { m[cur - MW] = 1; stack.push(cur - MW); }
+    if (cy0 < MH - 1 && weak[cur + MW] && !m[cur + MW]) { m[cur + MW] = 1; stack.push(cur + MW); }
+  }
+  // 3) 闭运算：填平人物内部小孔（脸/衣服上的色点）
+  const dilate = (src, r) => {
+    let t = new Uint8Array(MW * MH), out = new Uint8Array(MW * MH);
+    for (let y = 0; y < MH; y++)
+      for (let x = 0; x < MW; x++) {
+        let v = 0;
+        for (let k = -r; k <= r; k++) { const xx = x + k; if (xx >= 0 && xx < MW && src[y * MW + xx]) { v = 1; break; } }
+        t[y * MW + x] = v;
+      }
+    for (let y = 0; y < MH; y++)
+      for (let x = 0; x < MW; x++) {
+        let v = 0;
+        for (let k = -r; k <= r; k++) { const yy = y + k; if (yy >= 0 && yy < MH && t[yy * MW + x]) { v = 1; break; } }
+        out[y * MW + x] = v;
+      }
+    return out;
+  };
+  const erode = (src, r) => {
+    let t = new Uint8Array(MW * MH), out = new Uint8Array(MW * MH);
+    for (let y = 0; y < MH; y++)
+      for (let x = 0; x < MW; x++) {
+        let v = 1;
+        for (let k = -r; k <= r; k++) { const xx = x + k; if (xx < 0 || xx >= MW || !src[y * MW + xx]) { v = 0; break; } }
+        t[y * MW + x] = v;
+      }
+    for (let y = 0; y < MH; y++)
+      for (let x = 0; x < MW; x++) {
+        let v = 1;
+        for (let k = -r; k <= r; k++) { const yy = y + k; if (yy < 0 || yy >= MH || !t[yy * MW + x]) { v = 0; break; } }
+        out[y * MW + x] = v;
+      }
+    return out;
+  };
+  m = erode(dilate(m, 3), 3);  // 闭运算填小孔（保留细丝：细线经膨胀-腐蚀后仍在）
+  // 羽化：512 网格画到 canvas 再双线性放大回原尺寸，边缘自然过渡
+  const mc = document.createElement("canvas"); mc.width = MW; mc.height = MH;
+  const mctx = mc.getContext("2d");
+  const mimg = mctx.createImageData(MW, MH);
+  for (let i = 0; i < MW * MH; i++) {
+    const v = m[i] * 255;
+    mimg.data[i * 4] = v; mimg.data[i * 4 + 1] = v; mimg.data[i * 4 + 2] = v; mimg.data[i * 4 + 3] = 255;
+  }
+  mctx.putImageData(mimg, 0, 0);
+  const big = document.createElement("canvas"); big.width = rw; big.height = rh;
+  const bctx = big.getContext("2d");
+  bctx.imageSmoothingEnabled = true; bctx.imageSmoothingQuality = "high";
+  bctx.drawImage(mc, 0, 0, rw, rh);
+  const soft = bctx.getImageData(0, 0, rw, rh).data;
+  // 最终 alpha = min(模型原始软 alpha, 清理后遮罩)
+  // 保留碎发的半透明细节（不丢发丝），被清理区域归零；仅压掉 alpha<25 的极弱丝
+  for (let i = 0; i < rw * rh; i++) {
+    const a = Math.min(px[i * 4 + 3], soft[i * 4]);
+    px[i * 4 + 3] = a < 25 ? 0 : a;
+  }
+}
+
+// Alpha 羽化：对最终 alpha 通道做 r=1 分离式盒式模糊，消除遮罩边缘的阶梯锯齿。
+// 低清小图（遮罩像素极粗）受益最大；高清图也只是让边缘过渡更自然，无副作用。
+// 调用时序必须在 unmixBg 之前：羽化会在轮廓外侧新产生一圈半透明像素，其颜色仍是原背景混色，
+// 交给后续 unmixBg/decontaminate 还色，才不会出现浅色光晕。
+function featherAlpha(px, rw, rh) {
+  const n = rw * rh;
+  const src = new Float32Array(n);
+  for (let i = 0; i < n; i++) src[i] = px[i * 4 + 3];
+  const tmp = new Float32Array(n);
+  const r = 1, dw = 3;
+  for (let y = 0; y < rh; y++) {
+    let s = 0;
+    for (let x = -r; x <= r; x++) s += src[y * rw + Math.max(0, Math.min(rw - 1, x))];
+    for (let x = 0; x < rw; x++) {
+      tmp[y * rw + x] = s / dw;
+      s += src[y * rw + Math.min(rw - 1, x + r + 1)] - src[y * rw + Math.max(0, x - r)];
+    }
+  }
+  for (let x = 0; x < rw; x++) {
+    let s = 0;
+    for (let y = -r; y <= r; y++) s += tmp[Math.max(0, Math.min(rh - 1, y)) * rw + x];
+    for (let y = 0; y < rh; y++) {
+      const a = Math.round(s / dw);
+      px[(y * rw + x) * 4 + 3] = a < 12 ? 0 : a;
+      s += tmp[Math.min(rh - 1, y + r + 1) * rw + x] - tmp[Math.max(0, y - r) * rw + x];
+    }
+  }
+}
+
+// 估计原背景色：取四边边缘带的每通道中位数
+function estimateBg(px, rw, rh) {
+  const samples = [[], [], []];
+  const band = Math.max(2, Math.round(Math.min(rw, rh) * 0.03));
+  for (let y = 0; y < rh; y += 2)
+    for (let x = 0; x < rw; x += 2) {
+      if (x < band || x >= rw - band || y < band || y >= rh - band) {
+        const i = (y * rw + x) * 4;
+        samples[0].push(px[i]); samples[1].push(px[i+1]); samples[2].push(px[i+2]);
+      }
+    }
+  const med = arr => { arr.sort((a, b) => a - b); return arr[arr.length >> 1]; };
+  return [med(samples[0]), med(samples[1]), med(samples[2])];
+}
+
+// 反混色（un-premultiply）：半透明像素的颜色 = (观测色 - (1-a)·背景色) / a
+// 还原碎发/边缘的真实颜色，去掉"罩了一层原背景色"的白纱感
+function unmixBg(px, rw, rh, bg) {
+  for (let i = 0; i < rw * rh; i++) {
+    const a = px[i * 4 + 3];
+    if (a > 10 && a < 245) {
+      const inv = 255 - a;
+      for (let ch = 0; ch < 3; ch++) {
+        const idx = i * 4 + ch;
+        px[idx] = Math.max(0, Math.min(255, Math.round((px[idx] * 255 - inv * bg[ch]) / a)));
+      }
+    }
+  }
+}
+
+// 颜色净化：识别"近背景色残留"并就近借色。全部按连通块处理，不做全局借色传播。
+// 组件 = "残留像素"的连通区域：近背景色（色距<60）或 半透明且发亮（min 通道>120，
+// 如水印白线/逆光碎发——白底下 unmixBg 退化，颜色还原不出来），分两类处置：
+//  A. 口袋：四周不接触任何透明像素 → 一定是被头发/身体包围的背景残留 → 强制借色
+//     （浅色衣服必然贴到轮廓外透明区，不会误判为口袋）；
+//  B. 碎发残留（wisp）：接触透明区、但面积小（<人物面积1%）且相邻人物色偏暗（发色）→
+//     是粘在头发边缘的背景丝（白底上 unmixBg 无法还原颜色）→ 借色；
+//     衬衫/领口面积大、相邻人物色亮（皮肤），两个条件都不满足，天然免疫。
+// 借色统一用带 progressed 标志的 BFS（无可借像素即退出，不会死循环）。
+// 注意：RMBG 模型 alpha 最大值只有 254（实测 cnt255=0），"不透明"必须用 >=250 判定，
+// 写成 ===255 会让种子数为 0、整个函数空转（08-24 以来一直存在，靠 unmixBg 掩盖了）。
+function decontaminate(px, rw, rh, bg) {
+  const colorDist = i => Math.abs(px[i*4] - bg[0]) + Math.abs(px[i*4+1] - bg[1]) + Math.abs(px[i*4+2] - bg[2]);
+  const OPAQUE = 250; // alpha >= 250 视为不透明
+  const interior = new Uint8Array(rw * rh); // 借色源种子：不透明且颜色明显不同于背景
+  let personArea = 0;
+  for (let y = 1; y < rh - 1; y++)
+    for (let x = 1; x < rw - 1; x++) {
+      const i = y * rw + x;
+      if (px[i*4+3] >= 40) personArea++;
+      if (px[i*4+3] >= OPAQUE && colorDist(i) > 50
+          && px[(i-1)*4+3] >= OPAQUE && px[(i+1)*4+3] >= OPAQUE
+          && px[(i-rw)*4+3] >= OPAQUE && px[(i+rw)*4+3] >= OPAQUE)
+        interior[i] = 1;
+    }
+  // 从邻居逐层借色（真 BFS； progressed 保证终止）
+  const borrowFromNeighbors = members => {
+    let frontier = members, progressed = true;
+    while (frontier.length && progressed) {
+      progressed = false;
+      const next = [];
+      for (const m of frontier) {
+        if (interior[m]) continue;
+        const mx = m % rw, my = (m / rw) | 0;
+        const nb = [mx > 0 ? m - 1 : -1, mx < rw - 1 ? m + 1 : -1, my > 0 ? m - rw : -1, my < rh - 1 ? m + rw : -1];
+        for (const j of nb) {
+          // 借色源：已确定像素，或人物色像素（a>=40 且色距>50 且非残留；覆盖被半透发丝环包围、
+          // 接触不到不透明种子的情况）。残留自身绝不能当借色源，否则成员互相抄原色、永远借不进人物色。
+          if (j >= 0 && (interior[j] || (!isResidue(j) && px[j*4+3] >= 40 && colorDist(j) > 50))) {
+            px[m*4] = px[j*4]; px[m*4+1] = px[j*4+1]; px[m*4+2] = px[j*4+2];
+            interior[m] = 1; progressed = true; next.push(m); break;
+          }
+        }
+        if (!interior[m]) next.push(m);
+      }
+      frontier = next;
+    }
+  };
+  // 连通块扫描。残留像素的判定：近背景色（色距<60）或 半透明且发亮（min通道>120，
+  // 如水印白线/逆光碎发——unmixBg 在白底下退化，还原不出来真实颜色）
+  const isResidue = i => px[i*4+3] >= 40 &&
+    (colorDist(i) < 60 || (px[i*4+3] < OPAQUE && Math.min(px[i*4], px[i*4+1], px[i*4+2]) > 120));
+  const compId = new Int32Array(rw * rh).fill(-1);
+  const stack = [];
+  for (let i = 0; i < rw * rh; i++) {
+    if (compId[i] >= 0 || !isResidue(i)) continue;
+    const members = [];
+    let touchesTransp = false, nbSum = 0, nbCnt = 0;
+    stack.length = 0; stack.push(i); compId[i] = 1;
+    while (stack.length) {
+      const cur = stack.pop(); members.push(cur);
+      const cx = cur % rw, cy = (cur / rw) | 0;
+      if (cx === 0 || cx === rw - 1 || cy === 0 || cy === rh - 1) touchesTransp = true; // 贴图边的保守视为接触
+      const nb = [cur - 1, cur + 1, cur - rw, cur + rw];
+      const valid = [cx > 0, cx < rw - 1, cy > 0, cy < rh - 1];
+      for (let k = 0; k < 4; k++) {
+        if (!valid[k]) continue;
+        const j = nb[k];
+        if (px[j*4+3] < 12) { touchesTransp = true; continue; }
+        if (compId[j] < 0 && isResidue(j)) { compId[j] = 1; stack.push(j); }
+        else if (!isResidue(j) && px[j*4+3] >= 40 && colorDist(j) > 50) { nbSum += px[j*4] + px[j*4+1] + px[j*4+2]; nbCnt++; } // 相邻人物色（残留自身不算）
+      }
+    }
+    if (!touchesTransp) { borrowFromNeighbors(members); continue; } // A. 口袋
+    // B. 碎发残留：小组件 + 相邻人物色偏暗（头发）。衬衫/领口面积大、邻居亮，不会命中
+    const meanNb = nbCnt ? nbSum / nbCnt : 765;
+    if (members.length < personArea * 0.01 && meanNb < 350) borrowFromNeighbors(members);
+  }
+}
+
+// 去色圈（spill suppression，溢色抑制）：红底/蓝底照片的背景色会渗进头发边缘的【不透明】
+// 暗像素（如暗红 (61,18,13)），换成蓝底后就显出一圈红晕。unmixBg 只管半透明像素，管不到它们。
+// 做法（标准绿幕/蓝幕 despill 思路）：
+// 1) 判断原背景的主导通道（红底→R，蓝底→B，白/灰底无主导则跳过）；
+// 2) 透明区向外膨胀得到"边缘带"（宽度随分辨率缩放）；
+// 3) 带内"暗且主导通道显著偏高"的像素（红渗进黑发：R≫G,B 且 G,B 很低）把主导通道压回
+//    到另两通道均值附近——只去色偏、不动亮度，头发边缘恢复深色。
+// 肤色 G、B 都高，不满足"暗"条件，不会被误伤。
+function defringeBg(px, rw, rh, bg) {
+  const o1 = ch => (ch + 1) % 3, o2 = ch => (ch + 2) % 3;
+  let dom = -1;
+  for (let ch = 0; ch < 3; ch++) {
+    if (bg[ch] > bg[o1(ch)] + 40 && bg[ch] > bg[o2(ch)] + 40) { dom = ch; break; }
+  }
+  if (dom < 0) return; // 白/灰等无主导色的背景没有色偏问题
+  const c1 = o1(dom), c2 = o2(dom);
+  const n = rw * rh;
+  const transp = new Uint8Array(n);
+  for (let i = 0; i < n; i++) transp[i] = px[i * 4 + 3] < 12 ? 1 : 0;
+  // 透明区膨胀 = 边缘带。宽度按图尺寸缩放：晕染环在超分图上可达十几~二十 px，固定小半径够不到
+  const R = Math.max(3, Math.round(Math.min(rw, rh) / 30));
+  let band = transp;
+  for (let d = 0; d < R; d++) {
+    const out = new Uint8Array(n);
+    for (let y = 0; y < rh; y++)
+      for (let x = 0; x < rw; x++) {
+        const i = y * rw + x;
+        if (band[i]) { out[i] = 1; continue; }
+        if ((x > 0 && band[i - 1]) || (x < rw - 1 && band[i + 1]) ||
+            (y > 0 && band[i - rw]) || (y < rh - 1 && band[i + rw])) out[i] = 1;
+      }
+    band = out;
+  }
+  for (let i = 0; i < n; i++) {
+    if (!band[i] || transp[i]) continue;
+    const d = px[i * 4 + dom], a = px[i * 4 + c1], b = px[i * 4 + c2];
+    // 暗像素 且 主导通道相对另两通道显著偏高（≈溢色），才压制
+    if (a < 110 && b < 110 && d > a * 1.4 && d > b * 1.4) {
+      px[i * 4 + dom] = Math.round((a + b) / 2 + 12);
+    }
+  }
+}
+
+// 轻度锐化（unsharp mask，r=1，K=0.32）：证件照成品只有几百像素，源图缩放 + JPG 压缩都会让
+// 画面发虚，抠图后、合成前对人物做轻微锐化可明显提升观感清晰度（打印店出片前也会做类似处理）。
+// 模糊用预乘盒式模糊（boxBlurPm，颜色按 alpha 加权），避免透明边缘的颜色掺入产生色晕；
+// 锐化量随 alpha 衰减，发丝等半透明边缘不受影响，不会描出白边/亮边。
+// 注意：boxBlurPm 在文件后部定义（函数声明提升，运行时可用）。
+function sharpenPx(px, rw, rh) {
+  const blur = boxBlurPm(px, rw, rh, 1);
+  const K = 0.45;
+  for (let i = 0; i < rw * rh; i++) {
+    const a = px[i * 4 + 3];
+    if (a < 60) continue;
+    const arm = K * Math.min(1, a / 255 * 1.5);
+    const ba = blur[i * 4 + 3]; // 预乘 alpha（0..1）
+    if (ba <= 1e-4) continue;
+    for (let ch = 0; ch < 3; ch++) {
+      const idx = i * 4 + ch;
+      const v = px[idx] + arm * (px[idx] - blur[idx] / ba);
+      px[idx] = v < 0 ? 0 : v > 255 ? 255 : v;
+    }
+  }
+}
+
+// transformers.js AI 运行时：多 CDN 源容错（jsdelivr 被部分网络拦截时自动换源）
+async function importTransformers() {
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://fastly.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://gcore.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://unpkg.com/@huggingface/transformers@3.8.1",
+  ];
+  let lastErr = null;
+  for (const u of urls) {
+    try { return await withTimeout(import(u), 30000); } catch (e) { lastErr = e; console.warn("transformers.js 加载失败，换源重试", u, e); }
+  }
+  throw lastErr || new Error("AI 组件加载失败");
+}
+
+// ==================== AI Worker（后台线程跑推理，页面不再卡死/弹「没有响应」） ====================
+// transformers.js 的 WASM 推理默认跑在主线程，模型编译/推理期间页面被冻结，浏览器会反复弹
+// 「此页面没有响应」。这里把模型加载和推理放进内联 Web Worker（Blob 经典 Worker + 内部动态 import，单文件
+// 不引入外部 js），主线程只收发消息和更新状态文字，页面全程可点可动。
+// Worker 创建失败（极端环境/安全策略）时自动回退主线程模式，功能不受影响。
+// 注意：Worker 源码内不能使用模板字符串反引号和 ${}（外层已是模板字符串）。
+const AI_WORKER_SRC = `
+let T = null;
+const pipes = { segment: null, sr: null };
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("模型下载超时 " + Math.round(ms / 1000) + "s")), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
+async function importTransformers() {
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://fastly.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://gcore.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+    "https://unpkg.com/@huggingface/transformers@3.8.1"
+  ];
+  let lastErr = null;
+  for (const u of urls) {
+    try { return await withTimeout(import(u), 30000); } catch (e) { lastErr = e; console.warn("transformers.js 加载失败，换源重试", u, e); }
+  }
+  throw lastErr || new Error("AI 组件加载失败");
+}
+const CONF = {
+  segment: { task: "background-removal", model: "briaai/RMBG-1.4", dtypes: ["fp16", "q8"], label: "抠图模型" },
+  sr: { task: "image-to-image", model: "Xenova/swin2SR-realworld-sr-x4-64-bsrgan-psnr", dtypes: ["q8", "fp32"], label: "高清修复模型" }
+};
+async function getPipe(kind, id) {
+  if (!T) { T = await importTransformers(); T.env.allowLocalModels = false; }
+  if (pipes[kind]) return pipes[kind];
+  const conf = CONF[kind];
+  const progress = p => self.postMessage({ id: id, progress: { status: p.status, total: p.total || 0, loaded: p.loaded || 0 } });
+  const HOSTS = ["https://hf-mirror.com", "https://huggingface.co"];
+  let lastErr = null;
+  for (const host of HOSTS) {
+    T.env.remoteHost = host;
+    for (const dtype of conf.dtypes) {
+      try {
+        pipes[kind] = await withTimeout(T.pipeline(conf.task, conf.model, { dtype: dtype, progress_callback: progress }), 300000);
+        return pipes[kind];
+      } catch (e) {
+        lastErr = e;
+        console.warn(conf.label + "加载失败（" + host + " / " + dtype + "），换源重试", e);
+      }
+    }
+  }
+  throw lastErr || new Error(conf.label + "加载失败");
+}
+self.onmessage = async e => {
+  const m = e.data;
+  if (m.kind === "ping") { self.postMessage({ id: m.id, ok: true }); return; }
+  try {
+    const pipe = await getPipe(m.kind, m.id);
+    self.postMessage({ id: m.id, progress: { status: "__infer" } });
+    const out = await pipe(m.dataURL);
+    const im = Array.isArray(out) ? out[0] : out; // image-to-image 返回单个 RawImage，background-removal 返回数组
+    if (!im || !im.width) throw new Error("模型未返回有效图像");
+    const src = im.data instanceof Uint8ClampedArray ? im.data : new Uint8ClampedArray(im.data);
+    const data = src.slice(); // 拷贝到独立 buffer 再 transfer，避免视图底层 buffer 过大
+    const n = im.width * im.height;
+    self.postMessage({ id: m.id, ok: true, width: im.width, height: im.height, channels: im.channels || (data.length / n), data: data.buffer }, [data.buffer]);
+  } catch (err) {
+    self.postMessage({ id: m.id, ok: false, error: String((err && err.message) || err) });
+  }
+};
+`;
+
+let __aiWorker = null, __aiWorkerBroken = false, __aiReqId = 0, __aiWorkerReady = null;
+const __aiPending = {};
+
+function ensureAiWorker() {
+  if (__aiWorker || __aiWorkerBroken) return __aiWorker;
+  try {
+    const w = new Worker(
+      URL.createObjectURL(new Blob([AI_WORKER_SRC], { type: "text/javascript" }))
+      // 注意：file:// 页面下 Blob module worker（type:"module"）因 opaque origin 被拒（实测）；
+      // 经典 Worker + 内部动态 import() 可正常工作，不要用 module 模式
+    );
+    w.onmessage = e => {
+      const m = e.data, p = __aiPending[m.id];
+      if (!p) return;
+      if (m.progress) { if (p.onProg) p.onProg(m.progress); return; }
+      delete __aiPending[m.id];
+      if (m.ok) { p.resolve({ data: new Uint8ClampedArray(m.data), width: m.width, height: m.height, channels: m.channels }); return; }
+      // WASM 内存不足类错误（如纯数字错误码 99156816 / OOM）：Worker 内 WASM 内存可能已损坏，
+      // 销毁重建，避免污染后续抠图等步骤（模型在 Cache API，重建只是重新编译）
+      if (/^\d+$/.test(String(m.error)) || /memory|oom|out of/i.test(String(m.error))) {
+        console.warn("AI Worker 疑似内存错误，销毁重建", m.error);
+        try { w.terminate(); } catch (e2) {}
+        __aiWorker = null; __aiWorkerReady = null;
+      }
+      p.reject(new Error(m.error));
+    };
+    w.onerror = e => console.warn("AI Worker 运行错误", e.message || e);
+    __aiWorker = w;
+  } catch (e) {
+    __aiWorkerBroken = true;
+    console.warn("AI Worker 不可用，回退主线程模式", e);
+  }
+  return __aiWorker;
+}
+
+// 先 ping 一次确认 Worker 可用（10s 无响应视为不可用，回退主线程模式）
+function probeAiWorker() {
+  if (__aiWorkerReady) return __aiWorkerReady;
+  __aiWorkerReady = new Promise(resolve => {
+    const w = ensureAiWorker();
+    if (!w) return resolve(false);
+    const id = ++__aiReqId;
+    const t = setTimeout(() => {
+      delete __aiPending[id];
+      __aiWorkerBroken = true;
+      try { w.terminate(); } catch (e) {}
+      __aiWorker = null;
+      resolve(false);
+    }, 10000);
+    __aiPending[id] = {
+      onProg: null,
+      resolve: () => { clearTimeout(t); console.log("AI Worker 就绪：推理在后台线程运行，页面保持响应"); resolve(true); },
+      reject: () => { clearTimeout(t); resolve(false); }
+    };
+    w.postMessage({ id, kind: "ping" });
+  });
+  return __aiWorkerReady;
+}
+
+function aiRunWorker(kind, dataURL, onProg, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const id = ++__aiReqId;
+    // 超时兜底：Worker 在跑重型 WASM 推理时自身事件循环也被占住，超时只能在主线程侧做。
+    // 超时后 Worker 还在跑旧任务，直接销毁重建（模型在 Cache API，重建只是重新编译，代价可接受）
+    const t = timeoutMs ? setTimeout(() => {
+      delete __aiPending[id];
+      try { __aiWorker.terminate(); } catch (e) {}
+      __aiWorker = null; __aiWorkerReady = null;
+      reject(new Error("AI 处理超时（" + Math.round(timeoutMs / 1000) + "s）"));
+    }, timeoutMs) : null;
+    __aiPending[id] = {
+      resolve: v => { if (t) clearTimeout(t); resolve(v); },
+      reject: e => { if (t) clearTimeout(t); reject(e); },
+      onProg
+    };
+    __aiWorker.postMessage({ id, kind, dataURL });
+  });
+}
+
+// 主线程兼容模式：Worker 不可用时使用（行为同旧版，推理期间页面会短暂冻结）
+async function aiRunLocal(kind, dataURL, onProg) {
+  const T = await importTransformers();
+  T.env.allowLocalModels = false;
+  const conf = kind === "segment"
+    ? { task: "background-removal", model: "briaai/RMBG-1.4", dtypes: ["fp16", "q8"], label: "抠图模型" }
+    : { task: "image-to-image", model: "Xenova/swin2SR-realworld-sr-x4-64-bsrgan-psnr", dtypes: ["q8", "fp32"], label: "高清修复模型" };
+  let pipe = kind === "segment" ? __segPipe : __srPipe;
+  if (!pipe) {
+    const HOSTS = ["https://hf-mirror.com", "https://huggingface.co"];
+    let lastErr = null;
+    for (const host of HOSTS) {
+      T.env.remoteHost = host;
+      let ok = false;
+      for (const dtype of conf.dtypes) {
+        try {
+          pipe = await withTimeout(T.pipeline(conf.task, conf.model, { dtype, progress_callback: p => onProg && onProg(p) }), 300000);
+          ok = true; break;
+        } catch (e) {
+          lastErr = e;
+          console.warn(conf.label + "加载失败（" + host + " / " + dtype + "），换源重试", e);
+        }
+      }
+      if (ok) break;
+    }
+    if (!pipe) throw lastErr || new Error(conf.label + "加载失败");
+    if (kind === "segment") __segPipe = pipe; else __srPipe = pipe;
+  }
+  if (onProg) onProg({ status: "__infer" });
+  const out = await pipe(dataURL);
+  const im = Array.isArray(out) ? out[0] : out;
+  if (!im || !im.width) throw new Error("模型未返回有效图像");
+  const data = im.data instanceof Uint8ClampedArray ? im.data : new Uint8ClampedArray(im.data);
+  return { data, width: im.width, height: im.height, channels: im.channels || data.length / (im.width * im.height) };
+}
+
+async function aiRun(kind, dataURL, onProg, timeoutMs) {
+  if (await probeAiWorker()) return aiRunWorker(kind, dataURL, onProg, timeoutMs);
+  console.warn("AI Worker 不可用，使用主线程兼容模式（推理期间页面可能短暂无响应）");
+  return aiRunLocal(kind, dataURL, onProg);
+}
+
+async function segmentImage(img) {
+  // 模型加载与推理在 AI Worker（后台线程）中进行；onProg 收进度事件并更新状态文字
+  const onProg = p => {
+    if (!p) return;
+    if (p.status === "__infer") setStatus("正在 AI 抠图去背景（约 10~30 秒）…");
+    else if (p.status === "progress" && p.total)
+      setStatus(`正在下载抠图模型… ${Math.round((p.loaded || 0) / p.total * 100)}%`);
+    else if (p.status === "done")
+      setStatus("模型下载完成，正在编译初始化（首次需 1~3 分钟，请耐心等待）…");
+    else if (p.status === "initiate")
+      setStatus("正在加载抠图模型…");
+  };
+  // 超大照片先降采样到最长边 1600 再推理，明显提速；证件照输出远低于该尺寸，画质无损感
+  const MAX_SEG = 1600;
+  let sw = img.naturalWidth, sh = img.naturalHeight;
+  if (Math.max(sw, sh) > MAX_SEG) {
+    const k = MAX_SEG / Math.max(sw, sh);
+    sw = Math.round(sw * k); sh = Math.round(sh * k);
+  }
+  // 低清小图（如 99×150 老照片）先上采样到长边 1024 再推理：
+  // 抠图模型输出的遮罩分辨率 = 输入分辨率，小图直接推理只能得到马赛克级遮罩，
+  // 头发边缘全是阶梯锯齿和色边；上采样后遮罩细腻得多，发丝边缘明显更平滑
+  const MIN_SEG = 1024;
+  if (Math.max(sw, sh) < MIN_SEG) {
+    const k = MIN_SEG / Math.max(sw, sh);
+    sw = Math.round(sw * k); sh = Math.round(sh * k);
+  }
+  const c = document.createElement("canvas");
+  c.width = sw; c.height = sh;
+  const ctx0 = c.getContext("2d");
+  ctx0.imageSmoothingEnabled = true;
+  ctx0.imageSmoothingQuality = "high";
+  ctx0.drawImage(img, 0, 0, sw, sh);
+  // 从原图边缘带估计背景色（用于反混色和污染点识别）
+  const srcPx = ctx0.getImageData(0, 0, sw, sh).data;
+  const bg = estimateBg(srcPx, sw, sh);
+  setStatus("正在准备 AI 抠图（首次需下载模型，请稍候）…");
+  const rgba = await aiRun("segment", c.toDataURL("image/png"), onProg); // {data,width,height}，RGBA，与送入尺寸相同
+  const px = rgba.data;
+  const rw = rgba.width, rh = rgba.height;
+  cleanMask(px, rw, rh);
+  featherAlpha(px, rw, rh);   // alpha 羽化去阶梯（须在反混色前，新产生的半透明环才能被正确还色）
+  unmixBg(px, rw, rh, bg);        // 半透明像素按原背景色反混色，还原碎发真实颜色
+  decontaminate(px, rw, rh, bg);  // 边缘带+污染点从人物内部借色
+  defringeBg(px, rw, rh, bg);     // 去背景色晕染圈（超分修复的照片尤其需要）
+  sharpenPx(px, rw, rh);          // 轻度锐化，抵消缩放/压缩的发虚感（须在还色后、合成前）
+  const cc = document.createElement("canvas");
+  cc.width = rw; cc.height = rh;
+  cc.getContext("2d").putImageData(new ImageData(px, rw, rh), 0, 0);
+  // 从 alpha 轮廓找人物真实头顶行（含发型）与人物本体的左右边界，
+  // 换算回原图坐标系，用于精准定位、并让「人物本体」铺满画布（避免一侧露底色）
+  let topRow = -1;
+  let minX = -1, maxX = -1;
+  for (let y = 0; y < rgba.height; y++) {
+    for (let x = 0; x < rgba.width; x++) {
+      if (px[(y * rgba.width + x) * 4 + 3] > 30) {
+        if (topRow < 0) topRow = y;
+        if (minX < 0 || x < minX) minX = x;
+        if (x > maxX) maxX = x;
+      }
+    }
+  }
+  const k = img.naturalHeight / rgba.height; // 换算系数（抠图与源图同比例）
+  const cut = new Image();
+  await new Promise((res, rej) => { cut.onload = res; cut.onerror = rej; cut.src = cc.toDataURL("image/png"); });
+  return {
+    cut,
+    personTopSrc: topRow >= 0 ? topRow * k : null,
+    personBounds: (minX >= 0 && maxX >= 0) ? { x0: minX * k, x1: maxX * k } : null,
+  };
+}
+
+// ==================== 低清照片 AI 高清修复（Swin2SR 4x 超分） ====================
+// 低清小图（如 99×150 老照片）本身没有发丝信息，抠图模型只能抠出一团模糊色块。
+// 先用专为真实世界模糊/压缩照片设计的 Swin2SR 模型把照片放大 4 倍、重建发丝与边缘细节，
+// 后续的抠图遮罩才有细节可抓，头发边缘才能真正干净。
+let __srPipe = null;
+async function superResolve(img) {
+  // 模型加载与推理在 AI Worker（后台线程）中进行；onProg 收进度事件并更新状态文字
+  const onProg = p => {
+    if (!p) return;
+    if (p.status === "__infer") setStatus("正在 AI 高清修复照片（4x 超分重建细节，约 30 秒~2 分钟）…");
+    else if (p.status === "progress" && p.total)
+      setStatus(`正在下载高清修复模型… ${Math.round((p.loaded || 0) / p.total * 100)}%`);
+    else if (p.status === "done")
+      setStatus("修复模型下载完成，正在编译初始化（首次需 1~3 分钟，请耐心等待）…");
+    else if (p.status === "initiate")
+      setStatus("正在加载高清修复模型…");
+  };
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const ctx0 = c.getContext("2d");
+  ctx0.imageSmoothingEnabled = true;
+  ctx0.imageSmoothingQuality = "high";
+  ctx0.drawImage(img, 0, 0);
+  setStatus("正在准备 AI 高清修复（首次需下载修复模型）…");
+  const up = await aiRun("sr", c.toDataURL("image/png"), onProg, 180000); // {data,width,height}，宽高 ×4；超时 3 分钟兜底
+  const n = up.width * up.height;
+  // 输出可能是 RGB（3 通道）也可能是 RGBA，统一转成 RGBA
+  const rgba = new Uint8ClampedArray(n * 4);
+  if (up.data.length === n * 4) {
+    rgba.set(up.data);
+  } else {
+    for (let i = 0; i < n; i++) {
+      rgba[i * 4] = up.data[i * 3];
+      rgba[i * 4 + 1] = up.data[i * 3 + 1];
+      rgba[i * 4 + 2] = up.data[i * 3 + 2];
+      rgba[i * 4 + 3] = 255;
+    }
+  }
+  const uc = document.createElement("canvas");
+  uc.width = up.width; uc.height = up.height;
+  uc.getContext("2d").putImageData(new ImageData(rgba, up.width, up.height), 0, 0);
+  const enhanced = new Image();
+  await new Promise((resolve, reject) => { enhanced.onload = resolve; enhanced.onerror = reject; enhanced.src = uc.toDataURL("image/png"); });
+  return enhanced;
+}
+
+// ==================== 一键 AI 生成 ====================
+$("btnAI").onclick = () => runAI();
+async function runAI() {
+  if (!state.srcImg || state.aiBusy) return;
+  state.aiBusy = true;
+  $("btnAI").disabled = true;
+  $("btnStickyAI").disabled = true;
+  try {
+    // 0. 极低清照片（长边 <300px，如 99×150 老照片）先 AI 高清修复：重建发丝/边缘细节后再检测和抠图。
+    //    失败不阻塞，按原图继续。修复后 srcImg 整体替换为高清版（坐标系一致），原图保留在 origImg 供对比视图。
+    //    阈值定 300 而非更高：Swin2SR 在 CPU/WASM 上耗时随像素数增长，519×518 实测要跑 ~5 分钟
+    //    且 WASM 内存不足报错（Error: 99156816 ≈ 分配 94MB 失败）；300px 以上照片靠抠图前
+    //    上采样到 1024 已足够，超分纯属浪费时间。
+    if (Math.max(state.srcImg.naturalWidth, state.srcImg.naturalHeight) < 300) {
+      try {
+        setStatus("照片分辨率较低，先进行 AI 高清修复…");
+        const enhanced = await superResolve(state.srcImg);
+        state.origImg = state.origImg || state.srcImg;
+        state.srcImg = enhanced;
+        setStatus(`高清修复完成（${enhanced.naturalWidth}×${enhanced.naturalHeight}px），继续处理…`);
+      } catch (e) {
+        console.warn("高清修复失败，按原图继续", e);
+        setStatus("高清修复不可用，按原图继续处理…");
+      }
+    }
+
+    // 1. 人脸检测
+    setStatus("正在加载人脸检测模型…");
+    const faceOk = await ensureFaceModel();
+    if (faceOk) {
+      setStatus("正在检测人脸…");
+      // 关键：detectSingleFace(...) 本身返回一个 task；只有 .withFaceLandmarks() 才会去加载关键点模型。
+      // 若 landmark 模型没就绪就链 .withFaceLandmarks()，会触发未预加载模型的下钻下载而卡在网络上。
+      // 所以这里改成：模型就绪才用关键点定位，否则退回纯检测框（都不卡）。
+      const detTask = faceapi.detectSingleFace(
+        state.srcImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 })
+      );
+      const det = state.landmarkReady ? await detTask.withFaceLandmarks() : await detTask;
+      if (det) {
+        const isLM = state.landmarkReady && !!det.detection;
+        const b = isLM ? det.detection.box : det.box;
+        // 用「两眼中点」作脸中心，比 bounding box 中心准得多：检测框易受头发/阴影带偏，眼睛定位稳定
+        let faceCx = b.x + b.width / 2;
+        if (isLM) {
+          try {
+            const land = det.landmarks;
+            const avgX = arr => arr.reduce((s, p) => s + p.x, 0) / arr.length;
+            faceCx = (avgX(land.leftEye) + avgX(land.rightEye)) / 2;
+          } catch (e) { /* 拿不到 landmark 就退回框中心 */ }
+        }
+        state.faceBox = { x: faceCx - b.width / 2, y: b.y, w: b.width, h: b.height };
+      } else {
+        state.faceBox = null;
+        console.warn("未检测到人脸，使用居中裁剪");
+      }
+    } else {
+      state.faceBox = null;
+    }
+
+    // 2. 抠图（保留原背景则跳过）
+    if (!state.keepBg) {
+      setStatus("正在 AI 抠图去背景（首次需下载模型，请稍候）…");
+      const seg = await segmentImage(state.srcImg);
+      state.cutImg = seg.cut;
+      state.personTop = seg.personTopSrc; // 人物真实头顶（原图坐标）
+      state.personBounds = seg.personBounds; // 人物本体左右边界（原图坐标）
+    } else {
+      state.cutImg = null;
+      state.personTop = null;
+      state.personBounds = null;
+    }
+
+    // 3. 合成（保留用户在步骤4已调好的缩放/位置/美化参数）
+    computeBase();
+    state.resultReady = true;
+    render();
+    state.aiBusy = false;
+    if (typeof refreshBatch === "function") refreshBatch();
+    $("btnExport").disabled = false;
+    setStatus("生成完成！可用第 5 步微调位置，第 6 步导出。\n如需打印，切换到「相纸排版打印」标签页。");
+  } catch (e) {
+    console.error(e);
+    const msg = (e && e.message) || String(e);
+    const isNet = /fetch|network|网络/i.test(msg);
+    setStatus("AI 处理失败：" + msg + (isNet
+      ? "\n这是网络问题：AI 模型需要从网上下载。请确认已联网，建议用 Edge/Chrome 直接打开本文件（不要在微信里直接打开），公司/校园网可能拦截了模型下载，可换手机热点重试。"
+      : "") + "\n也可勾选「保留原背景」后用「仅裁剪排版」（不需要联网）。", true);
+  } finally {
+    state.aiBusy = false;
+    $("btnAI").disabled = false;
+    $("btnStickyAI").disabled = false;
+  }
+};
+
+// 仅裁剪排版（不用 AI）
+$("btnCropOnly").onclick = () => {
+  if (!state.srcImg) return;
+  state.cutImg = null;
+  state.faceBox = null;
+  state.personTop = null;
+  state.personBounds = null;
+  computeBase();
+  state.resultReady = true;
+  render();
+  if (typeof refreshBatch === "function") refreshBatch();
+  $("btnExport").disabled = false;
+  setStatus("已按居中裁剪排版。可手动微调位置后导出。");
+};
+
+// ==================== 合成渲染 ====================
+function computeBaseFor(W, H) {
+  if (!state.srcImg) return null;
+  const imgW = state.srcImg.naturalWidth, imgH = state.srcImg.naturalHeight;
+  const cover = Math.max(W / imgW, H / imgH); // 铺满画布所需最小缩放
+  if (!state.faceBox) {
+    const scale = cover;                  // 覆盖式居中
+    return { scale, x: (W - imgW * scale) / 2, y: (H - imgH * scale) / 2 };
+  }
+  const f = state.faceBox;
+  // 头顶：优先用抠图轮廓的真实顶（含发型，最准），否则按检测框估算
+  // 健壮性：轮廓顶必须位于检测框中点以上，否则视为无效（遮罩异常时回退估算值）
+  let crownY = f.y - f.h * 0.6;
+  if (state.personTop != null && state.personTop < f.y + f.h * 0.5) crownY = state.personTop;
+  const chinY = f.y + f.h;
+  const headH = Math.max(1, chinY - crownY);
+  // 头（含发型）占照片高约 62% 定主缩放（证件照规范）
+  let scale = (H * 0.62) / headH;
+  const faceCx = f.x + f.w / 2;
+  // 保证水平方向人物铺满画布（左右不露底色）。脸中心已用「两眼中点」校准得相当准，
+  // 所以这里的 needX 只是轻微微调，不像旧的「框中心」那样被带偏而失控放大
+  const needX = Math.max(W / (2 * Math.max(1, faceCx)),
+                         W / (2 * Math.max(1, imgW - faceCx)));
+  scale = Math.max(scale, cover, needX);
+  // 人物本体铺满：保证抠出的「人物本体」左右都盖到画布边，避免一侧露底色（不同规格宽高比表现不同）
+  if (state.personBounds) {
+    const pb = state.personBounds;
+    if (pb.x1 > pb.x0 && faceCx > pb.x0 && faceCx < pb.x1) {
+      const scBody = Math.max(
+        W / (2 * Math.max(1, faceCx - pb.x0)),
+        W / (2 * Math.max(1, pb.x1 - faceCx))
+      );
+      scale = Math.max(scale, scBody);
+    }
+  }
+  const x = W / 2 - faceCx * scale;      // 人脸始终水平居中
+  let y = H * 0.07 - crownY * scale;     // 头顶留约 7% 上边距
+  // 垂直兜底：底部盖不住画布则整体下移
+  y = Math.max(y, H - imgH * scale);
+  return { scale, x, y };
+}
+function computeBase() {
+  const s = currentSize();
+  state.base = computeBaseFor(s.w, s.h) || state.base;
+}
+
+// 渲染最终证件照到新 canvas（供主预览 / 批量导出 / 前后对比复用）
+function renderToCanvas(spec, opts = {}) {
+  const W = spec.w, H = spec.h;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  const keepBg = opts.keepBg != null ? opts.keepBg : state.keepBg;
+  const bg = opts.bg != null ? opts.bg : state.bgColor;
+  const zoom = opts.zoom != null ? opts.zoom : (+$("adjZoom").value / 100);
+  const dx = opts.dx != null ? opts.dx : (+$("adjX").value / 100 * W / 2);
+  const dy = opts.dy != null ? opts.dy : (+$("adjY").value / 100 * H / 2);
+  const beauty = opts.beauty != null
+    ? opts.beauty
+    : ($("beautyOn").checked && state.cutImg && !keepBg && +$("beautyStrength").value > 0);
+  ctx.fillStyle = keepBg ? "#FFFFFF" : bg;
+  ctx.fillRect(0, 0, W, H);
+  if (!state.srcImg) return canvas;
+  const base = opts.base || state.base;
+  if (!base) return canvas;
+  const imgW = state.srcImg.naturalWidth, imgH = state.srcImg.naturalHeight;
+  const person = beauty ? ensureBeautyCut() : (state.cutImg || state.srcImg);
+  const sc = base.scale * zoom;
+  const dw = imgW * sc, dh = imgH * sc;
+  const cx = base.x + imgW * base.scale / 2;
+  const cy = base.y + imgH * base.scale / 2;
+  // 低清小图会被放大数倍绘制，显式开高质量平滑，避免边缘锯齿被放大
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(person, cx - dw / 2 + dx, cy - dh / 2 + dy, dw, dh);
+  return canvas;
+}
+
+// 渲染"原图"版本到目标 canvas：原图按当前规格覆盖居中（保留原背景），用于「原图/对比」视图
+// 若低清照片已被 AI 高清修复（srcImg 被替换），这里仍展示用户上传的最初原图（origImg）
+function renderRawTo(spec, target) {
+  target.width = spec.w; target.height = spec.h;
+  const ctx = target.getContext("2d");
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, spec.w, spec.h);
+  const raw = state.origImg || state.srcImg;
+  if (!raw) return;
+  const cover = Math.max(spec.w / raw.naturalWidth, spec.h / raw.naturalHeight);
+  const dw = raw.naturalWidth * cover, dh = raw.naturalHeight * cover;
+  ctx.drawImage(raw, (spec.w - dw) / 2, (spec.h - dh) / 2, dw, dh);
+}
+
+// 对比滑杆位置（默认居中）
+let curComparePos = 0.5;
+function setComparePos(x) {
+  const p = Math.max(0, Math.min(1, x));
+  curComparePos = p;
+  $("baLine").style.left = (p * 100) + "%";
+  $("baHandle").style.left = (p * 100) + "%";
+  $("baAfter").style.clipPath = "inset(0 0 0 " + (p * 100) + "%)";
+}
+
+function render() {
+  const s = currentSize();
+  const finalC = renderToCanvas(s, {});
+  const rc = $("resultCanvas");
+  rc.width = finalC.width; rc.height = finalC.height;
+  rc.getContext("2d").drawImage(finalC, 0, 0);
+  // 原图 & 前后对比视图同步刷新
+  renderRawTo(s, $("rawCanvas"));
+  renderRawTo(s, $("baBefore"));
+  const ac = $("baAfter");
+  ac.width = finalC.width; ac.height = finalC.height;
+  ac.getContext("2d").drawImage(finalC, 0, 0);
+  setComparePos(curComparePos);
+}
+
+// 微调滑条
+["adjZoom", "adjX", "adjY"].forEach(id => {
+  $(id).oninput = () => {
+    $("adjZoomVal").textContent = $("adjZoom").value + "%";
+    $("adjXVal").textContent = $("adjX").value;
+    $("adjYVal").textContent = $("adjY").value;
+    render();
+  };
+});
+function resetAdjust() {
+  $("adjZoom").value = 100; $("adjX").value = 0; $("adjY").value = 0;
+  $("adjZoomVal").textContent = "100%"; $("adjXVal").textContent = "0"; $("adjYVal").textContent = "0";
+}
+$("btnResetAdj").onclick = () => { resetAdjust(); render(); };
+
+// ==================== 导出证件照 ====================
+function canvasToBlobLimit(canvas, format, maxKB) {
+  return new Promise(resolve => {
+    const mime = format === "png" ? "image/png" : "image/jpeg";
+    if (format === "png" || !maxKB || maxKB <= 0) {
+      canvas.toBlob(b => resolve({ blob: b, note: "" }), mime, 0.95);
+      return;
+    }
+    let q = 0.92;
+    const tryQ = () => {
+      canvas.toBlob(b => {
+        const kb = b.size / 1024;
+        if (kb <= maxKB || q <= 0.1) {
+          // 质量压到 60% 以下时 JPEG 块状伪影（马赛克感）会肉眼可见，明确提醒
+          const warn = q < 0.6 ? " ⚠️ 大小上限压得太低，画面会发虚/有马赛克，建议放宽 KB 上限或改用 PNG 格式" : "";
+          resolve({ blob: b, note: (kb > maxKB ? `（已压到最低质量仍 ${kb.toFixed(0)}KB）` : `（质量 ${Math.round(q * 100)}%，${kb.toFixed(0)}KB）`) + warn });
+        } else { q -= 0.08; tryQ(); }
+      }, mime, q);
+    };
+    tryQ();
+  });
+}
+
+function downloadBlob(blob, filename) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+$("btnExport").onclick = async () => {
+  const s = currentSize();
+  const format = $("exportFormat").value;
+  const maxKB = +$("maxKB").value || 0;
+  const { blob, note } = await canvasToBlobLimit($("resultCanvas"), format, maxKB);
+  downloadBlob(blob, `证件照_${s.name}_${s.w}x${s.h}.${format === "png" ? "png" : "jpg"}`);
+  $("exportInfo").textContent = `已导出 ${s.w}×${s.h}px ${note}`;
+};
+
+// ==================== 相纸排版 ====================
+$("btnLayout").onclick = () => {
+  if (!state.resultReady) { alert("请先在左侧第 5 步生成证件照。"); return; }
+  const s = currentSize();
+  const paper = PAPERS[$("paperSize").value] || PAPERS["A4"];
+  let pwmm = paper.wmm, phmm = paper.hmm;
+  if ($("paperOrient").value === "landscape") [pwmm, phmm] = [phmm, pwmm];
+  let fwmm = s.wmm, fhmm = s.hmm;
+  if ($("photoOrient").value === "landscape") [fwmm, fhmm] = [fhmm, fwmm];
+
+  const paperW = mm2px(pwmm), paperH = mm2px(phmm);
+  const photoW = mm2px(fwmm), photoH = mm2px(fhmm);
+  const gap = mm2px(2), margin = mm2px(3);
+
+  const cols = Math.floor((paperW - margin * 2 + gap) / (photoW + gap));
+  const rows = Math.floor((paperH - margin * 2 + gap) / (photoH + gap));
+  if (cols < 1 || rows < 1) {
+    $("printInfo").textContent = `当前相纸放不下 ${fwmm.toFixed(0)}×${fhmm.toFixed(0)}mm 的照片，请换更大的相纸或调整方向。`;
+    return;
+  }
+  const total = cols * rows;
+  const canvas = $("printCanvas");
+  canvas.width = paperW; canvas.height = paperH;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, paperW, paperH);
+  const usedW = cols * photoW + (cols - 1) * gap;
+  const usedH = rows * photoH + (rows - 1) * gap;
+  const startX = (paperW - usedW) / 2, startY = (paperH - usedH) / 2;
+  const src = $("resultCanvas");
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const px = startX + c * (photoW + gap), py = startY + r * (photoH + gap);
+      if ($("photoOrient").value === "landscape") {
+        ctx.save();
+        ctx.translate(px + photoW / 2, py + photoH / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(src, -photoH / 2, -photoW / 2, photoH, photoW);
+        ctx.restore();
+      } else {
+        ctx.drawImage(src, px, py, photoW, photoH);
+      }
+      // 裁剪参考线（细灰框）
+      ctx.strokeStyle = "#CCCCCC";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px, py, photoW, photoH);
+    }
+  }
+  $("printInfo").textContent = `${$("paperSize").selectedOptions[0].text} ｜ 每张照片 ${fwmm.toFixed(1)}×${fhmm.toFixed(1)}mm ｜ 共 ${total} 张（${cols}列×${rows}行）｜ 输出 ${paperW}×${paperH}px @300DPI`;
+  $("btnExportPrint").disabled = false;
+};
+
+$("btnExportPrint").onclick = () => {
+  $("printCanvas").toBlob(b => {
+    downloadBlob(b, `相纸排版_${$("paperSize").value}_${$("paperOrient").value === "landscape" ? "横" : "竖"}.jpg`);
+  }, "image/jpeg", 0.95);
+};
+
+// ==================== 标签页 ====================
+document.querySelectorAll(".tab").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab-body").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    $("tab-" + t.dataset.tab).classList.add("active");
+  };
+});
+
+// ==================== 轻度去瑕疵美化（本地、克制、不联网） ====================
+// 分离式盒式模糊（预乘保留），返回 Float32 数组 [r*a,g*a,b*a,a]（a 为 0..1）
+function boxBlurPm(px, w, h, r) {
+  const n = w * h;
+  const tmp = new Float32Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    const a = px[i * 4 + 3] / 255;
+    tmp[i * 4] = px[i * 4] * a; tmp[i * 4 + 1] = px[i * 4 + 1] * a;
+    tmp[i * 4 + 2] = px[i * 4 + 2] * a; tmp[i * 4 + 3] = a;
+  }
+  const out1 = new Float32Array(n * 4);
+  for (let y = 0; y < h; y++) {
+    const yb = y * w, dw = 2 * r + 1;
+    let sr = 0, sg = 0, sb = 0, sa = 0;
+    for (let x = -r; x <= r; x++) {
+      const xx = Math.max(0, Math.min(w - 1, x)), i = (yb + xx) * 4;
+      sr += tmp[i]; sg += tmp[i + 1]; sb += tmp[i + 2]; sa += tmp[i + 3];
+    }
+    for (let x = 0; x < w; x++) {
+      const i = (yb + x) * 4;
+      out1[i] = sr / dw; out1[i + 1] = sg / dw; out1[i + 2] = sb / dw; out1[i + 3] = sa / dw;
+      const xo = Math.max(0, Math.min(w - 1, x - r)), xi = Math.max(0, Math.min(w - 1, x + r + 1));
+      const oi = (yb + xo) * 4, ii = (yb + xi) * 4;
+      sr += tmp[ii] - tmp[oi]; sg += tmp[ii + 1] - tmp[oi + 1]; sb += tmp[ii + 2] - tmp[oi + 2]; sa += tmp[ii + 3] - tmp[oi + 3];
+    }
+  }
+  const out2 = new Float32Array(n * 4);
+  for (let x = 0; x < w; x++) {
+    const dw = 2 * r + 1;
+    let sr = 0, sg = 0, sb = 0, sa = 0;
+    for (let y = -r; y <= r; y++) {
+      const yy = Math.max(0, Math.min(h - 1, y)), i = (yy * w + x) * 4;
+      sr += out1[i]; sg += out1[i + 1]; sb += out1[i + 2]; sa += out1[i + 3];
+    }
+    for (let y = 0; y < h; y++) {
+      const i = (y * w + x) * 4;
+      out2[i] = sr / dw; out2[i + 1] = sg / dw; out2[i + 2] = sb / dw; out2[i + 3] = sa / dw;
+      const yo = Math.max(0, Math.min(h - 1, y - r)), yi = Math.max(0, Math.min(h - 1, y + r + 1));
+      const oi = (yo * w + x) * 4, ii = (yi * w + x) * 4;
+      sr += out1[ii] - out1[oi]; sg += out1[ii + 1] - out1[oi + 1]; sb += out1[ii + 2] - out1[oi + 2]; sa += out1[ii + 3] - out1[oi + 3];
+    }
+  }
+  return out2;
+}
+
+let __beautyCache = { img: null, strength: -1, cut: null };
+
+// 对抠图后的透明底人物做轻度美化：柔和提亮 + 皮肤轻磨皮 + 轻锐化 + 眼周提亮。
+// 全部按 strength(0~1) 缩放且克制；边缘（低 alpha 发丝）按透明度加权避免假面。
+function beautifyCut(img, strength) {
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0);
+  const id = ctx.getImageData(0, 0, w, h);
+  const px = id.data;
+  let hasPerson = false;
+  for (let i = 3; i < px.length; i += 4) if (px[i] > 10) { hasPerson = true; break; }
+  if (!hasPerson || strength <= 0) return c;
+  const blur = boxBlurPm(px, w, h, 2);
+  // faceBox 是原图坐标系，而 cut 图可能经上/下采样（小图放大到 1024、大图降到 1600），需按比例换算
+  const fb0 = state.faceBox;
+  const kr = state.srcImg ? w / state.srcImg.naturalWidth : 1;
+  const fb = fb0 ? { x: fb0.x * kr, y: fb0.y * kr, w: fb0.w * kr, h: fb0.h * kr } : null;
+  const eyeCY = fb ? (fb.y + fb.h * 0.38) : h * 0.35;
+  const eyeDX = fb ? fb.w * 0.22 : w * 0.18;
+  const eyeRX = fb ? fb.w * 0.16 : w * 0.15;
+  const eyeRY = fb ? fb.h * 0.10 : h * 0.06;
+  const centers = fb
+    ? [{ x: fb.x + fb.w * 0.32, y: eyeCY }, { x: fb.x + fb.w * 0.68, y: eyeCY }]
+    : [{ x: w / 2 - eyeDX, y: eyeCY }, { x: w / 2 + eyeDX, y: eyeCY }];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const a = px[i + 3];
+      if (a <= 10) continue;
+      const r = px[i], g = px[i + 1], b = px[i + 2];
+      const ba = blur[i + 3];
+      let br = px[i], gg = px[i + 1], bb = px[i + 2];
+      if (ba > 1e-4) { br = blur[i] / ba; gg = blur[i + 1] / ba; bb = blur[i + 2] / ba; }
+      const dr = r - br, dg = g - gg, db = b - bb;
+      const skin = (r > g && g >= b - 8 && (r - b) > 16 && r > 100 && r < 235 && a > 128) ? 1 : 0;
+      const egW = a / 255;
+      const arm = Math.min(1, strength) * (0.35 + 0.65 * egW);
+      let eye = 0;
+      for (const ct of centers) {
+        const ex = (x - ct.x) / eyeRX, ey = (y - ct.y) / eyeRY;
+        if (ex * ex + ey * ey < 1) { eye = 1; break; }
+      }
+      const brightLift = 0.05 * arm;
+      const sharpen = 0.5 * arm;
+      const smooth = skin ? 0.45 * arm : 0;
+      const eyeLift = eye ? (0.5 * arm) : 0;
+      let nr = r * (1 + brightLift) + dr * sharpen + (br - r) * smooth + eyeLift * 14;
+      let ng = g * (1 + brightLift) + dg * sharpen + (gg - g) * smooth + eyeLift * 14;
+      let nb = b * (1 + brightLift) + db * sharpen + (bb - b) * smooth + eyeLift * 6;
+      px[i] = nr < 0 ? 0 : nr > 255 ? 255 : nr;
+      px[i + 1] = ng < 0 ? 0 : ng > 255 ? 255 : ng;
+      px[i + 2] = nb < 0 ? 0 : nb > 255 ? 255 : nb;
+    }
+  }
+  ctx.putImageData(id, 0, 0);
+  return c;
+}
+
+function ensureBeautyCut() {
+  if (!state.cutImg) return state.cutImg;
+  const key = Math.round(+$("beautyStrength").value / 20); // 每 20 档重算一次，避免拖动卡顿
+  if (__beautyCache.img === state.cutImg && __beautyCache.strength === key) return __beautyCache.cut;
+  const cut = beautifyCut(state.cutImg, +$("beautyStrength").value / 100);
+  __beautyCache = { img: state.cutImg, strength: key, cut };
+  return cut;
+}
+
+// 美化开关 / 强度绑定
+$("beautyOn").onchange = () => render();
+$("beautyStrength").oninput = () => { $("beautyStrengthVal").textContent = $("beautyStrength").value + "%"; render(); };
+
+// ==================== 预览视图切换 + 前后对比滑杆 ====================
+function switchView(v) {
+  $("viewAfter").style.display = v === "after" ? "flex" : "none";
+  $("viewBefore").style.display = v === "before" ? "flex" : "none";
+  $("viewCompare").style.display = v === "compare" ? "flex" : "none";
+  if (v === "compare") setComparePos(curComparePos);
+}
+document.querySelectorAll(".seg-btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".seg-btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    switchView(b.dataset.seg);
+  };
+});
+const baWrap = $("baWrap");
+function pointerToPos(e) {
+  const rect = baWrap.getBoundingClientRect();
+  return (e.clientX - rect.left) / rect.width;
+}
+baWrap.addEventListener("pointerdown", e => {
+  window.__baDrag = true; setComparePos(pointerToPos(e));
+  if (baWrap.setPointerCapture && e.pointerId != null) baWrap.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+baWrap.addEventListener("pointermove", e => { if (window.__baDrag) setComparePos(pointerToPos(e)); });
+window.addEventListener("pointerup", () => { window.__baDrag = false; });
+
+// ==================== 批量导出（多规格 × 多底色） ====================
+function loadScriptBatch(urls) {
+  return new Promise((res, rej) => {
+    (function tryI(i) {
+      if (i >= urls.length) return rej(new Error("批量打包组件加载失败"));
+      const s = document.createElement("script");
+      s.src = urls[i]; s.onload = () => res(); s.onerror = () => tryI(i + 1);
+      document.head.appendChild(s);
+    })(0);
+  });
+}
+async function ensureJSZip() {
+  if (window.JSZip) return true;
+  try {
+    await loadScriptBatch([
+      "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+      "https://fastly.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+      "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
+    ]);
+    return !!window.JSZip;
+  } catch (e) { console.warn("JSZip 加载失败，退回逐张下载", e); return false; }
+}
+
+const batchSel = { specs: new Set(), bgs: new Set() };
+function toggleSet(set, i, el) {
+  if (set.has(i)) { set.delete(i); el.classList.remove("active"); }
+  else { set.add(i); el.classList.add("active"); }
+}
+function initBatchChips() {
+  const sc = $("batchSpecChips");
+  SIZE_PRESETS.forEach((p, i) => {
+    if (p.name === "自定义") return;
+    const el = document.createElement("span");
+    el.className = "chip"; el.textContent = p.name;
+    if (p.name === "一寸") { el.classList.add("active"); batchSel.specs.add(i); }
+    el.onclick = () => { toggleSet(batchSel.specs, i, el); refreshBatch(); };
+    sc.appendChild(el);
+  });
+  const bc = $("batchBgChips");
+  BG_COLORS.forEach((c_, i) => {
+    const el = document.createElement("span");
+    el.className = "chip"; el.textContent = c_.name;
+    if (c_.name === "白色") { el.classList.add("active"); batchSel.bgs.add(i); }
+    el.onclick = () => { toggleSet(batchSel.bgs, i, el); refreshBatch(); };
+    bc.appendChild(el);
+  });
+  refreshBatch();
+}
+function renderBatchCanvas(spec, bg) {
+  const base = computeBaseFor(spec.w, spec.h);
+  return renderToCanvas(spec, { bg, base, zoom: 1, dx: 0, dy: 0, beauty: false, keepBg: false });
+}
+function updateBatchAction() {
+  const btn = $("btnBatchExport");
+  const sum = $("batchSum");
+  const n = batchSel.specs.size * batchSel.bgs.size;
+
+  if (state.aiBusy) {
+    btn.disabled = true;
+    btn.textContent = "AI 生成中…";
+    btn.onclick = null;
+    sum.textContent = "正在 AI 生成，请稍候…";
+    return;
+  }
+  if (!state.srcImg) {
+    btn.disabled = true;
+    btn.textContent = "请先上传照片";
+    btn.onclick = null;
+    sum.textContent = "请先上传照片。";
+    return;
+  }
+  if (n === 0) {
+    btn.disabled = true;
+    btn.textContent = "请勾选规格与底色";
+    btn.onclick = null;
+    sum.textContent = "请至少勾选一种规格与底色。";
+    return;
+  }
+  if (!state.resultReady) {
+    btn.disabled = false;
+    btn.textContent = "生成批量预览";
+    btn.onclick = () => runAI();
+    sum.textContent = `已选 ${batchSel.specs.size} 规格 × ${batchSel.bgs.size} 底色 = ${n} 张，点击生成批量预览。`;
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = "打包下载全部（ZIP）";
+  btn.onclick = doBatchExport;
+  sum.textContent = `共 ${n} 张（${batchSel.specs.size} 规格 × ${batchSel.bgs.size} 底色），可打包下载。`;
+}
+function refreshBatch() {
+  const grid = $("batchPreview"); grid.innerHTML = "";
+  let n = 0;
+  batchSel.specs.forEach(si => batchSel.bgs.forEach(bi => {
+    n++;
+    const spec = SIZE_PRESETS[si], bgc = BG_COLORS[bi];
+    const c = renderBatchCanvas(spec, bgc.value);
+    const cell = document.createElement("div"); cell.className = "bp";
+    const cv = document.createElement("canvas"); cv.width = spec.w; cv.height = spec.h;
+    cv.getContext("2d").drawImage(c, 0, 0);
+    cell.appendChild(cv);
+    const lbl = document.createElement("div"); lbl.className = "bp-label"; lbl.textContent = spec.name + " · " + bgc.name;
+    cell.appendChild(lbl);
+    grid.appendChild(cell);
+  }));
+  updateBatchAction();
+}
+function toBlobPromise(canvas, mime, q) {
+  return new Promise(res => canvas.toBlob(res, mime || "image/jpeg", q == null ? 0.95 : q));
+}
+async function doBatchExport() {
+  if (!state.srcImg) { alert("请先在左侧加载照片。"); return; }
+  const items = [];
+  batchSel.specs.forEach(si => batchSel.bgs.forEach(bi => items.push({ src: SIZE_PRESETS[si], bg: BG_COLORS[bi] })));
+  if (!items.length) { alert("请至少勾选一种规格与底色。"); return; }
+  const btn = $("btnBatchExport");
+  btn.textContent = "正在打包…"; btn.disabled = true;
+  try {
+    const hasZip = await ensureJSZip();
+    if (hasZip) {
+      const zip = new JSZip();
+      items.forEach(it => {
+        const c = renderBatchCanvas(it.src, it.bg.value);
+        zip.file(`证件照_${it.src.name}_${it.bg.name}.jpg`, c.toDataURL("image/jpeg", 0.95).split(",")[1], { base64: true });
+      });
+      downloadBlob(await zip.generateAsync({ type: "blob" }), `证件照_批量_${items.length}张.zip`);
+      $("batchSum").textContent = `已打包 ${items.length} 张（ZIP）到下载文件夹。`;
+    } else {
+      for (let k = 0; k < items.length; k++) {
+        const it = items[k];
+        const c = renderBatchCanvas(it.src, it.bg.value);
+        downloadBlob(await toBlobPromise(c), `证件照_${it.src.name}_${it.bg.name}.jpg`);
+        await new Promise(r => setTimeout(r, 600));
+      }
+      $("batchSum").textContent = `已按 ${items.length} 张逐个下载；若浏览器拦截了批量下载，请允许本页弹出下载。`;
+    }
+  } catch (e) { console.error(e); alert("批量导出失败：" + (e && e.message || e)); }
+  finally { updateBatchAction(); }
+}
+
+// ==================== 吸顶生成条（滚动时始终可触达） ====================
+function updateStickyBar() {
+  const status = $("aiStickyStatus");
+  const btn = $("btnStickyAI");
+  if (!state.srcImg) {
+    status.textContent = "请先上传照片";
+    btn.disabled = true;
+  } else if (state.aiBusy) {
+    status.textContent = "正在 AI 生成中…";
+    btn.disabled = true;
+  } else if (state.resultReady) {
+    status.textContent = "生成完成，可继续导出或批量下载";
+    btn.disabled = false;
+  } else {
+    status.textContent = "照片已就绪，点击一键 AI 生成";
+    btn.disabled = false;
+  }
+}
+function initStickyBar() {
+  const bar = $("aiStickyBar");
+  const btn = $("btnStickyAI");
+  btn.onclick = () => runAI();
+
+  if (!("IntersectionObserver" in window)) {
+    console.warn("浏览器不支持 IntersectionObserver，吸顶条已关闭");
+    return;
+  }
+
+  const controls = document.querySelector(".controls");
+  const obs = new IntersectionObserver((entries) => {
+    const visible = entries[0].isIntersecting;
+    bar.classList.toggle("visible", !visible);
+  }, {
+    root: controls,
+    threshold: 0
+  });
+  obs.observe($("btnAI"));
+}
+
+// 初始化：批量 chips + 默认预览视图
+initBatchChips();
+initStickyBar();
+updateBatchAction();
+
+// ==================== 极速换底色 ====================
+function updateQuickButtons() {
+  const hasPhoto = !!state.srcImg;
+  const ready = state.cutImg && state.resultReady && !state.aiBusy;
+
+  // 控制整块显示/隐藏：有照片才显示
+  $("quickStep").style.display = hasPhoto ? "block" : "none";
+
+  document.querySelectorAll(".quick-btn").forEach(b => {
+    b.disabled = !ready;
+  });
+
+  if (ready) {
+    $("quickHint").textContent = "已抠图完毕 ✨ 点击颜色卡，秒级切换底色，无需重复抠图。";
+  } else if (state.cutImg) {
+    $("quickHint").textContent = "正在 AI 处理中，请稍候…";
+  } else {
+    $("quickHint").textContent = "先点击「一键 AI 生成」抠图一次，之后点这里换底色无需重复抠图，秒级出图。";
+  }
+
+  updateStickyBar();
+}
+
+// 每 500ms 同步一次按钮状态（页面级工具，开销可忽略）
+// 覆盖：照片加载 → AI 完成 → 重新加载 → 换底色 等所有状态变化路径
+setInterval(updateQuickButtons, 500);
+updateQuickButtons();
+
+// 极速按钮点击逻辑：
+//   已抠图 → 直接换底色 + 重渲染（秒级，0 等待）
+//   未抠图 → 自动设底色 + 跑 AI 生成
+document.querySelectorAll(".quick-btn").forEach(b => {
+  b.onclick = function () {
+    const targetBg = b.dataset.bg;
+    if (!state.srcImg) return;
+
+    if (state.cutImg && !state.aiBusy) {
+      setBgColor(targetBg);
+      if (typeof refreshBatch === "function") refreshBatch();
+      return;
+    }
+
+    setBgColor(targetBg);
+    setStatus("已选择目标底色，正在启动 AI 抠图…");
+    runAI();
+  };
+});
+</script>
+<footer>
+  <div class="brand">AI 扫盲班长 · <span>長青</span></div>
+  <div class="desc">把复杂的 AI 讲给普通人的智能体 🌱 本证件照工具由 長青 自制 · 全程本地处理，照片不上传</div>
+  <div class="contact">遇到问题？关注公众号 <strong>AI扫盲班长·長青</strong>，直接与我聊聊 👋</div>
+  <div class="tag">📮 一个讲 AI 的公众号 · 帮你把 AI 真正用起来</div>
+</footer>
+
+</body>
+</html>

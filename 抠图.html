@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本地抠图工具 · 纯浏览器运行</title>
+<style>
+:root{
+  --bg:#faf6ff;
+  --bg-deep:#ede4ff;
+  --panel:rgba(255,255,255,0.72);
+  --panel-strong:rgba(255,255,255,0.88);
+  --border:rgba(139,92,246,0.18);
+  --border-strong:rgba(139,92,246,0.4);
+  --text:#1a0f2e;
+  --text-dim:#5b4a8a;
+  --text-mute:#9d8dc5;
+  --purple:#8B5CF6;
+  --purple-deep:#6D28D9;
+  --purple-soft:rgba(139,92,246,0.1);
+  --purple-glow:rgba(139,92,246,0.28);
+  --accent:#c4b5fd;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --warning:#f59e0b;
+  --glass-shadow:0 8px 32px rgba(139,92,246,0.12),0 2px 8px rgba(0,0,0,0.06);
+  --radius-lg:28px;
+  --radius-md:20px;
+  --radius-sm:14px;
+  --radius-pill:9999px;
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-smooth:cubic-bezier(0.4,0,0.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow:hidden}
+body{
+  height:100vh;padding:16px;overflow:hidden;
+  background:
+    radial-gradient(ellipse 55% 45% at 20% 10%,rgba(139,92,246,0.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 85%,rgba(196,181,253,0.14) 0%,transparent 55%),
+    linear-gradient(135deg,var(--bg-deep) 0%,var(--bg) 50%,#fdfbff 100%);
+  background-attachment:fixed;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--text);
+}
+.container{width:100%;height:100%;display:flex;flex-direction:column;padding:0}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--purple-soft),rgba(139,92,246,0.35));border-radius:var(--radius-pill)}
+*{scrollbar-width:thin;scrollbar-color:var(--purple) transparent}
+
+/* 头部 */
+.header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:0 4px}
+.header h1{font-size:18px;font-weight:900;color:var(--text)}
+.header .subtitle{font-size:12px;color:var(--text-dim)}
+.header .spacer{flex:1}
+.model-state{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--radius-pill);
+  background:var(--panel);border:1px solid var(--border);font-size:11px;color:var(--text-dim);
+  font-family:"SF Mono",monospace;backdrop-filter:blur(20px);
+}
+.model-state .dot{width:8px;height:8px;border-radius:50%;background:var(--text-mute);animation:pulse 1.5s infinite}
+.model-state.loading .dot{background:var(--purple);animation:pulse 1s infinite}
+.model-state.ready .dot{background:var(--success);box-shadow:0 0 8px rgba(34,197,94,0.4);animation:none}
+.model-state.err .dot{background:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* 三栏布局 */
+.main-grid{display:grid;grid-template-columns:320px 6px 5fr 6px 4fr;gap:0;flex:1;min-height:0;overflow:hidden}
+.main-grid > *{height:100%;min-height:0;overflow:hidden}
+.resize-handle{
+  background:var(--border);cursor:col-resize;position:relative;
+  transition:background 0.2s;
+}
+.resize-handle:hover{background:var(--purple)}
+.resize-handle::after{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:2px;height:40px;background:var(--purple);border-radius:1px;opacity:0.5;
+}
+.left-col,.center-col,.right-col{height:100%;min-height:0;display:flex;flex-direction:column}
+.panel{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;backdrop-filter:blur(20px);box-shadow:var(--glass-shadow);
+  position:relative;overflow:hidden;display:flex;flex-direction:column;height:100%;
+}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.4),transparent)}
+/* 左栏内容多：允许整体滚动，子项不压缩，队列保住最小高度 */
+.left-col .panel{overflow-y:auto;overflow-x:hidden}
+.left-col .panel > *{flex-shrink:0}
+.left-col .panel .queue{flex-shrink:1}
+.panel-title{font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--purple)}
+
+/* 按钮 */
+button{
+  background:linear-gradient(135deg,var(--purple) 0%,var(--purple-deep) 100%);
+  color:#fff;border:0;padding:10px 16px;border-radius:var(--radius-sm);
+  cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;
+  transition:all 0.25s var(--spring);box-shadow:0 4px 12px var(--purple-glow);
+}
+button:hover:not(:disabled){transform:translateY(-1px) scale(1.02)}
+button:disabled{background:rgba(139,92,246,0.2);color:var(--text-mute);cursor:not-allowed;box-shadow:none}
+button.ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text-dim);box-shadow:none}
+button.ghost:hover:not(:disabled){background:var(--purple-soft);border-color:var(--purple);color:var(--purple-deep)}
+button.small{padding:6px 12px;font-size:12px}
+
+/* 模式切换 */
+.mode-tabs{display:flex;gap:6px;margin-bottom:12px}
+.mode-tabs .tab{
+  flex:1;padding:8px 12px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,0.6);border:1px solid var(--border);
+  font-size:12px;font-weight:600;color:var(--text-dim);cursor:pointer;
+  transition:all 0.25s var(--spring);text-align:center;
+}
+.mode-tabs .tab.active{background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff;border-color:transparent;box-shadow:0 4px 12px var(--purple-glow)}
+
+/* SAM 模式切换 */
+.sam-modes{display:flex;gap:6px;margin-bottom:12px}
+.sam-modes .btn{
+  flex:1;padding:6px 10px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,0.6);border:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--text-dim);cursor:pointer;
+  transition:all 0.2s var(--spring);display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.sam-modes .btn.active-box{background:var(--purple);color:#fff;border-color:transparent}
+.sam-modes .btn.active-inc{background:var(--success);color:#fff;border-color:transparent}
+.sam-modes .btn.active-exc{background:var(--danger);color:#fff;border-color:transparent}
+.field label.refine-row{display:flex;align-items:center;gap:6px;margin:8px 0 0;cursor:pointer}
+.refine-row input{width:auto;accent-color:var(--purple);cursor:pointer;flex-shrink:0}
+.refine-row span{font-size:12px;color:var(--text-dim);line-height:1.5;font-weight:600;cursor:pointer;user-select:none}
+
+/* 表单控件 */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600}
+select,input[type=color],input[type=range]{
+  width:100%;font-family:inherit;font-size:13px;padding:8px 12px;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.6);color:var(--text);
+}
+input[type=color]{height:36px;padding:2px 4px}
+input[type=range]{padding:0;height:6px;cursor:pointer;accent-color:var(--purple)}
+
+/* 队列 */
+.queue{flex:1;overflow-y:auto;list-style:none;margin:12px -8px 0;padding:0 8px;min-height:180px}
+.queue li{
+  display:flex;gap:8px;align-items:center;padding:8px;border-radius:var(--radius-sm);
+  cursor:pointer;border:2px solid transparent;margin-bottom:6px;
+  transition:all 0.2s var(--ease-smooth);
+}
+.queue li:hover{background:rgba(255,255,255,0.6)}
+.queue li.active{border-color:var(--purple);background:var(--purple-soft)}
+.queue li.flash{animation:flashNew 1.4s var(--ease-smooth)}
+@keyframes flashNew{
+  0%{background:var(--purple-glow);border-color:var(--purple);transform:scale(1.03)}
+  100%{background:transparent;border-color:transparent;transform:scale(1)}
+}
+.queue li img{width:48px;height:48px;object-fit:cover;border-radius:8px;background:var(--bg-deep);flex-shrink:0}
+.queue li .meta{min-width:0;flex:1}
+.queue li .del{
+  flex-shrink:0;width:20px;height:20px;line-height:18px;text-align:center;border-radius:50%;
+  color:var(--text-mute);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;
+}
+.queue li .del:hover{background:var(--danger);color:#fff;transform:scale(1.1)}
+.queue li .name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:var(--radius-pill);margin-top:4px;font-weight:600}
+.badge.pending{background:var(--bg-deep);color:var(--text-mute)}
+.badge.working{background:rgba(245,158,11,0.15);color:var(--warning)}
+.badge.done{background:rgba(34,197,94,0.15);color:var(--success)}
+.badge.error{background:rgba(239,68,68,0.15);color:var(--danger)}
+
+/* 操作区 */
+.stage{
+  position:relative;border-radius:var(--radius-md);overflow:hidden;flex:1;min-height:0;
+  background:#f3edff;display:flex;align-items:center;justify-content:center;
+}
+.drop-zone{
+  border:2px dashed var(--border-strong);border-radius:var(--radius-md);
+  padding:60px 40px;text-align:center;cursor:pointer;
+  transition:all 0.3s var(--ease-smooth);
+}
+.drop-zone:hover{border-color:var(--purple);background:var(--purple-soft);transform:scale(1.01)}
+.drop-zone .icon{
+  width:88px;height:88px;margin:0 auto 14px;border-radius:50%;
+  background:var(--purple-soft);display:flex;align-items:center;justify-content:center;
+  color:var(--purple);transition:all 0.3s var(--ease-smooth);
+}
+.drop-zone:hover .icon{background:var(--purple-glow);color:var(--purple-deep);transform:scale(1.06)}
+.drop-zone .txt{color:var(--text-dim);font-size:13px;line-height:1.8}
+.drop-zone .hint{font-size:11px;color:var(--text-mute)}
+
+#viewer{position:relative;max-width:100%;max-height:100%;display:none}
+#viewer.active{display:block}
+#imgBox{
+  position:relative;display:inline-block;max-width:100%;max-height:100%;
+  box-shadow:0 8px 32px rgba(139,92,246,0.15);
+  background:repeating-conic-gradient(#e9e4f5 0% 25%,#f8f6fc 0% 50%) 0 0/20px 20px;
+  border-radius:var(--radius-sm);overflow:hidden;
+}
+#viewImg{display:block;max-width:100%;max-height:calc(100vh - 250px)}
+#maskCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#overlay{position:absolute;inset:0;cursor:crosshair;z-index:10}
+#overlay.busy{cursor:wait}
+#boxSelect{position:absolute;border:2px dashed var(--purple);background:var(--purple-soft);pointer-events:none;display:none}
+.stage-busy{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--radius-pill);
+  background:var(--panel-strong);border:1px solid var(--border-strong);
+  box-shadow:var(--glass-shadow);font-size:12px;color:var(--text-dim);font-weight:600;
+  backdrop-filter:blur(20px);max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.stage-busy .spin{width:14px;height:14px;flex-shrink:0;color:var(--purple);animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+/* 处理中全画面遮罩：大 spinner + 状态文字，盖住操作区，不可能看不见 */
+.stage-veil{
+  position:absolute;inset:0;z-index:25;border-radius:var(--radius-md);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(250,246,255,0.62);backdrop-filter:blur(3px);
+}
+.stage-veil .big-spin{width:44px;height:44px;color:var(--purple);animation:rot 1s linear infinite}
+.stage-veil span{
+  font-size:13px;font-weight:700;color:var(--purple-deep);
+  background:var(--panel-strong);padding:8px 18px;border-radius:var(--radius-pill);
+  border:1px solid var(--border-strong);box-shadow:var(--glass-shadow);
+  max-width:86%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.marker{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);cursor:pointer;transition:transform .15s}
+.marker:hover{transform:translate(-50%,-50%) scale(1.3)}
+.marker.inc{background:var(--success)}
+.marker.exc{background:var(--danger)}
+/* 框选持久标记：选区模式紫色（单击删除），修补模式绿色（保留语义，撤销回退） */
+.marker-box{
+  position:absolute;border:2px solid var(--purple);background:rgba(139,92,246,0.10);
+  border-radius:4px;cursor:pointer;transition:all .15s;
+}
+.marker-box:hover{border-width:3px;background:rgba(139,92,246,0.18)}
+.marker-box.refine{border-color:var(--success);background:rgba(34,197,94,0.10);cursor:default}
+.marker-box.refine:hover{border-width:2px;background:rgba(34,197,94,0.16)}
+
+/* 结果预览 */
+.result-box{
+  flex:1;min-height:0;border-radius:var(--radius-md);overflow:auto;
+  display:flex;align-items:center;justify-content:center;
+  background-color:#fff;
+  background-image:
+    linear-gradient(45deg,#eee8fb 25%,transparent 25%,transparent 75%,#eee8fb 75%),
+    linear-gradient(45deg,#eee8fb 25%,transparent 25%,transparent 75%,#eee8fb 75%);
+  background-size:20px 20px;background-position:0 0,10px 10px;
+}
+.result-box img{max-width:100%;max-height:100%;display:block;object-fit:contain}
+.result-box .placeholder{font-size:12px;color:var(--text-mute);padding:20px;text-align:center;line-height:1.8}
+
+/* 品牌区域 */
+.brand-section{
+  margin-top:12px;padding:12px;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--purple-soft),rgba(196,181,253,0.08));
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.brand-section .ip-img{width:80px;height:80px;object-fit:contain;flex-shrink:0}
+.brand-section .brand-info{flex:1;min-width:0}
+.brand-section .brand-name{font-size:13px;font-weight:700;color:var(--purple-deep);margin-bottom:4px}
+.brand-section .brand-slogan{font-size:11px;color:var(--text-dim);line-height:1.5;margin-bottom:8px}
+.brand-section .qrcode-img{width:80px;height:80px;border-radius:8px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
+/* 状态栏 */
+.status{
+  font-family:inherit;font-size:12px;color:var(--text-dim);
+  padding:10px 14px;background:rgba(255,255,255,0.55);border-radius:var(--radius-sm);
+  border:1px solid var(--border);margin-top:12px;
+  min-height:64px;max-height:150px;overflow-y:auto;flex-shrink:0;
+}
+#statusTxt{margin:0;font-family:inherit;font-size:12px;white-space:pre-wrap;word-break:break-word;line-height:1.7}
+.status.ok{border-color:var(--success);color:var(--success);background:rgba(34,197,94,0.08)}
+.status.err{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,0.08)}
+
+/* 进度条 */
+.progress-wrap{display:none;margin-top:12px}
+.progress-wrap.active{display:block}
+.progress-label{font-size:11px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:5px;font-family:"SF Mono",monospace}
+.progress-track{height:5px;background:rgba(139,92,246,0.12);border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--purple-deep));border-radius:var(--radius-pill);width:0%;transition:width 0.3s var(--ease-smooth)}
+
+/* 元信息 */
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.meta .chip{background:rgba(255,255,255,0.7);border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px 12px;font-size:11px;color:var(--text-dim);font-family:"SF Mono",monospace}
+.meta .chip b{color:var(--purple-deep)}
+
+/* 操作按钮组 */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button{flex:1;min-width:0}
+
+/* 使用说明弹窗 */
+#helpModal{position:fixed;inset:0;background:rgba(26,15,46,0.5);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
+#helpModal .panel{background:var(--panel-strong);border-radius:var(--radius-lg);padding:24px 28px;max-width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+#helpModal h2{font-size:17px;color:var(--text);margin-bottom:16px}
+#helpModal h3{font-size:14px;color:var(--purple-deep);margin:14px 0 6px}
+#helpModal p,#helpModal li{font-size:13px;color:var(--text-dim);line-height:1.8}
+#helpModal ul{padding-left:20px}
+#helpModal .close-btn{margin-top:16px;width:100%}
+#helpModal kbd{background:var(--bg-deep);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px;font-family:inherit}
+#helpModal .tip{background:rgba(34,197,94,0.08);border-left:3px solid var(--success);padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0}
+#helpModal .warn{background:rgba(245,158,11,0.08);border-left:3px solid var(--warning);padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0}
+
+.hidden{display:none !important}
+.spacer{flex:1}
+
+/* 响应式 */
+@media(max-width:1400px){
+  .main-grid{grid-template-columns:300px 6px 5fr 6px 4fr}
+}
+@media(max-width:1100px){
+  .main-grid{grid-template-columns:240px 6px 1fr;overflow-y:auto}
+  .right-col{grid-column:1/-1}
+  .resize-handle{display:none}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 头部 -->
+  <div class="header">
+    <h1>本地抠图工具 <span style="font-size:12px;color:var(--purple);font-weight:600">v1.5.0</span></h1>
+    <span class="subtitle">100% 浏览器本地运行 · 图片不上传</span>
+    <span class="spacer"></span>
+    <span class="model-state loading" id="modelState">
+      <span class="dot"></span>
+      <span id="modelStateText">就绪</span>
+    </span>
+    <button class="ghost small" id="btnHelp">使用说明</button>
+  </div>
+
+  <!-- 三栏布局 -->
+  <div class="main-grid">
+    <!-- 左栏：控制面板 -->
+    <div class="left-col">
+      <div class="panel">
+        <div class="panel-title"><span>模式选择</span></div>
+        <div class="mode-tabs">
+          <div class="tab active" id="modeAuto">自动抠图</div>
+          <div class="tab" id="modeSam">点选 / 修补</div>
+        </div>
+
+        <div class="field" id="autoModelField">
+          <label>自动模型</label>
+          <select id="autoModel">
+            <option value="isnet_quint8" selected>快速版 40MB</option>
+            <option value="isnet_fp16">精细版 80MB（发丝细节）</option>
+            <option value="rmbg14">高清版 RMBG 44MB（复杂图更准，推荐）</option>
+          </select>
+        </div>
+
+        <div class="field" id="autoRunField">
+          <label class="refine-row" style="margin-top:0">
+            <input type="checkbox" id="autoRunToggle" checked>
+            <span>添加图片后自动抠图（拖入 / 粘贴即出结果）</span>
+          </label>
+        </div>
+
+        <div class="field hidden" id="samModeField">
+          <label>点选模式</label>
+          <div class="sam-modes">
+            <div class="btn active-box" id="samModeBox">框选</div>
+            <div class="btn" id="samModeInc">保留</div>
+            <div class="btn" id="samModeExc">排除</div>
+          </div>
+          <label class="refine-row">
+            <input type="checkbox" id="refineToggle" checked>
+            <span>修补模式：在已有结果上点保留/排除</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label>背景</label>
+          <select id="bgSelect">
+            <option value="transparent" selected>透明</option>
+            <option value="#ffffff">白底</option>
+            <option value="#e60012">红底（证件照）</option>
+            <option value="#2f6fdd">蓝底（证件照）</option>
+            <option value="custom">自定义颜色…</option>
+            <option value="gradient-1">渐变 · 暮紫</option>
+            <option value="gradient-2">渐变 · 暖杏</option>
+            <option value="gradient-3">渐变 · 薄荷</option>
+            <option value="image">图片背景（上传）…</option>
+            <option value="fx-blur">原图背景 · 模糊</option>
+            <option value="fx-gray">原图背景 · 灰度</option>
+            <option value="fx-sepia">原图背景 · 深褐</option>
+          </select>
+        </div>
+
+        <div class="field hidden" id="bgCustomField">
+          <label>自定义颜色</label>
+          <input type="color" id="bgCustom" value="#ffffff">
+        </div>
+
+        <div class="field hidden" id="bgImageField">
+          <label>背景图</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <img id="bgImageThumb" style="width:64px;height:40px;object-fit:cover;border-radius:8px;border:1px solid var(--border)" alt="">
+            <button class="ghost small" id="btnBgImage" type="button" style="flex:1">更换背景图</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="refine-row" style="margin-top:0">
+            <input type="checkbox" id="decontamToggle">
+            <span>去白边 / 灰边（发丝边缘去污，深色背景下必开）</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label>残留清理 / 主体补全 <span id="alphaValue" style="color:var(--purple-deep);font-weight:700">0（关）</span></label>
+          <input type="range" id="alphaRange" min="-60" max="60" value="0" step="5" style="width:100%">
+          <div style="font-size:11px;color:var(--text-mute);margin-top:4px">右拉：清除半透明残留（沙发/桌面鬼影）；左拉：把半透明主体补全为实心（救回没抠全的裤子/裙摆）。即时生效，无需重抠</div>
+        </div>
+
+        <div class="field">
+          <label>导出格式</label>
+          <select id="fmtSelect">
+            <option value="image/png" selected>PNG（透明）</option>
+            <option value="image/webp">WebP（更小）</option>
+            <option value="image/jpeg">JPEG（已换底色）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>边缘羽化 <span id="featherValue" style="color:var(--purple-deep);font-weight:700">2px</span></label>
+          <input type="range" id="featherRange" min="0" max="10" value="2" step="1" style="width:100%">
+          <div style="font-size:11px;color:var(--text-mute);margin-top:4px">让抠图边缘平滑过渡，减少锯齿</div>
+        </div>
+
+        <div class="panel-title" style="margin-top:16px"><span>图片队列</span></div>
+        <div class="actions">
+          <button id="btnAdd">＋ 添加图片</button>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="btnAutoAll">全部自动抠图</button>
+          <button class="ghost" id="btnZip">打包下载 ZIP</button>
+        </div>
+        <ul class="queue" id="queue"></ul>
+
+        <div class="meta" id="metaRow" style="display:none">
+          <span class="chip">标记 <b id="chipPoints">0</b></span>
+          <span class="chip">尺寸 <b id="chipSize">--</b></span>
+          <span class="chip">耗时 <b id="chipTime">--</b></span>
+        </div>
+
+        <div class="status"><pre id="statusTxt">就绪。添加图片开始抠图。</pre></div>
+      </div>
+    </div>
+
+    <!-- 分隔线 1 -->
+    <div class="resize-handle" data-side="left"></div>
+
+    <!-- 中栏：操作区 -->
+    <div class="center-col">
+      <div class="panel">
+        <div class="panel-title"><span>操作区域</span></div>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:12px" id="modeHint">
+          自动模式：添加图片后点击"抠当前图"一键完成
+        </p>
+        <div class="stage" id="stage">
+          <div class="drop-zone" id="drop">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/>
+                <line x1="16" x2="22" y1="5" y2="5"/>
+                <line x1="19" x2="19" y1="2" y2="8"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <div class="txt">
+              拖图片到这里，或点击选择<br>
+              <span class="hint">也可以直接 Ctrl+V 粘贴截图 · 支持一次多张</span>
+            </div>
+          </div>
+          <div id="viewer">
+            <div id="imgBox">
+              <img id="viewImg" alt="">
+              <canvas id="maskCanvas"></canvas>
+              <div id="overlay"><div id="boxSelect"></div></div>
+            </div>
+          </div>
+          <div class="stage-busy hidden" id="stageBusy">
+            <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+            <span id="stageBusyTxt">处理中…</span>
+          </div>
+          <div class="stage-veil hidden" id="stageVeil">
+            <svg class="big-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+            <span id="stageVeilTxt">处理中…</span>
+          </div>
+        </div>
+        <div class="actions" id="samActions" style="display:none">
+          <button class="ghost small" id="btnUndoPoint">撤销</button>
+          <button class="ghost small" id="btnClearPoints">清空</button>
+          <button class="ghost small" id="btnCompare">查看结果</button>
+        </div>
+        <div class="actions" id="autoActions">
+          <button id="btnAutoOne">抠当前图</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分隔线 2 -->
+    <div class="resize-handle" data-side="right"></div>
+
+    <!-- 右栏：结果预览 -->
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-title"><span>抠图结果</span></div>
+        <div class="result-box">
+          <img id="resultImg" style="display:none" alt="">
+          <div class="placeholder" id="resultEmpty">抠出的图片将显示在这里<br>支持 PNG / WebP / JPEG 导出</div>
+        </div>
+        <div class="actions">
+          <button id="btnDownload" disabled>下载当前</button>
+        </div>
+
+        <!-- 品牌区域 -->
+        <div class="brand-section">
+          <img src="ip-waving.png" class="ip-img" alt="AI扫盲班长">
+          <div class="brand-info">
+            <div class="brand-name">AI扫盲班长.長青</div>
+            <div class="brand-slogan">不怕零基础，就怕没长期<br>AI工作流实战派 · 工具深度拆解</div>
+          </div>
+          <img src="qrcode.jpg" class="qrcode-img" alt="公众号二维码">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+
+<!-- 使用说明弹窗 -->
+<div id="helpModal" class="hidden">
+  <div class="panel">
+    <h2>使用说明</h2>
+
+    <h3>快速上手（推荐流程）</h3>
+    <ul>
+      <li><b>①</b> 拖入图片（默认自动开抠，无需点任何按钮）</li>
+      <li><b>②</b> 看右栏结果，满意直接点"下载当前"</li>
+      <li><b>③</b> 不完美？先拖"残留清理 / 主体补全"滑块快速修正（10 秒搞定）</li>
+      <li><b>④</b> 还不行？切"点选 / 修补"模式：点"排除"去掉残留，点"保留"补回缺失</li>
+      <li><b>⑤</b> 复杂图（坐姿、杂乱背景、多人物）：左栏模型选"高清版 RMBG"，主体完整度最好</li>
+    </ul>
+
+    <h3>两种抠图模式</h3>
+    <ul>
+      <li><b>自动抠图</b>：一键完成。三个模型档位：<b>快速版</b>（40MB，日常够用）、<b>精细版</b>（80MB，发丝细节）、<b>高清版 RMBG</b>（44MB，复杂场景/坐姿人像更准，主体完整度最好，推荐）。</li>
+      <li><b>点选抠图</b>：手动指定主体，适合复杂背景、多物体场景。</li>
+    </ul>
+
+    <h3>点选抠图操作</h3>
+    <ul>
+      <li><b>框选（推荐）</b>：默认模式，按住鼠标左键拖框包住要保留的主体，一次搞定。选完后留下紫色矩形标记（单击可删除），和保留/排除点一样可见</li>
+      <li><b>添加保留点</b>：点"保留"按钮切换模式，左键点击要保留的区域</li>
+      <li><b>添加排除点</b>：点"排除"按钮切换模式，左键点击误选的区域（如头发间隙的背景）</li>
+      <li><b>删除点</b>：单击已存在的点（绿色/红色圆点）即可删除</li>
+      <li><b>切换点类型</b>：双击已存在的点，保留 ↔ 排除 互切</li>
+      <li><b>撤销/清空</b>：底部按钮可撤销最后一个标记（优先撤销框选）或清空所有</li>
+    </ul>
+    <div class="tip">深紫色区域 = 当前选中效果，亮紫色描边 = 选中边界，实时可见</div>
+    <div class="tip">处理时画面底部会显示浮动进度条（模型下载百分比 / 编码中 / 解码中），光标变等待样式；首次使用点选需下载约 40MB 模型，请耐心等待</div>
+    <div class="tip">推荐流程：先框选整个人体 → 再用"排除"模式点掉误选的背景（头发间隙、手臂旁边）</div>
+    <div class="warn">点选模式是<b>从头开始抠</b>，不是在自动抠图结果上修补。框选可以快速选中完整主体，比点很多点方便得多。</div>
+
+    <h3>修补模式（默认开启，推荐）</h3>
+    <ul>
+      <li><b>流程</b>：先用"自动抠图"得到结果 → 切到"点选 / 修补"（修补模式默认已勾选）</li>
+      <li><b>排除</b>：点残留的 background 区域（如腰带、下摆处没抠干净的色块），SAM 会识别该处物体并从结果中减去</li>
+      <li><b>保留</b>：点被误删的区域（如镂空处、半透明处），SAM 识别后加回结果</li>
+      <li><b>撤销</b>：每次修补都可逐步撤销（保留最近 8 步）；"清空"恢复到修补前的结果</li>
+      <li>框选修补后留下<b>绿色矩形标记</b>，和点标记一样可见，撤销时同步回退</li>
+      <li>深紫色叠加层始终显示当前保留的部分，所见即所得</li>
+    </ul>
+    <div class="tip">修补模式 = 自动抠图打底 + SAM 局部增删，比纯点选从零开始省力得多，效果也更好。</div>
+
+    <h3>批量处理</h3>
+    <ul>
+      <li>拖拽多张图片到页面，或 <kbd>Ctrl+V</kbd> 粘贴截图</li>
+      <li><b>添加后自动抠图</b>（默认开启）：图片一拖入/粘贴就自动开始抠，无需再点按钮；想先调设置再抠，可在左栏关掉该开关</li>
+      <li>也可点"全部自动抠图"批量处理队列中所有待处理的图片</li>
+      <li>完成后点"打包下载 ZIP"一次下载所有结果</li>
+    </ul>
+
+    <h3>换背景与导出</h3>
+    <ul>
+      <li>抠图完成后，背景可选：透明 / 白底 / 红底 / 蓝底 / 自定义颜色</li>
+      <li><b>渐变背景</b>：内置暮紫 / 暖杏 / 薄荷三组渐变，适合做海报底图</li>
+      <li><b>图片背景</b>：选"图片背景（上传）…"，上传任意风景图/场景图作为背景，自动铺满</li>
+      <li><b>原图背景特效</b>：选"原图背景 · 模糊/灰度/深褐"，主体保持清晰，背景一键虚化或做旧（朋友圈氛围图神器）</li>
+      <li><b>去白边 / 灰边</b>：勾选后自动把前景颜色渗透到半透明边缘，消除发丝白边/灰边。换深色背景时建议开启</li>
+      <li><b>残留清理 / 主体补全</b>：抠完后如果边缘有半透明"鬼影"（如沙发、桌面残留），右拉滑块清除；如果主体没抠全呈半透明（如裤子、裙摆），左拉滑块补全为实心。即时生效，无需重新抠图</li>
+      <li><b>半透明智能提示</b>：自动抠完后若状态栏提示"约 N% 区域呈半透明"，说明可能有残留或没抠全，按提示用滑块或修补模式修正即可</li>
+      <li>支持 PNG（透明）、WebP（更小）、JPEG（已换底色）三种格式</li>
+      <li><b>边缘羽化</b>：调整滑块（0-10px）让抠图边缘平滑过渡，减少锯齿。默认 2px，发丝细节可调到 3-4px</li>
+    </ul>
+
+    <h3>布局调整</h3>
+    <ul>
+      <li>栏与栏之间有紫色分隔线，鼠标悬停会高亮</li>
+      <li>按住分隔线左右拖动，可以调整三栏的宽度</li>
+      <li>布局会自动保存，下次打开时恢复</li>
+    </ul>
+
+    <h3>抠图效果说明</h3>
+    <ul>
+      <li><b>自动模式</b>（ISNet / RMBG）：适合主体明确的照片，推荐优先使用。ISNet 快速但复杂场景容易丢主体细节（如坐姿的腿部）；RMBG 高清版主体完整度明显更好，复杂图建议直接选它</li>
+      <li><b>点选模式</b>（SlimSAM）：适合指定抠哪个物体，但轻量版模型对发丝、复杂边缘效果有限</li>
+      <li>细小的附属物（飘带末端、挂饰等）任何自动模型都可能漏掉，用"点选 / 修补"模式点"保留"补回</li>
+      <li>如果点选模式效果不好，建议换自动模式，或换更精细的图片</li>
+    </ul>
+
+    <div class="warn">首次使用需联网下载模型（约 40-80MB），之后走浏览器缓存，离线可用。</div>
+    <div class="warn">如果遇到 "Failed to fetch" 错误，说明模型下载失败。请检查网络连接，或刷新页面重试。模型走国内镜像 hf-mirror.com，一般都能正常下载。</div>
+
+    <h3>故障排除</h3>
+    <ul>
+      <li><b>自动抠图失败</b>：状态栏会显示具体失败原因（网络问题/图片格式/内存不足等）</li>
+      <li><b>网络问题</b>：模型托管在 cdn.jsdelivr.net 和 hf-mirror.com，确保能访问这两个域名</li>
+      <li><b>图片格式</b>：支持 JPG/PNG/WebP 等常见格式，不支持 GIF 动图</li>
+      <li><b>内存不足</b>：图片太大（>4000px）可能导致内存不足，建议压缩后重试</li>
+      <li><b>批量失败</b>：批量处理时会显示每张图的失败原因，方便定位问题</li>
+      <li><b>高清版 RMBG 较慢</b>：首次需下载 44MB 模型（走 hf-mirror 国内镜像）；有独立显卡时走 GPU 约 10 秒出结果，纯 CPU 推理需要 1-2 分钟，属正常现象，请耐心等待</li>
+    </ul>
+
+    <button class="close-btn" id="btnCloseHelp">知道了</button>
+  </div>
+</div>
+
+<script type="module">
+// 优先 patch fetch：把所有 huggingface.co 请求重定向到 hf-mirror.com（国内镜像）
+// 必须在 import transformers.js 之前执行
+const origFetch = window.fetch.bind(window);
+window.fetch = (urlOr, opts) => {
+  // 防御性检查：urlOr 可能是 undefined、Request 对象、或字符串
+  let url = '';
+  try {
+    if (typeof urlOr === 'string') url = urlOr;
+    else if (urlOr && urlOr.url) url = urlOr.url;
+    else if (urlOr) url = String(urlOr);
+  } catch { url = ''; }
+
+  if (url && url.includes('huggingface.co')) {
+    const newUrl = url.replace('https://huggingface.co', 'https://hf-mirror.com');
+    console.log('[fetch 重定向]', url, '→', newUrl);
+    return origFetch(newUrl, opts).catch(err => { console.error('[fetch失败]', newUrl, String(err)); throw err; });
+  }
+  return origFetch(urlOr, opts).catch(err => { console.error('[fetch失败]', url, String(err)); throw err; });
+};
+
+const $ = id => document.getElementById(id);
+const CDN_IMGLY = 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm';
+const CDN_HF = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3';
+const CDN_JSZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+const SAM_MODEL = 'Xenova/slimsam-77-uniform';
+const SAM_HOSTS = ['https://hf-mirror.com', 'https://huggingface.co'];
+
+const state = {
+  items: [], currentId: null, mode: 'auto', busy: false,
+  bg: 'transparent', format: 'image/png', showOriginal: false,
+  autoModel: 'isnet_quint8', decontam: false, bgImg: null,
+  alphaAdj: 0, autoRun: true,
+  sam: { loaded: false, loading: false, model: null, processor: null, cache: null, device: '', rmbg: null },
+};
+let idSeq = 0;
+const current = () => state.items.find(i => i.id === state.currentId) || null;
+
+/* ---------- 状态管理 ---------- */
+function setStatus(text, cls = '') {
+  $('statusTxt').textContent = text;
+  $('statusTxt').parentElement.className = 'status' + (cls ? ' ' + cls : '');
+  // 忙时把状态同步到中栏浮动提示与中央遮罩（左栏状态栏可能被滚出视野）
+  if (state.busy) {
+    const t = text.split('\n')[0].slice(0, 60);
+    $('stageBusyTxt').textContent = t;
+    $('stageVeilTxt').textContent = t;
+  }
+}
+function setModelState(cls, txt) {
+  $('modelState').className = 'model-state ' + cls;
+  $('modelStateText').textContent = txt;
+}
+function setBusy(b) {
+  state.busy = b;
+  ['btnAdd','btnAutoAll','btnZip','btnAutoOne','btnDownload','btnCompare','btnUndoPoint','btnClearPoints']
+    .forEach(id => { $(id).disabled = b; });
+  $('overlay').classList.toggle('busy', b);
+  $('stageBusy').classList.toggle('hidden', !b);
+  $('stageVeil').classList.toggle('hidden', !b);
+  if (b) {
+    const t = $('statusTxt').textContent.split('\n')[0].slice(0, 60) || '处理中…';
+    $('stageBusyTxt').textContent = t;
+    $('stageVeilTxt').textContent = t;
+  }
+  updateButtons();
+}
+
+/* ---------- 队列 ---------- */
+async function addFiles(files) {
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  let added = 0, skipped = 0;
+  const newIds = [];
+  for (const f of imgs) {
+    // 去重：同名同大小同修改时间的文件跳过（防止手滑重复添加）
+    if (state.items.some(i => i.file.size === f.size && i.file.lastModified === f.lastModified && i.file.name === f.name && f.name)) {
+      skipped++; continue;
+    }
+    const url = URL.createObjectURL(f);
+    try {
+      const img = await loadImage(url);
+      const id = ++idSeq;
+      state.items.push({ id, file: f, name: f.name || `粘贴图-${idSeq + 1}.png`,
+        url, img, width: img.naturalWidth, height: img.naturalHeight,
+        status: 'pending', resultBlob: null, previewUrl: null, points: [], box: null,
+        baseMask: null, autoMask: null, maskHist: [], refineBoxes: [], refineActions: [] });
+      newIds.push(id);
+      added++;
+    } catch { URL.revokeObjectURL(url); }
+  }
+  if (!state.currentId && state.items.length) state.currentId = state.items[0].id;
+  renderQueue(); updateView();
+  // 新加的图片高亮闪烁 + 滚动到可见位置，让用户明确看到已添加
+  const ul = $('queue');
+  for (const id of newIds) {
+    const li = ul.querySelector(`li[data-id="${id}"]`);
+    if (li) { li.classList.add('flash'); li.addEventListener('animationend', () => li.classList.remove('flash'), { once: true }); }
+  }
+  ul.scrollTop = ul.scrollHeight;
+  setStatus(`已添加 ${added} 张图片，共 ${state.items.length} 张。` + (skipped ? `\n跳过 ${skipped} 张重复图片（同名同大小）。` : ''));
+  $('metaRow').style.display = '';
+  $('chipSize').textContent = state.items[0].width + '×' + state.items[0].height;
+  // 添加后自动抠图（默认开启）：自动模式下、当前空闲、有待处理项时直接开跑；自测试模式跳过（selftest 自己驱动流程）
+  if (state.autoRun && state.mode === 'auto' && !state.busy
+      && !new URLSearchParams(location.search).get('selftest')
+      && state.items.some(i => i.status === 'pending')) {
+    runAutoAll();
+  }
+}
+function loadImage(url) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+}
+const STATUS_LABEL = { pending: '待处理', working: '处理中', done: '已完成', error: '失败' };
+function renderQueue() {
+  const ul = $('queue');
+  ul.innerHTML = '';
+  for (const it of state.items) {
+    const li = document.createElement('li');
+    li.dataset.id = it.id;
+    if (it.id === state.currentId) li.className = 'active';
+    li.innerHTML = `<img src="${it.url}"><div class="meta"><div class="name" title="${it.name}">${it.name}</div><span class="badge ${it.status}">${STATUS_LABEL[it.status]}</span></div><span class="del" title="从队列移除">×</span>`;
+    li.querySelector('.del').onclick = e => { e.stopPropagation(); removeItem(it.id); };
+    li.onclick = () => {
+      if (state.busy) return;
+      const prev = current();
+      if (prev) renderMaskOverlay(prev, null, 0, 0);
+      state.currentId = it.id;
+      state.showOriginal = state.mode === 'sam';
+      renderQueue(); updateView();
+      $('chipSize').textContent = it.width + '×' + it.height;
+      $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+    };
+    ul.appendChild(li);
+  }
+}
+
+/* 从队列移除（释放 blob URL，删除当前项则切换到相邻项） */
+function removeItem(id) {
+  if (state.busy) return;
+  const idx = state.items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const it = state.items[idx];
+  URL.revokeObjectURL(it.url);
+  if (it.previewUrl) URL.revokeObjectURL(it.previewUrl);
+  state.items.splice(idx, 1);
+  if (state.currentId === id) {
+    renderMaskOverlay(it, null, 0, 0);
+    state.currentId = state.items.length ? state.items[Math.min(idx, state.items.length - 1)].id : null;
+    state.showOriginal = state.mode === 'sam';
+    const cur = current();
+    if (cur) {
+      $('chipSize').textContent = cur.width + '×' + cur.height;
+      $('chipPoints').textContent = cur.points.length + (cur.box ? '+框' : '');
+    }
+  }
+  renderQueue(); updateView();
+  setStatus(state.items.length ? `已移除「${it.name}」，剩余 ${state.items.length} 张。` : '队列已清空。');
+}
+
+/* ---------- 视图 ---------- */
+function updateView() {
+  const it = current();
+  $('drop').classList.toggle('hidden', !!it);
+  $('viewer').classList.toggle('active', !!it);
+  if (!it) { updateButtons(); updateResultView(); return; }
+
+  const showResult = !state.showOriginal && it.previewUrl;
+  $('viewImg').src = showResult ? it.previewUrl : it.url;
+
+  const mc = $('maskCanvas');
+  if (state.mode === 'sam' && !showResult) {
+    mc.style.display = 'block';
+    if (it.baseMask) renderMaskOverlay(it, it.baseMask, it.width, it.height);
+  } else {
+    mc.style.display = 'none';
+    if (state.mode !== 'sam') { mc.width = 0; mc.height = 0; }
+  }
+
+  renderMarkers(it);
+  updateButtons();
+  updateResultView();
+  $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+}
+function updateButtons() {
+  const it = current();
+  $('btnCompare').disabled = state.busy || !it || !it.resultBlob;
+  $('btnDownload').disabled = state.busy || !it || !it.resultBlob;
+  $('btnAutoAll').disabled = state.busy || !state.items.some(i => i.status === 'pending' || i.status === 'error');
+  $('btnZip').disabled = state.busy || !state.items.some(i => i.status === 'done');
+  $('btnAutoOne').disabled = state.busy || !it;
+  // 撤销/清空可用性：修补模式看修补历史（maskHist）+ 全部标记；选区模式看点/框
+  const inRefine = state.mode === 'sam' && refineMode;
+  const hasMarks = !!it && (it.points.length > 0 || !!it.box || (it.refineBoxes && it.refineBoxes.length > 0));
+  const hasHist = !!it && it.maskHist && it.maskHist.length > 0;
+  $('btnUndoPoint').disabled = state.busy || !it || (inRefine ? !hasHist : !hasMarks);
+  $('btnClearPoints').disabled = state.busy || !it || (inRefine ? (!hasHist && !hasMarks) : !hasMarks);
+  $('btnCompare').textContent = state.showOriginal ? '查看结果' : '查看原图';
+}
+function updateResultView() {
+  const it = current();
+  if (it && it.previewUrl) {
+    $('resultImg').src = it.previewUrl;
+    $('resultImg').style.display = '';
+    $('resultEmpty').style.display = 'none';
+  } else {
+    $('resultImg').style.display = 'none';
+    $('resultEmpty').style.display = '';
+  }
+}
+function renderMarkers(it) {
+  const ov = $('overlay');
+  ov.innerHTML = '<div id="boxSelect"></div>';
+  if (state.mode !== 'sam') return;
+  for (let i = 0; i < it.points.length; i++) {
+    const p = it.points[i];
+    const d = document.createElement('div');
+    d.className = 'marker ' + (p.label ? 'inc' : 'exc');
+    d.style.left = (p.x / it.width * 100) + '%';
+    d.style.top = (p.y / it.height * 100) + '%';
+    d.dataset.idx = i;
+    d.title = p.label ? '保留点（单击删除，双击变排除）' : '排除点（单击删除，双击变保留）';
+    d.addEventListener('click', e => { e.stopPropagation(); deletePoint(i); });
+    d.addEventListener('dblclick', e => { e.stopPropagation(); togglePointType(i); });
+    ov.appendChild(d);
+  }
+  // 选区模式的框选持久标记（紫色，单击删除）
+  if (it.box) {
+    const d = document.createElement('div');
+    d.className = 'marker-box';
+    d.style.left = (it.box.x1 / it.width * 100) + '%';
+    d.style.top = (it.box.y1 / it.height * 100) + '%';
+    d.style.width = ((it.box.x2 - it.box.x1) / it.width * 100) + '%';
+    d.style.height = ((it.box.y2 - it.box.y1) / it.height * 100) + '%';
+    d.title = '框选区域（单击删除）';
+    d.addEventListener('click', e => { e.stopPropagation(); $('btnUndoPoint').click(); });
+    ov.appendChild(d);
+  }
+  // 修补模式的框选留痕（绿色=已并入结果，用"撤销"逐步回退）
+  for (const b of (it.refineBoxes || [])) {
+    const d = document.createElement('div');
+    d.className = 'marker-box refine';
+    d.style.left = (b.x1 / it.width * 100) + '%';
+    d.style.top = (b.y1 / it.height * 100) + '%';
+    d.style.width = ((b.x2 - b.x1) / it.width * 100) + '%';
+    d.style.height = ((b.y2 - b.y1) / it.height * 100) + '%';
+    d.title = '框选修补区域（已并入结果，用"撤销"回退）';
+    ov.appendChild(d);
+  }
+}
+
+/* 删除指定点 */
+async function deletePoint(idx) {
+  const it = current(); if (!it || state.busy) return;
+  it.points.splice(idx, 1);
+  renderMarkers(it);
+  $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+  if (refineMode) { setStatus('已删除标记（修补模式下不影响蒙版，用"撤销"回退修补步骤）。'); return; }
+  if (!it.points.length && !it.box) {
+    it.resultBlob = null; it.status = 'pending';
+    renderMaskOverlay(it, null, 0, 0);
+    await refreshPreview(it); renderQueue(); updateView();
+    setStatus('已清空所有标记。');
+    return;
+  }
+  setStatus(`已删除点，重新计算中…（剩余 ${it.points.length} 个点）`);
+  setBusy(true);
+  try { await runSamDecode(it); setStatus(`已重新计算（${it.points.length} 个点）。`, 'ok'); }
+  catch (e) { console.error(e); setStatus(`重新计算失败：${e.message || e}`, 'err'); }
+  setBusy(false); renderQueue(); updateView();
+}
+
+/* 切换点类型 */
+async function togglePointType(idx) {
+  const it = current(); if (!it || state.busy) return;
+  if (refineMode) return;
+  it.points[idx].label = it.points[idx].label ? 0 : 1;
+  renderMarkers(it);
+  setStatus(`已切换点类型为${it.points[idx].label ? '保留' : '排除'}，重新计算中…`);
+  setBusy(true);
+  try { await runSamDecode(it); setStatus(`已重新计算（${it.points.length} 个点）。`, 'ok'); }
+  catch (e) { console.error(e); setStatus(`重新计算失败：${e.message || e}`, 'err'); }
+  setBusy(false); renderQueue(); updateView();
+}
+
+/* ---------- 预览合成 ---------- */
+const GRADIENTS = {
+  'gradient-1': ['#6D28D9', '#c4b5fd'],   // 暮紫
+  'gradient-2': ['#F2945C', '#FFE3C2'],   // 暖杏
+  'gradient-3': ['#2ea88a', '#D8F3EA'],   // 薄荷
+};
+
+/* 在 ctx 上绘制背景层（纯色/渐变/上传图片/原图特效） */
+function drawBackground(ctx, it, W, H, bg) {
+  if (bg === 'transparent') return;
+  if (bg.startsWith('fx-')) {
+    // 原图背景特效：把原图作为背景（cover 铺满），加滤镜
+    const filter = bg === 'fx-blur' ? 'blur(14px)' : bg === 'fx-gray' ? 'grayscale(1)' : 'sepia(0.9)';
+    ctx.save();
+    ctx.filter = filter;
+    const s = Math.max(W / it.width, H / it.height);
+    ctx.drawImage(it.img, (W - it.width * s) / 2, (H - it.height * s) / 2, it.width * s, it.height * s);
+    ctx.restore();
+    return;
+  }
+  if (bg === 'image') {
+    if (!state.bgImg) return;
+    const s = Math.max(W / state.bgImg.width, H / state.bgImg.height);
+    ctx.drawImage(state.bgImg, (W - state.bgImg.width * s) / 2, (H - state.bgImg.height * s) / 2, state.bgImg.width * s, state.bgImg.height * s);
+    return;
+  }
+  if (GRADIENTS[bg]) {
+    const [c1, c2] = GRADIENTS[bg];
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, c1); g.addColorStop(1, c2);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    return;
+  }
+  ctx.fillStyle = bg === 'custom' ? $('bgCustom').value : bg;
+  ctx.fillRect(0, 0, W, H);
+}
+
+/* 去白边/灰边：把不透明前景的颜色向半透明边缘"渗透"（color bleeding），
+   消除抠图边缘残留的底色杂边。只在边缘带内生效（最多向内 16px）。 */
+function decontaminate(ctx, W, H) {
+  const im = ctx.getImageData(0, 0, W, H);
+  const d = im.data;
+  const n = W * H;
+  const filled = new Uint8Array(n);
+  for (let i = 0; i < n; i++) filled[i] = d[i * 4 + 3] >= 200 ? 1 : 0;
+  const MAX_PASS = 16;
+  for (let p = 0; p < MAX_PASS; p++) {
+    let changed = 0;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        if (filled[i]) continue;
+        let src = -1;
+        if (x > 0 && filled[i - 1] === 1) src = i - 1;
+        else if (x < W - 1 && filled[i + 1] === 1) src = i + 1;
+        else if (y > 0 && filled[i - W] === 1) src = i - W;
+        else if (y < H - 1 && filled[i + W] === 1) src = i + W;
+        if (src >= 0) {
+          d[i * 4] = d[src * 4]; d[i * 4 + 1] = d[src * 4 + 1]; d[i * 4 + 2] = d[src * 4 + 2];
+          filled[i] = 2; changed++;
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) if (filled[i] === 2) filled[i] = 1;
+    if (!changed) break;
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+/* 蒙版强度调整（残留清理 / 主体补全）：
+   adj > 0：清理——alpha ≤ adj% 的半透明像素归零，其余线性拉伸（去沙发/桌面鬼影）
+   adj < 0：补全——alpha 按比例增益（救回没抠全、呈半透明的裤子/裙摆等主体区域）
+   直接改前景画布的 alpha 通道，对预览/下载/ZIP 全链路生效，无需重新抠图。 */
+function adjustAlpha(ctx, W, H, adj) {
+  if (!adj) return;
+  const im = ctx.getImageData(0, 0, W, H);
+  const d = im.data;
+  const t = adj / 100;
+  if (t > 0) {
+    const lo = t * 255, span = Math.max(1, 255 - lo);
+    for (let i = 3; i < d.length; i += 4) {
+      const a = d[i];
+      d[i] = a <= lo ? 0 : Math.round((a - lo) / span * 255);
+    }
+  } else {
+    const g = 1 / (1 + t); // t∈[-0.6,0) → 增益 1~2.5 倍
+    for (let i = 3; i < d.length; i += 4) {
+      const a = d[i];
+      if (a) d[i] = Math.min(255, Math.round(a * g));
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+async function composite(it, format, quality) {
+  const bmp = await createImageBitmap(it.resultBlob);
+  // 先在透明画布上放好前景，按需做 蒙版强度调整 + 边缘去污，再叠到背景上
+  const fg = document.createElement('canvas');
+  fg.width = bmp.width; fg.height = bmp.height;
+  const fctx = fg.getContext('2d', { willReadFrequently: state.decontam || state.alphaAdj !== 0 });
+  fctx.drawImage(bmp, 0, 0);
+  if (state.alphaAdj) adjustAlpha(fctx, fg.width, fg.height, state.alphaAdj);
+  if (state.decontam) decontaminate(fctx, fg.width, fg.height);
+  const c = document.createElement('canvas');
+  c.width = bmp.width; c.height = bmp.height;
+  const ctx = c.getContext('2d');
+  drawBackground(ctx, it, c.width, c.height, state.bg);
+  ctx.drawImage(fg, 0, 0);
+  const type = format || 'image/png';
+  return new Promise(res => c.toBlob(res, type, quality ?? 0.92));
+}
+async function refreshPreview(it) {
+  if (it.previewUrl) { URL.revokeObjectURL(it.previewUrl); it.previewUrl = null; }
+  if (it.resultBlob) {
+    const blob = await composite(it, 'image/png');
+    it.previewUrl = URL.createObjectURL(blob);
+  }
+}
+
+/* ---------- 自动抠图（imgly / ISNet / RMBG） ---------- */
+let imglyMod = null;
+async function runAuto(it) {
+  const isRmbg = state.autoModel === 'rmbg14';
+  const modelLabel = isRmbg ? '高清版 RMBG 44MB' : state.autoModel === 'isnet_fp16' ? '精细版 80MB' : '快速版 40MB';
+  if (!isRmbg) {
+    try {
+      imglyMod = imglyMod || await import(CDN_IMGLY);
+    } catch (e) {
+      let msg = '未知错误';
+      try {
+        if (e && typeof e === 'object') {
+          msg = e.message || e.toString() || JSON.stringify(e) || '未知错误';
+        } else if (e !== undefined && e !== null) {
+          msg = String(e);
+        }
+      } catch { msg = '未知错误'; }
+      if (!msg || typeof msg !== 'string') msg = '未知错误';
+      throw new Error(`加载抠图库失败：${msg}。可能是网络问题，请检查是否能访问 cdn.jsdelivr.net`);
+    }
+  }
+  it.status = 'working'; renderQueue();
+  setModelState('loading', '推理中...');
+  const t0 = performance.now();
+  try {
+    let blob;
+    if (isRmbg) {
+      blob = await runRmbgInfer(it);
+    } else {
+      blob = await imglyMod.removeBackground(it.file, {
+        model: state.autoModel,
+        output: { format: 'image/png' },
+        progress: (key, cur, tot) => {
+          const stage = key.startsWith('fetch') ? '下载模型' : key.startsWith('compute') ? '推理计算' : key;
+          setStatus(`[${it.name}] ${stage}（${modelLabel}）`);
+        },
+      });
+    }
+    it.resultBlob = blob; it.status = 'done';
+    it.baseMask = null; it.autoMask = null; it.maskHist = []; it.points = []; it.box = null;
+    it.refineBoxes = []; it.refineActions = [];
+    const ms = ((performance.now() - t0) / 1000).toFixed(1);
+    $('chipTime').textContent = ms + 's';
+    setModelState('ready', '就绪');
+    await refreshPreview(it);
+    // 半透明区域占比分析（缩小图统计，占比高 = 可能有幽灵残留或主体没抠全，提示用户用滑块/修补）
+    it.semiRatio = 0;
+    try {
+      const ab = await createImageBitmap(blob);
+      const sw = Math.min(ab.width, 256), sh = Math.max(1, Math.round(ab.height * sw / ab.width));
+      const ac = document.createElement('canvas'); ac.width = sw; ac.height = sh;
+      const actx = ac.getContext('2d', { willReadFrequently: true });
+      actx.drawImage(ab, 0, 0, sw, sh);
+      const ad = actx.getImageData(0, 0, sw, sh).data;
+      let semi = 0;
+      for (let i = 3; i < ad.length; i += 4) if (ad[i] > 30 && ad[i] < 200) semi++;
+      it.semiRatio = semi / (sw * sh);
+    } catch {}
+  } catch (e) {
+    // 兼容各种错误对象：Error 实例、字符串、其他对象
+    let msg = '未知错误';
+    try {
+      if (e && typeof e === 'object') {
+        msg = e.message || e.toString() || JSON.stringify(e) || '未知错误';
+      } else if (e !== undefined && e !== null) {
+        msg = String(e);
+      }
+    } catch { msg = '未知错误'; }
+    if (!msg || typeof msg !== 'string') msg = '未知错误';
+
+    console.log('[runAuto] ===== 错误详情开始 =====');
+    console.log('[runAuto] 捕获到错误：', e);
+    console.log('[runAuto] 错误类型：', typeof e);
+    console.log('[runAuto] 错误构造函数：', e && e.constructor ? e.constructor.name : 'N/A');
+    console.log('[runAuto] 错误.message：', e && e.message);
+    console.log('[runAuto] 错误.stack：', e && e.stack);
+    console.log('[runAuto] 提取的 msg：', msg);
+    console.log('[runAuto] ===== 错误详情结束 =====');
+
+    // 直接显示原始错误，不包装
+    throw new Error(msg);
+  }
+}
+
+/* ---------- 高清抠图（RMBG-1.4，走 transformers.js，与 SAM 共用 hf 模块） ---------- */
+async function ensureRmbg() {
+  if (state.sam.rmbg) return state.sam.rmbg;
+  hf = hf || await import(CDN_HF);
+  hf.env.allowLocalModels = false;
+  // 支持 ?hfhost= 覆盖模型源（自测试走本地代理用）
+  hf.env.remoteHost = new URLSearchParams(location.search).get('hfhost') || 'https://hf-mirror.com';
+  let gpuOk = false;
+  if (navigator.gpu) { try { gpuOk = !!(await navigator.gpu.requestAdapter()); } catch {} }
+  const device = gpuOk ? 'webgpu' : 'wasm';
+  // RMBG-1.4 的 config 声明的架构 transformers.js 不认识，需 model_type:'custom' 走通用 ONNX 加载
+  const model = await hf.AutoModel.from_pretrained('briaai/RMBG-1.4', {
+    device, dtype: 'q8', // q8 → model_quantized.onnx（44MB）
+    config: { model_type: 'custom' },
+    progress_callback: p => {
+      if (p.status === 'progress' && p.file && p.file.includes('onnx')) {
+        setStatus(`下载高清模型（RMBG-1.4 44MB）${Math.round(p.progress)}%`);
+      }
+    },
+  });
+  const processor = await hf.AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
+    config: {
+      do_normalize: true, do_pad: false, do_rescale: true, do_resize: true,
+      image_mean: [0.5, 0.5, 0.5], image_std: [1, 1, 1],
+      feature_extractor_type: 'ImageFeatureExtractor',
+      resample: 2, rescale_factor: 0.00392156862745098,
+      size: { width: 1024, height: 1024 },
+    },
+  });
+  state.sam.rmbg = { model, processor, device };
+  return state.sam.rmbg;
+}
+
+async function runRmbgInfer(it) {
+  const rb = await ensureRmbg();
+  setStatus(`[${it.name}] 推理计算（高清版 RMBG）${rb.device === 'wasm' ? '（CPU 推理较慢，请稍候）' : ''}`);
+  const image = await hf.RawImage.read(it.url);
+  const { pixel_values } = await rb.processor(image);
+  const { output } = await rb.model({ input: pixel_values });
+  const mask = await hf.RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(it.width, it.height);
+  const c = document.createElement('canvas'); c.width = it.width; c.height = it.height;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(it.img, 0, 0, it.width, it.height);
+  const im = ctx.getImageData(0, 0, it.width, it.height);
+  for (let i = 0; i < it.width * it.height; i++) im.data[i * 4 + 3] = mask.data[i * mask.channels];
+  ctx.putImageData(im, 0, 0);
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+
+/* ---------- 点选抠图（SlimSAM） ---------- */
+let hf = null;
+let samMode = 'box';
+let refineMode = true; // 修补模式默认开启（自动抠图打底 + SAM 局部增删，最省力）
+let boxStart = null;
+let decodeTimer = null;
+
+async function ensureSam() {
+  if (state.sam.loaded) return;
+  if (state.sam.loading) return;
+  state.sam.loading = true;
+  setModelState('loading', '加载模型...');
+  try {
+    hf = hf || await import(CDN_HF);
+    hf.env.allowLocalModels = false;
+    // 支持 ?hfhost= 覆盖模型源（自测试走本地代理用）
+    hf.env.remoteHost = new URLSearchParams(location.search).get('hfhost') || 'https://hf-mirror.com'; // 国内镜像
+    // navigator.gpu 存在不代表真能拿到 GPU（无头/虚拟机/被禁用时 requestAdapter 返回 null），先探测再决定设备顺序
+    let gpuOk = false;
+    if (navigator.gpu) { try { gpuOk = !!(await navigator.gpu.requestAdapter()); } catch {} }
+    const devices = gpuOk ? ['webgpu', 'wasm'] : ['wasm'];
+    let lastErr = null;
+    for (const device of devices) {
+      try {
+        setStatus(`加载点选模型 SlimSAM（约40MB，${device === 'webgpu' ? 'WebGPU 加速' : 'CPU'}）…`);
+        const progress_callback = p => {
+          if (p.status === 'progress' && p.total) setStatus(`下载模型 ${p.file}：${Math.round(p.progress)}%`);
+        };
+        const model = await hf.SamModel.from_pretrained(SAM_MODEL, {
+          dtype: { vision_encoder: 'q8', prompt_encoder_mask_decoder: 'fp32' },
+          device, progress_callback,
+        });
+        const processor = await hf.AutoProcessor.from_pretrained(SAM_MODEL, { progress_callback });
+        Object.assign(state.sam, { model, processor, loaded: true, device });
+        setModelState('ready', 'SlimSAM 就绪');
+        setStatus(`点选模型就绪（${device === 'webgpu' ? 'WebGPU 加速' : 'CPU 推理'}）。拖框或点击开始抠图。`, 'ok');
+        return;
+      } catch (e) { lastErr = e; console.warn(`SlimSAM 加载失败（${device}）`, e); }
+    }
+    throw lastErr || new Error('模型加载失败');
+  } catch (e) {
+    setModelState('err', '加载失败');
+    setStatus(`点选模型加载失败：${e.message || e}。\n可能原因：网络不通或 hf-mirror.com 不可用。\n建议：检查网络连接，或稍后再试。`, 'err');
+    throw e;
+  } finally { state.sam.loading = false; }
+}
+async function ensureEncoded(it) {
+  if (state.sam.cache && state.sam.cache.itemId === it.id) return;
+  setStatus(`[${it.name}] 编码图像中（仅首次需要）…`);
+  setModelState('loading', '编码中...');
+  const t0 = performance.now();
+  const image = await hf.RawImage.read(it.url);
+  const imageInputs = await state.sam.processor(image);
+  const embeddings = await state.sam.model.get_image_embeddings(imageInputs);
+  state.sam.cache = { itemId: it.id, imageInputs, embeddings };
+  const ms = ((performance.now() - t0) / 1000).toFixed(1);
+  $('chipTime').textContent = ms + 's';
+  setModelState('ready', 'SlimSAM 就绪');
+}
+
+/* 二值 mask → 羽化后的软蒙版（Uint8 0-255） */
+function maskToSoft(data, off, W, H, feather) {
+  const mc = document.createElement('canvas');
+  mc.width = W; mc.height = H;
+  const mctx = mc.getContext('2d', { willReadFrequently: true });
+  const im = mctx.createImageData(W, H);
+  for (let i = 0; i < H * W; i++) {
+    const v = data[off + i] ? 255 : 0;
+    im.data[i * 4] = v; im.data[i * 4 + 1] = v; im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255;
+  }
+  mctx.putImageData(im, 0, 0);
+  if (feather > 0) {
+    mctx.filter = `blur(${feather}px)`;
+    mctx.drawImage(mc, 0, 0);
+    mctx.filter = 'none';
+  }
+  const sd = mctx.getImageData(0, 0, W, H).data;
+  const out = new Uint8Array(W * H);
+  for (let i = 0; i < out.length; i++) out[i] = sd[i * 4];
+  return out;
+}
+
+/* 用软蒙版作为 alpha 生成结果 PNG */
+async function applyMaskResult(it, alpha, W, H) {
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(it.img, 0, 0, W, H);
+  const im = ctx.getImageData(0, 0, W, H);
+  const px = im.data;
+  for (let i = 0; i < H * W; i++) px[i * 4 + 3] = alpha[i];
+  ctx.putImageData(im, 0, 0);
+  it.resultBlob = await new Promise(res => c.toBlob(res, 'image/png'));
+  it.status = 'done';
+  await refreshPreview(it);
+}
+
+/* 从当前 resultBlob 提取 alpha 作为修补底版（无结果则为全 0） */
+async function extractBaseMask(it) {
+  const c = document.createElement('canvas');
+  c.width = it.width; c.height = it.height;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  if (it.resultBlob) {
+    const bmp = await createImageBitmap(it.resultBlob);
+    ctx.drawImage(bmp, 0, 0, it.width, it.height);
+  }
+  const d = ctx.getImageData(0, 0, it.width, it.height).data;
+  const m = new Uint8Array(it.width * it.height);
+  for (let i = 0; i < m.length; i++) m[i] = d[i * 4 + 3];
+  return m;
+}
+
+async function ensureBaseMask(it) {
+  if (!it.baseMask) {
+    it.baseMask = await extractBaseMask(it);
+    it.autoMask = it.baseMask.slice();
+    it.maskHist = [];
+  }
+}
+
+function maskUnion(base, soft) { for (let i = 0; i < base.length; i++) { const v = soft[i]; if (v > base[i]) base[i] = v; } }
+function maskSubtract(base, soft) { for (let i = 0; i < base.length; i++) { const inv = 255 - soft[i]; if (inv < base[i]) base[i] = inv; } }
+function pickBestMask(scores) { let best = 0; for (let i = 1; i < scores.length; i++) if (scores[i] > scores[best]) best = i; return best; }
+
+/* 渲染 mask 叠加层 */
+function renderMaskOverlay(it, maskData, maskW, maskH) {
+  const mc = $('maskCanvas');
+  mc.width = it.width; mc.height = it.height;
+  const ctx = mc.getContext('2d');
+  ctx.clearRect(0, 0, it.width, it.height);
+  if (!maskData) return;
+
+  const overlay = ctx.createImageData(maskW, maskH);
+  const px = overlay.data;
+
+  const isEdge = new Uint8Array(maskW * maskH);
+  for (let y = 0; y < maskH; y++) {
+    for (let x = 0; x < maskW; x++) {
+      const i = y * maskW + x;
+      if (maskData[i] <= 127) continue;
+      if ((x > 0 && maskData[i - 1] <= 127) || (x < maskW - 1 && maskData[i + 1] <= 127) ||
+          (y > 0 && maskData[i - maskW] <= 127) || (y < maskH - 1 && maskData[i + maskW] <= 127)) {
+        isEdge[i] = 1;
+      }
+    }
+  }
+
+  for (let i = 0; i < maskW * maskH; i++) {
+    if (maskData[i] <= 127) continue;
+    if (isEdge[i]) {
+      px[i * 4] = 168; px[i * 4 + 1] = 85; px[i * 4 + 2] = 247; px[i * 4 + 3] = 255;
+    } else {
+      px[i * 4] = 88; px[i * 4 + 1] = 28; px[i * 4 + 2] = 135; px[i * 4 + 3] = 153;
+    }
+  }
+
+  const tmp = document.createElement('canvas');
+  tmp.width = maskW; tmp.height = maskH;
+  tmp.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(tmp, 0, 0, it.width, it.height);
+}
+
+async function runSamDecode(it) {
+  if (!it.points.length && !it.box) { renderMaskOverlay(it, null, 0, 0); return; }
+  const { imageInputs, embeddings } = state.sam.cache;
+  const [rH, rW] = imageInputs.reshaped_input_sizes[0];
+
+  const flat = [], labels = [];
+  for (const p of it.points) { flat.push(p.x / it.width * rW, p.y / it.height * rH); labels.push(BigInt(p.label)); }
+
+  let input_boxes = null;
+  if (it.box) {
+    const { x1, y1, x2, y2 } = it.box;
+    input_boxes = new hf.Tensor('float32', Float32Array.from([
+      x1 / it.width * rW, y1 / it.height * rH,
+      x2 / it.width * rW, y2 / it.height * rH,
+    ]), [1, 1, 4]);
+    // SAM 要求必须有 input_points，框选时自动加中心点作为保留点
+    if (flat.length === 0) {
+      flat.push((x1 + x2) / 2 / it.width * rW, (y1 + y2) / 2 / it.height * rH);
+      labels.push(1n);
+    }
+  }
+
+  const n = flat.length / 2;
+  const input_points = new hf.Tensor('float32', Float32Array.from(flat), [1, 1, n, 2]);
+  const input_labels = new hf.Tensor('int64', BigInt64Array.from(labels), [1, 1, n]);
+
+  const t0 = performance.now();
+  const out = await state.sam.model({ ...embeddings, input_points, input_labels, input_boxes });
+  const masks = await state.sam.processor.post_process_masks(
+    out.pred_masks, imageInputs.original_sizes, imageInputs.reshaped_input_sizes);
+  const ms = ((performance.now() - t0) / 1000).toFixed(2);
+  $('chipTime').textContent = ms + 's';
+
+  const best = pickBestMask(out.iou_scores.data);
+  const m = masks[0];
+  const H = m.dims[m.dims.length - 2], W = m.dims[m.dims.length - 1];
+  const feather = parseInt($('featherRange').value);
+  const soft = maskToSoft(m.data, best * H * W, W, H, feather);
+
+  it.baseMask = soft.slice(); it.autoMask = soft.slice(); it.maskHist = [];
+  it.refineBoxes = []; it.refineActions = [];
+  renderMaskOverlay(it, soft, W, H);
+  await applyMaskResult(it, soft, W, H);
+}
+
+/* 修补模式：单点解码（始终作为正点，拿到该处物体蒙版） */
+async function decodeSinglePoint(it, x, y) {
+  const { imageInputs, embeddings } = state.sam.cache;
+  const [rH, rW] = imageInputs.reshaped_input_sizes[0];
+  const input_points = new hf.Tensor('float32', Float32Array.from([x / it.width * rW, y / it.height * rH]), [1, 1, 1, 2]);
+  const input_labels = new hf.Tensor('int64', BigInt64Array.from([1n]), [1, 1, 1]);
+  const out = await state.sam.model({ ...embeddings, input_points, input_labels, input_boxes: null });
+  const masks = await state.sam.processor.post_process_masks(
+    out.pred_masks, imageInputs.original_sizes, imageInputs.reshaped_input_sizes);
+  const best = pickBestMask(out.iou_scores.data);
+  const m = masks[0];
+  const H = m.dims[m.dims.length - 2], W = m.dims[m.dims.length - 1];
+  if (W !== it.width || H !== it.height) throw new Error('蒙版尺寸与原图不匹配');
+  const feather = parseInt($('featherRange').value);
+  return { soft: maskToSoft(m.data, best * H * W, W, H, feather), W, H };
+}
+
+/* 修补模式：框解码 */
+async function decodeBoxMask(it, box) {
+  const { imageInputs, embeddings } = state.sam.cache;
+  const [rH, rW] = imageInputs.reshaped_input_sizes[0];
+  const input_boxes = new hf.Tensor('float32', Float32Array.from([
+    box.x1 / it.width * rW, box.y1 / it.height * rH,
+    box.x2 / it.width * rW, box.y2 / it.height * rH,
+  ]), [1, 1, 4]);
+  const input_points = new hf.Tensor('float32', Float32Array.from([
+    (box.x1 + box.x2) / 2 / it.width * rW, (box.y1 + box.y2) / 2 / it.height * rH,
+  ]), [1, 1, 1, 2]);
+  const input_labels = new hf.Tensor('int64', BigInt64Array.from([1n]), [1, 1, 1]);
+  const out = await state.sam.model({ ...embeddings, input_points, input_labels, input_boxes });
+  const masks = await state.sam.processor.post_process_masks(
+    out.pred_masks, imageInputs.original_sizes, imageInputs.reshaped_input_sizes);
+  const best = pickBestMask(out.iou_scores.data);
+  const m = masks[0];
+  const H = m.dims[m.dims.length - 2], W = m.dims[m.dims.length - 1];
+  if (W !== it.width || H !== it.height) throw new Error('蒙版尺寸与原图不匹配');
+  const feather = parseInt($('featherRange').value);
+  return { soft: maskToSoft(m.data, best * H * W, W, H, feather), W, H };
+}
+
+/* 修补：点保留(label=1)/排除(label=0)，并入底版 */
+async function refinePointAt(it, x, y, label) {
+  await ensureSam();
+  await ensureEncoded(it);
+  await ensureBaseMask(it);
+  it.maskHist.push(it.baseMask.slice());
+  if (it.maskHist.length > 8) it.maskHist.shift();
+  const { soft, W, H } = await decodeSinglePoint(it, x, y);
+  if (label === 1) maskUnion(it.baseMask, soft); else maskSubtract(it.baseMask, soft);
+  renderMaskOverlay(it, it.baseMask, W, H);
+  await applyMaskResult(it, it.baseMask, W, H);
+}
+
+/* 修补：框选区域并入底版（始终为保留） */
+async function refineBoxAt(it, box) {
+  await ensureSam();
+  await ensureEncoded(it);
+  await ensureBaseMask(it);
+  it.maskHist.push(it.baseMask.slice());
+  if (it.maskHist.length > 8) it.maskHist.shift();
+  const { soft, W, H } = await decodeBoxMask(it, box);
+  maskUnion(it.baseMask, soft);
+  renderMaskOverlay(it, it.baseMask, W, H);
+  await applyMaskResult(it, it.baseMask, W, H);
+}
+
+/* 防抖解码 */
+function scheduleSamDecode(it) {
+  if (decodeTimer) clearTimeout(decodeTimer);
+  decodeTimer = setTimeout(async () => {
+    decodeTimer = null;
+    setBusy(true);
+    try {
+      setStatus(`[${it.name}] 解码中…`);
+      await runSamDecode(it);
+      setStatus(`[${it.name}] 解码完成（${it.points.length} 个点）。深紫区域=选中，亮紫描边=边界。`, 'ok');
+    } catch (e) {
+      console.error(e);
+      setStatus(`点选抠图失败：${e.message || e}`, 'err');
+    }
+    setBusy(false); renderQueue(); updateView();
+  }, 200);
+}
+
+/* ---------- 事件 ---------- */
+$('btnAdd').onclick = () => $('fileInput').click();
+$('fileInput').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+$('stage').addEventListener('dragover', e => e.preventDefault());
+$('stage').addEventListener('drop', e => { e.preventDefault(); addFiles(e.dataTransfer.files); });
+$('drop').onclick = () => $('fileInput').click();
+window.addEventListener('paste', e => {
+  const files = [...(e.clipboardData?.items || [])].filter(i => i.kind === 'file').map(i => i.getAsFile());
+  if (files.length) addFiles(files);
+});
+
+/* 帮助弹窗 */
+$('btnHelp').onclick = () => $('helpModal').classList.remove('hidden');
+$('btnCloseHelp').onclick = () => $('helpModal').classList.add('hidden');
+$('helpModal').addEventListener('click', e => { if (e.target === $('helpModal')) $('helpModal').classList.add('hidden'); });
+
+/* 模式切换 */
+$('modeAuto').onclick = () => {
+  state.mode = 'auto'; state.showOriginal = false;
+  $('modeAuto').classList.add('active'); $('modeSam').classList.remove('active');
+  $('autoModelField').classList.remove('hidden');
+  $('samModeField').classList.add('hidden');
+  $('autoActions').style.display = '';
+  $('samActions').style.display = 'none';
+  $('modeHint').textContent = '自动模式：添加图片后点击"抠当前图"一键完成';
+  const it = current();
+  if (it) renderMaskOverlay(it, null, 0, 0);
+  updateView();
+};
+$('modeSam').onclick = () => {
+  state.mode = 'sam'; state.showOriginal = true;
+  $('modeSam').classList.add('active'); $('modeAuto').classList.remove('active');
+  $('autoModelField').classList.add('hidden');
+  $('samModeField').classList.remove('hidden');
+  $('autoActions').style.display = 'none';
+  $('samActions').style.display = '';
+  $('modeHint').textContent = refineMode
+    ? '修补模式：在已有抠图结果上，点"保留"补回缺失区域，点"排除"去掉残留背景'
+    : '点选模式：拖框选中主体（推荐），或切换"保留/排除"模式点击修正';
+  updateView();
+};
+
+/* 修补模式开关 */
+$('refineToggle').onchange = async () => {
+  refineMode = $('refineToggle').checked;
+  const it = current();
+  if (refineMode) {
+    $('modeHint').textContent = '修补模式：在已有抠图结果上，点"保留"补回缺失区域，点"排除"去掉残留背景';
+    if (it && state.mode === 'sam') {
+      await ensureBaseMask(it);
+      state.showOriginal = true;
+      renderMaskOverlay(it, it.baseMask, it.width, it.height);
+      updateView();
+      setStatus(it.resultBlob
+        ? '修补模式已开启：深紫区域=当前保留部分。点"排除"去掉残留，点"保留"补回缺失。'
+        : '修补模式已开启：当前图片还没有抠图结果，将从空白开始（也可先切回自动模式抠图）。');
+    }
+  } else {
+    $('modeHint').textContent = '点选模式：拖框选中主体（推荐），或切换"保留/排除"模式点击修正';
+    updateView();
+  }
+};
+
+/* 半透明占比提示：自动抠图后引导用户用滑块/修补快速修正（单张、批量、自动触发三处共用） */
+function semiHint(it) {
+  return it && it.semiRatio > 0.12
+    ? `\n提示：「${it.name}」约 ${Math.round(it.semiRatio * 100)}% 区域呈半透明（可能有背景残留或主体没抠全），可拖左栏"残留清理 / 主体补全"滑块快速修正，或切"点选 / 修补"精修。`
+    : '';
+}
+
+$('btnAutoOne').onclick = async () => {
+  const it = current(); if (!it || state.busy) return;
+  setBusy(true);
+  try {
+    await runAuto(it);
+    setStatus(`[${it.name}] 抠图完成。` + semiHint(it), 'ok');
+  }
+  catch (e) {
+    it.status = 'error';
+    console.error(e);
+    let msg = '未知错误';
+    try {
+      if (e && typeof e === 'object') {
+        msg = e.message || e.toString() || JSON.stringify(e) || '未知错误';
+      } else if (e !== undefined && e !== null) {
+        msg = String(e);
+      }
+    } catch { msg = '未知错误'; }
+    if (!msg || typeof msg !== 'string') msg = '未知错误';
+    setStatus(`[${it.name}] 抠图失败\n\n${msg}`, 'err');
+    setModelState('err', '失败');
+  }
+  setBusy(false); renderQueue(); updateView();
+};
+
+/* 批量自动抠图：处理队列中所有待处理/失败的图片（"全部自动抠图"按钮和"添加后自动抠图"共用） */
+async function runAutoAll() {
+  if (state.busy) return;
+  const targets = state.items.filter(i => i.status === 'pending' || i.status === 'error');
+  if (!targets.length) return;
+  setBusy(true);
+  let ok = 0, fail = 0;
+  const errors = [];
+  for (const it of targets) {
+    state.currentId = it.id; renderQueue(); updateView();
+    try { await runAuto(it); ok++; setStatus(`批量进度 ${ok + fail}/${targets.length}：${it.name} 完成`, 'ok'); }
+    catch (e) {
+      it.status = 'error';
+      fail++;
+      let msg = '未知错误';
+      try {
+        if (e && typeof e === 'object') {
+          msg = e.message || e.toString() || JSON.stringify(e) || '未知错误';
+        } else if (e !== undefined && e !== null) {
+          msg = String(e);
+        }
+      } catch { msg = '未知错误'; }
+      if (!msg || typeof msg !== 'string') msg = '未知错误';
+      errors.push(`${it.name}: ${msg}`);
+      console.error(e);
+      setStatus(`[${it.name}] 失败\n\n${msg}`, 'err');
+    }
+    renderQueue(); updateView();
+  }
+  if (fail === 0) {
+    setStatus(`批量完成：成功 ${ok}/${targets.length}。` + targets.map(semiHint).join(''), 'ok');
+  } else {
+    setStatus(`批量完成：成功 ${ok}/${targets.length}，失败 ${fail} 张。\n\n失败原因：\n${errors.join('\n')}`, 'err');
+  }
+  setBusy(false); renderQueue(); updateView();
+}
+$('btnAutoAll').onclick = runAutoAll;
+
+/* SAM 模式切换 */
+$('samModeBox').onclick = () => { samMode = 'box'; updateSamModeButtons(); };
+$('samModeInc').onclick = () => { samMode = 'inc'; updateSamModeButtons(); };
+$('samModeExc').onclick = () => { samMode = 'exc'; updateSamModeButtons(); };
+function updateSamModeButtons() {
+  $('samModeBox').classList.toggle('active-box', samMode === 'box');
+  $('samModeInc').classList.toggle('active-inc', samMode === 'inc');
+  $('samModeExc').classList.toggle('active-exc', samMode === 'exc');
+}
+
+/* 框选 */
+$('overlay').addEventListener('mousedown', e => {
+  if (state.mode !== 'sam' || samMode !== 'box' || state.busy) return;
+  const it = current(); if (!it) return;
+  const r = $('overlay').getBoundingClientRect();
+  boxStart = {
+    x: (e.clientX - r.left) / r.width * it.width,
+    y: (e.clientY - r.top) / r.height * it.height,
+  };
+  e.preventDefault();
+});
+$('overlay').addEventListener('mousemove', e => {
+  if (!boxStart || state.busy) return;
+  const it = current(); if (!it) return;
+  const r = $('overlay').getBoundingClientRect();
+  const x2 = (e.clientX - r.left) / r.width * it.width;
+  const y2 = (e.clientY - r.top) / r.height * it.height;
+  const box = $('boxSelect');
+  const x1 = Math.min(boxStart.x, x2), y1 = Math.min(boxStart.y, y2);
+  const w = Math.abs(x2 - boxStart.x), h = Math.abs(y2 - boxStart.y);
+  box.style.display = 'block';
+  box.style.left = (x1 / it.width * 100) + '%';
+  box.style.top = (y1 / it.height * 100) + '%';
+  box.style.width = (w / it.width * 100) + '%';
+  box.style.height = (h / it.height * 100) + '%';
+});
+$('overlay').addEventListener('mouseup', async e => {
+  if (!boxStart || state.busy) return;
+  const it = current(); if (!it) return;
+  const r = $('overlay').getBoundingClientRect();
+  const x2 = (e.clientX - r.left) / r.width * it.width;
+  const y2 = (e.clientY - r.top) / r.height * it.height;
+  const box = {
+    x1: Math.min(boxStart.x, x2), y1: Math.min(boxStart.y, y2),
+    x2: Math.max(boxStart.x, x2), y2: Math.max(boxStart.y, y2),
+  };
+  boxStart = null;
+  if ((box.x2 - box.x1) < 10 || (box.y2 - box.y1) < 10) { $('boxSelect').style.display = 'none'; return; }
+  // 虚线框保持显示，处理结束后 updateView→renderMarkers 会重建 overlay 自动清除
+  setBusy(true);
+  try {
+    if (refineMode) {
+      setStatus(`[${it.name}] 修补解码中…`);
+      await refineBoxAt(it, box);
+      it.refineBoxes.push(box); it.refineActions.push({ type: 'box' });
+      renderMarkers(it);
+      setStatus(`已把框选区域并入结果。可继续修补，或点"撤销"回退。`, 'ok');
+    } else {
+      it.box = box;
+      $('chipPoints').textContent = it.points.length + '+框';
+      await ensureSam();
+      await ensureEncoded(it);
+      setStatus(`[${it.name}] 编码完成，正在解码框选区域…`);
+      await runSamDecode(it);
+      setStatus(`[${it.name}] 框选完成。可继续框选其他区域，或切换"保留/排除"模式点击修正。`, 'ok');
+    }
+  } catch (err) {
+    it.box = null;
+    console.error(err);
+    setStatus(`框选失败：${err.message || err}`, 'err');
+    setModelState('err', '失败');
+  }
+  setBusy(false); renderQueue(); updateView();
+});
+
+/* 点选 */
+$('overlay').addEventListener('click', e => {
+  if (samMode === 'box') return;
+  addPoint(e, samMode === 'inc' ? 1 : 0);
+});
+$('overlay').addEventListener('contextmenu', e => { e.preventDefault(); });
+
+async function addPoint(e, label) {
+  const it = current();
+  if (state.mode !== 'sam' || !it || state.busy) return;
+  const r = $('overlay').getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width * it.width;
+  const y = (e.clientY - r.top) / r.height * it.height;
+  if (refineMode) {
+    if (state.busy) return;
+    it.points.push({ x, y, label });
+    renderMarkers(it);
+    $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+    setBusy(true);
+    try {
+      setStatus(`[${it.name}] 修补解码中…`);
+      await refinePointAt(it, x, y, label);
+      it.refineActions.push({ type: 'point' });
+      setStatus(`已${label ? '保留' : '排除'}该区域。继续点击其他需要修补的位置，或点"撤销"回退上一步。`, 'ok');
+    } catch (err) {
+      it.points.pop(); renderMarkers(it);
+      $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+      console.error(err);
+      setStatus(`修补失败：${err.message || err}`, 'err');
+      setModelState('err', '失败');
+    }
+    setBusy(false); renderQueue(); updateView();
+    return;
+  }
+  it.points.push({ x, y, label });
+  renderMarkers(it);
+  $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+  if (!state.sam.loaded || !state.sam.cache || state.sam.cache.itemId !== it.id) {
+    setBusy(true);
+    try {
+      await ensureSam();
+      await ensureEncoded(it);
+      setStatus(`[${it.name}] 编码完成，正在解码…`);
+      await runSamDecode(it);
+      setStatus(`[${it.name}] 已添加点（${it.points.length} 个）。继续在要保留的区域点击，深紫区域会扩展。`, 'ok');
+    } catch (err) {
+      it.points.pop(); renderMarkers(it);
+      $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+      console.error(err);
+      let msg = '未知错误';
+      try {
+        if (err && typeof err === 'object') {
+          msg = err.message || err.toString() || JSON.stringify(err) || '未知错误';
+        } else if (err !== undefined && err !== null) {
+          msg = String(err);
+        }
+      } catch { msg = '未知错误'; }
+      if (!msg || typeof msg !== 'string') msg = '未知错误';
+      if (msg.includes('Failed to fetch') || msg.includes('fetch')) {
+        setStatus(`点选抠图失败：网络请求失败。\n可能原因：模型下载失败（hf-mirror.com 不通）。\n建议：检查网络连接，或刷新页面重试。`, 'err');
+      } else {
+        setStatus(`点选抠图失败：${msg}`, 'err');
+      }
+      setModelState('err', '失败');
+    }
+    setBusy(false); renderQueue(); updateView();
+  } else {
+    setStatus(`[${it.name}] 已添加点（${it.points.length} 个），等待解码…`);
+    scheduleSamDecode(it);
+  }
+}
+
+$('btnUndoPoint').onclick = async () => {
+  const it = current(); if (!it || state.busy) return;
+  if (refineMode) {
+    if (!it.maskHist || !it.maskHist.length) { setStatus('没有可撤销的修补步骤。'); return; }
+    it.baseMask = it.maskHist.pop();
+    // 按动作类型回退对应标记（点 or 框），保持视觉留痕与蒙版一致
+    const act = it.refineActions ? it.refineActions.pop() : null;
+    if (!act || act.type === 'point') { if (it.points.length) it.points.pop(); }
+    else if (act.type === 'box' && it.refineBoxes.length) { it.refineBoxes.pop(); }
+    renderMarkers(it);
+    $('chipPoints').textContent = it.points.length + (it.refineBoxes && it.refineBoxes.length ? `+${it.refineBoxes.length}框` : '');
+    renderMaskOverlay(it, it.baseMask, it.width, it.height);
+    await applyMaskResult(it, it.baseMask, it.width, it.height);
+    setStatus('已撤销上一次修补。', 'ok');
+    renderQueue(); updateView();
+    return;
+  }
+  if (!it.points.length && !it.box) return;
+  if (it.box) {
+    it.box = null;
+    if (!it.points.length) {
+      it.resultBlob = null; it.status = 'pending';
+      it.baseMask = null; it.autoMask = null; it.maskHist = [];
+      renderMaskOverlay(it, null, 0, 0);
+      await refreshPreview(it); renderQueue(); updateView();
+      setStatus('已撤销框选。');
+      $('chipPoints').textContent = '0';
+      return;
+    }
+  } else {
+    it.points.pop(); renderMarkers(it);
+    $('chipPoints').textContent = it.points.length + (it.box ? '+框' : '');
+  }
+  if (!it.points.length && !it.box) {
+    it.resultBlob = null; it.status = 'pending';
+    it.baseMask = null; it.autoMask = null; it.maskHist = [];
+    renderMaskOverlay(it, null, 0, 0);
+    await refreshPreview(it); renderQueue(); updateView();
+    setStatus('已清空所有标记。');
+    return;
+  }
+  setBusy(true);
+  try { await runSamDecode(it); setStatus(`[${it.name}] 已撤销并重新计算。`, 'ok'); }
+  catch (e) { console.error(e); setStatus(`重新计算失败：${e.message || e}`, 'err'); }
+  setBusy(false); renderQueue(); updateView();
+};
+$('btnClearPoints').onclick = async () => {
+  const it = current(); if (!it || state.busy) return;
+  if (refineMode) {
+    it.points = []; it.box = null; it.maskHist = [];
+    it.refineBoxes = []; it.refineActions = [];
+    it.baseMask = it.autoMask ? it.autoMask.slice() : null;
+    renderMarkers(it);
+    $('chipPoints').textContent = '0';
+    if (it.baseMask) {
+      renderMaskOverlay(it, it.baseMask, it.width, it.height);
+      await applyMaskResult(it, it.baseMask, it.width, it.height);
+      setStatus('已清空全部修补，恢复到修补前的结果。', 'ok');
+    } else {
+      it.resultBlob = null; it.status = 'pending';
+      renderMaskOverlay(it, null, 0, 0);
+      await refreshPreview(it);
+      setStatus('已清空。');
+    }
+    renderQueue(); updateView();
+    return;
+  }
+  it.points = []; it.box = null; it.resultBlob = null; it.status = 'pending';
+  it.baseMask = null; it.autoMask = null; it.maskHist = [];
+  it.refineBoxes = []; it.refineActions = [];
+  renderMaskOverlay(it, null, 0, 0);
+  await refreshPreview(it); renderQueue(); updateView();
+  setStatus('已清空所有标记。');
+  $('chipPoints').textContent = '0';
+};
+
+/* 背景 / 格式 / 羽化 / 对比 */
+const bgImageInput = document.createElement('input');
+bgImageInput.type = 'file'; bgImageInput.accept = 'image/*'; bgImageInput.style.display = 'none';
+document.body.appendChild(bgImageInput);
+bgImageInput.onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const img = await loadImage(URL.createObjectURL(f));
+    if (state.bgImg) URL.revokeObjectURL(state.bgImg.src);
+    state.bgImg = img;
+    $('bgImageThumb').src = img.src;
+    const it = current();
+    if (it && state.bg === 'image') { await refreshPreview(it); updateView(); }
+    setStatus(`背景图已加载（${img.naturalWidth}×${img.naturalHeight}）。`, 'ok');
+  } catch { setStatus('背景图加载失败，请换一张图片。', 'err'); }
+};
+$('btnBgImage').onclick = () => bgImageInput.click();
+
+$('bgSelect').onchange = async () => {
+  state.bg = $('bgSelect').value;
+  $('bgCustomField').classList.toggle('hidden', state.bg !== 'custom');
+  $('bgImageField').classList.toggle('hidden', state.bg !== 'image');
+  // 选了"图片背景"但还没上传过 → 直接弹出文件选择
+  if (state.bg === 'image' && !state.bgImg) bgImageInput.click();
+  const it = current();
+  if (it) { await refreshPreview(it); updateView(); }
+};
+$('decontamToggle').onchange = async () => {
+  state.decontam = $('decontamToggle').checked;
+  const it = current();
+  if (it) { await refreshPreview(it); updateView(); }
+  setStatus(state.decontam ? '已开启去白边：预览和导出都会做边缘去污。' : '已关闭去白边。');
+};
+$('bgCustom').oninput = async () => {
+  const it = current();
+  if (it && state.bg === 'custom') { await refreshPreview(it); updateView(); }
+};
+$('fmtSelect').onchange = () => { state.format = $('fmtSelect').value; };
+$('autoModel').onchange = () => {
+  state.autoModel = $('autoModel').value;
+  const labels = { isnet_quint8: '快速版 40MB', isnet_fp16: '精细版 80MB', rmbg14: '高清版 RMBG 44MB（复杂图更准）' };
+  setStatus(`已切换自动模型：${labels[state.autoModel] || state.autoModel}（对之后抠的图片生效）`);
+};
+$('featherRange').oninput = () => {
+  $('featherValue').textContent = $('featherRange').value + 'px';
+};
+$('autoRunToggle').onchange = () => {
+  state.autoRun = $('autoRunToggle').checked;
+  setStatus(state.autoRun
+    ? '已开启"添加后自动抠图"：拖入/粘贴图片即自动出结果。'
+    : '已关闭"添加后自动抠图"，添加图片后请手动点"抠当前图"或"全部自动抠图"。');
+};
+$('alphaRange').oninput = () => {
+  const v = +$('alphaRange').value;
+  $('alphaValue').textContent = v === 0 ? '0（关）' : (v > 0 ? `清理 +${v}` : `补全 ${v}`);
+};
+$('alphaRange').onchange = async () => {
+  state.alphaAdj = +$('alphaRange').value;
+  const it = current();
+  if (it && it.resultBlob) {
+    await refreshPreview(it); updateView();
+    setStatus(state.alphaAdj === 0
+      ? '已关闭残留清理/主体补全。'
+      : state.alphaAdj > 0
+        ? `残留清理 +${state.alphaAdj} 已应用：半透明残留已清除（预览/下载/ZIP 均生效，无需重抠）。`
+        : `主体补全 ${state.alphaAdj} 已应用：半透明主体已补全为实心（预览/下载/ZIP 均生效，无需重抠）。`, 'ok');
+  } else {
+    setStatus('已记录蒙版强度设置，对之后抠出的图片生效。');
+  }
+};
+$('featherRange').onchange = async () => {
+  const it = current();
+  if (it && it.resultBlob && state.mode === 'sam') {
+    // 重新应用羽化（需要重新解码）
+    setStatus('正在应用边缘羽化…');
+    setBusy(true);
+    try { await runSamDecode(it); setStatus('边缘羽化已应用。', 'ok'); }
+    catch (e) { setStatus(`羽化失败：${e.message || e}`, 'err'); }
+    setBusy(false); updateView();
+  }
+};
+$('btnCompare').onclick = () => { state.showOriginal = !state.showOriginal; updateView(); };
+
+/* 下载 */
+function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+function extOf(fmt) { return fmt === 'image/webp' ? 'webp' : fmt === 'image/jpeg' ? 'jpg' : 'png'; }
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+$('btnDownload').onclick = async () => {
+  const it = current(); if (!it || !it.resultBlob || state.busy) return;
+  setBusy(true);
+  try {
+    const blob = await composite(it, state.format);
+    downloadBlob(blob, `${baseName(it.name)}-cutout.${extOf(state.format)}`);
+    setStatus(`已导出 ${it.name}。`, 'ok');
+  } catch (e) { setStatus(`导出失败：${e.message || e}`, 'err'); }
+  setBusy(false);
+};
+$('btnZip').onclick = async () => {
+  if (state.busy) return;
+  const dones = state.items.filter(i => i.status === 'done' && i.resultBlob);
+  if (!dones.length) return;
+  setBusy(true);
+  try {
+    setStatus('加载打包组件…');
+    const JSZip = (await import(CDN_JSZIP)).default;
+    const zip = new JSZip();
+    let i = 0;
+    for (const it of dones) {
+      setStatus(`打包中 ${++i}/${dones.length}：${it.name}`);
+      zip.file(`${baseName(it.name)}-cutout.${extOf(state.format)}`, await composite(it, state.format));
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    downloadBlob(blob, `抠图结果-${new Date().toISOString().slice(0, 10)}.zip`);
+    setStatus(`已打包 ${dones.length} 张。`, 'ok');
+  } catch (e) { setStatus(`打包失败：${e.message || e}`, 'err'); }
+  setBusy(false);
+};
+
+/* 可调整布局：拖动分隔线 */
+(function initResize() {
+  const grid = document.querySelector('.main-grid');
+  const handles = document.querySelectorAll('.resize-handle');
+  let dragging = null;
+  let startX = 0;
+  let startWidths = [];
+
+  handles.forEach((handle, idx) => {
+    handle.addEventListener('mousedown', e => {
+      dragging = { handle, idx };
+      startX = e.clientX;
+      const cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+      // 解析列宽：左栏是 px，中栏和右栏是 fr
+      startWidths = cols.map(c => {
+        if (c.endsWith('px')) return { type: 'px', value: parseFloat(c) };
+        if (c.endsWith('fr')) return { type: 'fr', value: parseFloat(c) };
+        return { type: 'px', value: parseFloat(c) };
+      });
+      e.preventDefault();
+      document.body.style.cursor = 'col-resize';
+    });
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = e.clientX - startX;
+    const cols = [...startWidths];
+
+    if (dragging.idx === 0) {
+      // 左栏分隔线：调整左栏宽度（px）
+      cols[0] = { type: 'px', value: Math.max(200, Math.min(500, startWidths[0].value + delta)) };
+    } else if (dragging.idx === 1) {
+      // 右栏分隔线：调整中栏和右栏的比例（fr）
+      // 总 fr 保持不变，只调整比例
+      const totalFr = startWidths[2].value + startWidths[4].value;
+      const containerWidth = grid.offsetWidth - startWidths[0].value - 12; // 减去左栏和分隔线
+      const deltaFr = (delta / containerWidth) * totalFr;
+      cols[2] = { type: 'fr', value: Math.max(2, Math.min(8, startWidths[2].value + deltaFr)) };
+      cols[4] = { type: 'fr', value: Math.max(2, Math.min(8, startWidths[4].value - deltaFr)) };
+    }
+
+    grid.style.gridTemplateColumns = cols.map(c => c.value + (c.type === 'fr' ? 'fr' : 'px')).join(' ');
+    // 保存到 localStorage
+    localStorage.setItem('cutout-grid-cols-v2', JSON.stringify(cols));
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (dragging) {
+      dragging = null;
+      document.body.style.cursor = '';
+    }
+  });
+
+  // 恢复上次的布局
+  const saved = localStorage.getItem('cutout-grid-cols-v2');
+  if (saved) {
+    try {
+      const cols = JSON.parse(saved);
+      grid.style.gridTemplateColumns = cols.map(c => c.value + (c.type === 'fr' ? 'fr' : 'px')).join(' ');
+    } catch {}
+  }
+})();
+
+// 版本标识：用于确认是否加载了最新版本
+const VERSION = 'v1.5.0'; // 新增高清版 RMBG-1.4 自动模型（44MB，复杂图主体完整度显著更好）
+window.CUTOUT_VERSION = VERSION;
+window.CUTOUT_DEBUG = { state, addFiles, removeItem, current }; // 供自动化测试用
+console.log('%c本地抠图工具 ' + VERSION, 'color:#8B5CF6;font-size:16px;font-weight:bold');
+console.log('%c新增：高清版 RMBG 模型（复杂图更准）+ 残留清理/主体补全滑块 + 添加后自动抠图', 'color:#22c55e');
+console.log('%c点选模式：切换到点选抠图 → 添加图片 → 拖框或点击', 'color:#f59e0b');
+
+setStatus('就绪。添加图片开始抠图（支持拖拽、批量、Ctrl+V 粘贴）。\n\n版本：' + VERSION + '\n点选模式：切换到"点选抠图" → 添加图片 → 拖框或点击');
+setModelState('ready', '就绪');
+if (new URLSearchParams(location.search).get('selftest')) runSelfTest();
+async function runSelfTest() {
+  const pre = document.createElement('pre');
+  pre.id = 'selftestResult';
+  pre.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:999;background:#fff;padding:8px;max-width:60vw;max-height:40vh;overflow:auto;font-size:11px;border:1px solid #999';
+  document.body.appendChild(pre);
+  const log = (...a) => { const s = a.map(String).join(' '); console.log('[SELFTEST]', s); pre.textContent += s + '\n'; };
+  try {
+    document.title = 'SELFTEST_RUNNING';
+    log('start', VERSION);
+    const qp = new URLSearchParams(location.search);
+    const am = qp.get('automodel');
+    if (am) { state.autoModel = am; log('automodel override:', am); }
+    const resp = await origFetch('美女测试图.png');
+    const blob = await resp.blob();
+    await addFiles([new File([blob], 'selftest.png', { type: 'image/png' })]);
+    const it = current();
+    log('loaded', it.width + 'x' + it.height);
+    await runAuto(it);
+    if (!it.resultBlob) throw new Error('auto no result');
+    log('auto ok, bytes', it.resultBlob.size);
+    refineMode = true;
+    await ensureBaseMask(it);
+    const sum = m => m.reduce((a, b) => a + b, 0);
+    const s0 = sum(it.baseMask);
+    log('base alpha sum', s0);
+    if (s0 <= 0) throw new Error('auto mask empty');
+    // 底部 1/4 区域（裤子所在）alpha 统计：验证模型对下半身的覆盖
+    const H = it.height, W = it.width, y0 = Math.floor(H * 0.75);
+    let bottomSum = 0, bottomSolid = 0;
+    for (let y = y0; y < H; y++) for (let x = 0; x < W; x++) {
+      const v = it.baseMask[y * W + x];
+      bottomSum += v;
+      if (v > 127) bottomSolid++;
+    }
+    log('bottom 1/4: alphaSum', bottomSum, 'solidPx', bottomSolid, '/', (H - y0) * W);
+    if (new URLSearchParams(location.search).get('selftest') === 'stub') {
+      // stub 模式：用合成椭圆蒙版替代 SAM 解码，纯验证 并集/差集/撤销 逻辑
+      ensureSam = async () => {};
+      ensureEncoded = async () => {};
+      decodeSinglePoint = async (it2, x, y) => {
+        const W = it2.width, H = it2.height;
+        const soft = new Uint8Array(W * H);
+        const rx = W * 0.15, ry = H * 0.15;
+        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+          const dx = (xx - x) / rx, dy = (yy - y) / ry;
+          if (dx * dx + dy * dy <= 1) soft[yy * W + xx] = 255;
+        }
+        return { soft, W, H };
+      };
+      log('stub mode: SAM decode 已替换为合成椭圆蒙版');
+      await refinePointAt(it, it.width * 0.5, it.height * 0.5, 1);
+      const s1 = sum(it.baseMask);
+      log('after keep sum', s1, 'hist', it.maskHist.length);
+      if (s1 < s0) throw new Error('union 后蒙版变小，maskUnion 有误');
+      await refinePointAt(it, it.width * 0.5, it.height * 0.5, 0);
+      const s2 = sum(it.baseMask);
+      log('after remove sum', s2, 'hist', it.maskHist.length);
+      if (s2 >= s1) throw new Error('subtract 后蒙版未变小，maskSubtract 有误');
+      it.baseMask = it.maskHist.pop();
+      await applyMaskResult(it, it.baseMask, it.width, it.height);
+      const s3 = sum(it.baseMask);
+      log('undo ok, sum', s3);
+      if (s3 !== s1) throw new Error('撤销后蒙版与历史不一致');
+      document.title = 'SELFTEST_PASS';
+      log('PASS');
+      return;
+    }
+    await ensureSam(); await ensureEncoded(it);
+    log('sam ready', state.sam.device);
+    await refinePointAt(it, it.width * 0.5, it.height * 0.5, 1);
+    const s1 = sum(it.baseMask);
+    log('after keep sum', s1, 'hist', it.maskHist.length);
+    if (s1 < s0 * 0.9) throw new Error('keep shrank mask unexpectedly');
+    await refinePointAt(it, it.width * 0.05, it.height * 0.95, 0);
+    const s2 = sum(it.baseMask);
+    log('after remove sum', s2, 'hist', it.maskHist.length);
+    if (!it.resultBlob) throw new Error('no result after refine');
+    it.baseMask = it.maskHist.pop();
+    await applyMaskResult(it, it.baseMask, it.width, it.height);
+    log('undo ok, sum', sum(it.baseMask));
+    document.title = 'SELFTEST_PASS';
+    log('PASS');
+  } catch (e) {
+    console.error(e);
+    document.title = 'SELFTEST_FAIL';
+    log('FAIL:', e.message || String(e));
+  }
+}
+if (new URLSearchParams(location.search).get('help')) $('helpModal').classList.remove('hidden');
+</script>
+</body>
+</html>
