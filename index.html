@@ -2,1423 +2,1468 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>53便签 - 多引擎智能搜索</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>我的导航</title>
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
-            --primary-color: #3b82f6;
-            --secondary-color: #6366f1;
-            --accent-color: #8b5cf6;
-            --sidebar-width: 320px;
-            --neon-blue: #00f3ff;
-            --neon-purple: #b967ff;
+            --c-bg: #f5f7fa;
+            --c-card: rgba(255,255,255,0.75);
+            --c-card-hover: #ffffff;
+            --c-border: rgba(255,255,255,0.85);
+            --c-text: #1a1f2e;
+            --c-text-2: #5a6577;
+            --c-text-3: #9ca3af;
+            --c-primary: #2563eb;
+            --c-primary-light: rgba(37,99,235,0.08);
+            --c-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.04);
+            --c-shadow-lg: 0 8px 30px rgba(37,99,235,0.12), 0 2px 10px rgba(0,0,0,0.05);
+            --radius: 18px;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            color: var(--c-text);
+            background: var(--c-bg);
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-            color: #e2e8f0;
+            background:
+                radial-gradient(ellipse 100% 70% at 10% 0%, rgba(99,102,241,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 60% at 90% 5%, rgba(16,185,129,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 60% at 50% 100%, rgba(236,72,153,0.04) 0%, transparent 60%),
+                var(--c-bg);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 100dvh;
             overflow-x: hidden;
         }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-        
-        /* 搜索区域样式 */
-        .search-hero {
-            max-width: 800px;
-            margin: 4rem auto 3rem auto;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-            transition: all 0.3s ease;
-        }
-        
-        .search-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            letter-spacing: -2px;
-            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
-            position: relative;
-            display: inline-block;
-        }
-        
-        .search-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 10%;
-            width: 80%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
-            border-radius: 3px;
-        }
-        
-        .search-container {
-            position: relative;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .search-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 5px;
-            box-shadow: 
-                0 10px 40px rgba(0, 0, 0, 0.3),
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
-            position: relative;
-            overflow: hidden;
-            flex: 1;
-        }
-        
-        .search-box:focus-within {
-            transform: translateY(-5px);
-            box-shadow: 
-                0 20px 50px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(0, 243, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-        
-        .search-form {
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .search-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 20px 25px;
-            font-size: 18px;
-            color: white;
-            outline: none;
-            border-radius: 15px;
-            font-weight: 400;
-        }
-        
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .search-button {
-            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
-            border: none;
-            padding: 18px 35px;
-            border-radius: 15px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-            min-width: 140px;
-            box-shadow: 0 5px 20px rgba(0, 243, 255, 0.4);
-            position: relative;
-            overflow: hidden;
-            margin: 0 5px;
-        }
-        
-        .search-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.6);
-        }
-        
-        /* 隐藏式引擎选择器样式 - 调整到左侧 */
-        .engine-selector-container {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 0;
-        }
-        
-        .current-engine {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-            font-weight: 500;
-            min-width: 150px;
-            justify-content: center;
-        }
-        
-        .current-engine:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.25);
-        }
-        
-        .engine-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(15, 23, 42, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 8px;
-            margin-top: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            z-index: 100;
-        }
-        
-        .engine-selector-container:hover .engine-dropdown {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .engine-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .engine-option:hover {
-            background: rgba(0, 243, 255, 0.15);
-            color: white;
-        }
-        
-        .engine-option.active {
-            background: rgba(0, 243, 255, 0.2);
-            color: white;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .search-title {
-                font-size: 2.5rem;
-            }
-            
-            .search-container {
-                flex-direction: column;
-            }
-            
-            .search-form {
-                flex-direction: column;
-            }
-            
-            .search-input {
-                border-radius: 15px 15px 0 0;
-                padding: 16px 20px;
-            }
-            
-            .search-button {
-                width: 100%;
-                border-radius: 0 0 15px 15px;
-                padding: 16px;
-                margin: 0;
-            }
-            
-            .engine-selector-container {
-                width: 100%;
-            }
-            
-            .current-engine {
-                width: 100%;
-            }
-        }
-        
-        /* 其他原有样式保持不变 */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .neon-border {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .neon-border::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 12px;
-            padding: 2px;
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple), var(--neon-blue));
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: xor;
-            -webkit-mask-composite: xor;
-            animation: neon-glow 3s linear infinite;
-        }
-        
-        @keyframes neon-glow {
-            0% {
-                filter: hue-rotate(0deg);
-            }
-            100% {
-                filter: hue-rotate(360deg);
-            }
-        }
-        
-        .category-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.2s ease;
-            height: 100%;
-            max-height: 400px;
-            overflow: hidden;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 24px 40px;
+            padding-top: max(24px, env(safe-area-inset-top));
+            padding-bottom: max(40px, env(safe-area-inset-bottom));
+            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             position: relative;
+            z-index: 1;
         }
-        
-        .category-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-        
-        .category-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        .category-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--neon-blue);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-        }
-        
-        .category-title i {
-            margin-right: 10px;
-        }
-        
-        .site-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-        }
-        
-        .site-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 10px;
-            border-radius: 10px;
-            transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .site-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
-            transition: left 0.4s;
-        }
-        
-        .site-item:hover::before {
-            left: 100%;
-        }
-        
-        .site-item:hover {
-            background-color: rgba(59, 130, 246, 0.2);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .site-icon {
-            width: 40px;
-            height: 40px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        
-        .site-name {
-            font-size: 14px;
-            text-align: center;
-            color: #e2e8f0;
-            text-decoration: none;
-        }
-        
-        .section-title {
-            position: relative;
-            padding-left: 15px;
-        }
-        
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 20px;
-            background: var(--neon-blue);
-            border-radius: 2px;
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
-        
-        .sites {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            overflow-y: auto;
-            flex-grow: 1;
-            padding-right: 5px;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;
-        }
-        
-        .sites::-webkit-scrollbar {
-            width: 6px;
-            background: transparent;
-        }
-        
-        .sites::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 3px;
-        }
-        
-        .sites::-webkit-scrollbar-thumb {
-            background: transparent;
-            border-radius: 3px;
-            transition: background 0.2s ease;
-        }
-        
-        .sites:hover::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.3);
-        }
-        
-        .sites:hover::-webkit-scrollbar-thumb:hover {
-            background: rgba(59, 130, 246, 0.5);
-        }
-        
-        .header-gradient {
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* ==================== 简约侧边栏样式 ==================== */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            right: calc(-1 * var(--sidebar-width));
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 50;
-            overflow-y: auto;
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        
-        .sidebar.open {
-            right: 0;
-        }
-        
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 40;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
-        }
-        
-        .sidebar-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        /* 简约侧边栏切换按钮 */
-        .sidebar-toggle {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            z-index: 60;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .sidebar-toggle:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .sidebar-toggle i {
-            color: var(--neon-blue);
-            font-size: 20px;
-            transition: transform 0.2s ease;
-        }
-        
-        .sidebar.open + .sidebar-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        /* 简约书签样式 */
-        .bookmark-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
+
+        /* ===== Top Bar ===== */
+        .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
         }
-        
-        .bookmark-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(-3px);
-        }
-        
-        .bookmark-content {
+
+        .clock-area {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex: 1;
+            gap: 16px;
+            min-width: 0;
         }
-        
-        .bookmark-icon {
+
+        .clock-block { display: flex; flex-direction: column; flex-shrink: 0; }
+
+        .clock {
+            font-size: clamp(26px, 3.8vw, 36px);
+            font-weight: 200;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            color: var(--c-text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date {
+            font-size: 12px;
+            color: var(--c-text-3);
+            margin-top: 3px;
+            letter-spacing: 0.2px;
+        }
+
+        .greeting {
+            font-size: 12.5px;
+            color: var(--c-text-2);
+            font-weight: 500;
+            padding-left: 16px;
+            border-left: 1.5px solid #e5e7eb;
+            line-height: 1.4;
+            max-width: 180px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Tools on top right — 可横向滚动，不溢出 */
+        .top-tools {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 1;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 4px;
+            background: var(--c-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            box-shadow: var(--c-shadow);
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            max-width: min(100%, 560px);
+        }
+        .top-tools::-webkit-scrollbar { display: none; }
+
+        .top-tool {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .top-tool:hover { background: rgba(0,0,0,0.05); }
+        .top-tool:active { transform: scale(0.92); }
+        .top-tool img { width: 20px; height: 20px; object-fit: contain; display: block; }
+
+        .top-tool .tool-fallback {
             width: 20px;
             height: 20px;
-            border-radius: 4px;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 243, 255, 0.1);
-            color: var(--neon-blue);
-            font-size: 12px;
-        }
-        
-        .bookmark-text {
-            color: #e2e8f0;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-        }
-        
-        .bookmark-text:hover {
-            color: var(--neon-blue);
-        }
-        
-        .bookmark-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .bookmark-action {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-size: 12px;
-        }
-        
-        .bookmark-action:hover {
-            background: rgba(0, 243, 255, 0.2);
-            color: white;
-        }
-        
-        /* 简约侧边栏标题 */
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            margin-bottom: 20px;
-        }
-        
-        .sidebar-title {
-            font-size: 18px;
+            font-size: 10px;
             font-weight: 600;
             color: white;
-            margin-bottom: 5px;
         }
-        
-        .sidebar-subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-        }
-        
-        /* 简约侧边栏搜索 */
-        .sidebar-search {
-            padding: 0 20px 15px;
-        }
-        
-        .sidebar-search input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px 12px;
+
+        .top-tool.add-btn {
+            background: linear-gradient(135deg, var(--c-primary), #6366f1);
             color: white;
-            outline: none;
-            transition: all 0.2s ease;
-            font-size: 13px;
+            font-size: 18px;
+            font-weight: 300;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.25);
         }
-        
-        .sidebar-search input:focus {
-            border-color: var(--neon-blue);
-            background: rgba(255, 255, 255, 0.12);
+        .top-tool.add-btn:hover { background: linear-gradient(135deg, #1d4ed8, #4f46e5); transform: translateY(-1px); }
+
+        .top-tool .tip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: rgba(15,23,42,0.92);
+            color: white;
+            font-size: 11px;
+            padding: 5px 9px;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            z-index: 10;
         }
-        
-        .sidebar-search input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+        .top-tool .tip::before {
+            content:'';
+            position:absolute;
+            top:-4px;
+            left:50%;
+            transform:translateX(-50%) rotate(45deg);
+            width:8px; height:8px;
+            background: rgba(15,23,42,0.92);
         }
-        
-        /* 书签列表容器 */
-        .bookmark-list {
-            padding: 0 20px 20px;
+        @media (hover: hover) {
+            .top-tool:hover .tip { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-        
-        .floating-particles {
+
+        /* ===== Hero ===== */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: clamp(28px, 5.5vh, 60px);
+        }
+
+        /* ===== Search ===== */
+        .search-wrap {
+            width: 100%;
+            max-width: 680px;
+            position: relative;
+        }
+
+        .search-box {
+            position: relative;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1.5px solid rgba(255,255,255,0.9);
+            border-radius: 28px;
+            box-shadow: var(--c-shadow);
+            transition: all 0.3s var(--ease);
+            display: flex;
+            align-items: center;
+            padding: 5px 5px 5px 20px;
+            overflow: visible;
+        }
+
+        .search-box:focus-within {
+            box-shadow: var(--c-shadow-lg);
+            border-color: rgba(37,99,235,0.3);
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.95);
+        }
+
+        .search-icon {
+            flex-shrink: 0;
+            color: var(--c-text-3);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .search-box:focus-within .search-icon { color: var(--c-primary); }
+
+        /* ===== Engine selector ===== */
+        .engine-selector {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px 4px 4px;
+            margin-right: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            position: relative;
+            transition: background 0.15s;
+            height: 34px;
+        }
+        @media (hover: hover) {
+            .engine-selector:hover { background: rgba(0,0,0,0.05); }
+        }
+        .engine-selector:active { background: rgba(0,0,0,0.07); }
+        .engine-selector.open { background: rgba(0,0,0,0.06); }
+
+        .engine-icon-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .engine-icon-box img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
+
+        .engine-caret {
+            color: var(--c-text-3);
+            font-size: 8px;
+            transition: transform 0.2s var(--ease), color 0.2s;
+            line-height: 1;
+        }
+        .engine-selector.open .engine-caret { transform: rotate(180deg); color: var(--c-primary); }
+
+        /* ===== Engine dropdown (fixed, body-level) ===== */
+        .engine-dropdown {
             position: fixed;
-            top: 0;
-            left: 0;
+            min-width: 180px;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06);
+            padding: 6px;
+            z-index: 999999;
+            opacity: 0;
+            transform: translateY(-8px) scale(0.96);
+            pointer-events: none;
+            transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+            transform-origin: top left;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .engine-dropdown.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .engine-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 9px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.12s;
+            font-size: 14px;
+            color: var(--c-text);
+            font-weight: 500;
+        }
+        @media (hover: hover) {
+            .engine-item:hover { background: rgba(0,0,0,0.04); }
+        }
+        .engine-item:active { background: rgba(0,0,0,0.07); }
+        .engine-item.active { background: var(--c-primary-light); color: var(--c-primary); }
+
+        .engine-item .item-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .engine-item .item-icon img { width: 20px; height: 20px; object-fit: contain; }
+
+        .engine-item .item-check {
+            margin-left: auto;
+            color: var(--c-primary);
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0;
+            width: 16px;
+            text-align: center;
+        }
+        .engine-item.active .item-check { opacity: 1; }
+
+        .dropdown-hint {
+            padding: 6px 12px 3px;
+            font-size: 11px;
+            color: var(--c-text-3);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 14px 12px 14px 0;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            color: var(--c-text);
+            font-family: inherit;
+            min-width: 0;
+            caret-color: var(--c-primary);
+        }
+
+        .search-input::placeholder { color: var(--c-text-3); font-weight: 400; }
+
+        .search-btn {
+            flex-shrink: 0;
+            padding: 0 22px;
+            height: 40px;
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            border-radius: 22px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media (hover: hover) {
+            .search-btn:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+        }
+        .search-btn:active { transform: scale(0.96); }
+
+        /* Search suggestion tags */
+        .search-tips {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            padding: 0 8px;
+        }
+        .search-tip {
+            font-size: 12px;
+            color: var(--c-text-3);
+            padding: 5px 13px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        @media (hover: hover) {
+            .search-tip:hover { color: var(--c-primary); background: var(--c-primary-light); border-color: transparent; transform: translateY(-1px); }
+        }
+        .search-tip:active { transform: scale(0.96); }
+
+        /* ===== Tabs ===== */
+        .tabs-wrap {
+            width: 100%;
+            margin-top: clamp(24px, 4.5vh, 44px);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin: 0 auto 20px;
+            padding: 4px;
+            background: var(--c-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: var(--c-shadow);
+        }
+
+        .tab {
+            padding: 7px 17px;
+            border: none;
+            background: transparent;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--c-text-2);
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        @media (hover: hover) {
+            .tab:hover { color: var(--c-primary); background: var(--c-primary-light); }
+        }
+        .tab:active { transform: scale(0.96); }
+        .tab.active { background: var(--c-text); color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* ===== Grid ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 8px 14px;
+            background: var(--c-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            animation: fadeUp 0.4s var(--ease) both;
+            position: relative;
+            overflow: hidden;
+            -webkit-touch-callout: none;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (hover: hover) {
+            .card:hover {
+                transform: translateY(-5px);
+                background: var(--c-card-hover);
+                box-shadow: var(--c-shadow-lg);
+                border-color: rgba(37,99,235,0.15);
+            }
+            .card:hover .icon-wrap { transform: scale(1.1); }
+            .card:hover .card-name { color: var(--c-text); }
+            .card:hover .card-del { opacity: 1; pointer-events: auto; }
+        }
+        .card:active { transform: scale(0.97); }
+
+        .icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: transform 0.25s var(--ease);
+            background: #f1f5f9;
+        }
+
+        .icon-wrap img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .icon-fallback {
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            font-weight: 600;
+            color: white;
         }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--neon-blue);
-            border-radius: 50%;
-            opacity: 0.5;
-            animation: float-particle 12s infinite linear;
-        }
-        
-        @keyframes float-particle {
-            0% {
-                transform: translateY(100vh) translateX(0);
-            }
-            100% {
-                transform: translateY(-100px) translateX(20px);
-            }
-        }
-        
-        /* 内容区域初始隐藏和滚动显示效果 */
-        .content-section {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        
-        .content-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* 页面滚动时隐藏其他内容，仅显示搜索区域 */
-        body.scrolled-to-top .content-section,
-        body.scrolled-to-top footer {
-            opacity: 0.3;
-            transform: translateY(20px);
-            pointer-events: none;
-        }
-        
-        body.scrolled-to-top .search-hero {
-            transform: scale(1.05);
-            margin-top: 10rem;
-        }
-        
-        /* 搜索状态样式 */
-        .search-status {
+
+        .card-name {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--c-text-2);
             text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.7);
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: color 0.2s;
+            padding: 0 2px;
+        }
+
+        .card-del {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.06);
+            color: rgba(0,0,0,0.3);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        /* 移动端始终显示删除按钮在自定义卡片上（因为没有hover） */
+        @media (hover: none) {
+            .card.custom .card-del { opacity: 1; pointer-events: auto; }
+        }
+        .card-del:hover { background: #ef4444; color: white; }
+        .card-del:active { transform: scale(0.9); }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: var(--c-text-3);
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        /* ===== Modal ===== */
+        .modal-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            padding: 16px;
+        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 26px 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+            transform: scale(0.93) translateY(10px);
+            transition: transform 0.22s var(--ease);
+        }
+        .modal-mask.show .modal { transform: scale(1) translateY(0); }
+
+        .modal h3 { font-size: 18px; margin-bottom: 18px; font-weight: 600; letter-spacing: -0.2px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; color: var(--c-text-2); margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 11px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.15s;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        .form-row { display: flex; gap: 10px; margin-top: 22px; }
+        .btn {
+            flex: 1;
+            padding: 11px;
+            border-radius: 11px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-cancel { background: #f1f5f9; color: var(--c-text-2); }
+        .btn-cancel:hover { background: #e2e8f0; }
+        .btn-cancel:active { transform: scale(0.97); }
+        .btn-primary { background: var(--c-primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:active { transform: scale(0.97); }
+
+        /* 自动补全前缀小标签 */
+        .form-hint {
+            font-size: 11px;
+            color: var(--c-text-3);
+            margin-top: 5px;
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(15,23,42,0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 2000000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s var(--ease);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .greeting { max-width: 140px; font-size: 12px; }
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 16px 14px 24px; }
+            .topbar { flex-direction: column; gap: 12px; align-items: stretch; }
+            .clock-area { flex-direction: row; justify-content: space-between; align-items: center; gap: 12px; }
+            .clock-block { align-items: flex-start; }
+            .greeting {
+                border-left: none;
+                padding-left: 0;
+                padding-top: 0;
+                border-top: none;
+                text-align: right;
+                max-width: 150px;
+                font-size: 11.5px;
+            }
+            .top-tools {
+                max-width: 100%;
+                justify-content: flex-start;
+            }
+            .search-box { padding: 4px 4px 4px 16px; border-radius: 24px; }
+            .search-icon { margin-right: 8px; }
+            .engine-selector { padding: 4px 6px 4px 2px; margin-right: 2px; height: 32px; }
+            .search-input { padding: 12px 8px 12px 0; font-size: 16px; }
+            .search-btn { padding: 0 16px; height: 36px; font-size: 13px; }
+            .search-btn svg { display: none; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+            .card { padding: 14px 6px 10px; gap: 8px; }
+            .icon-wrap { width: 42px; height: 42px; border-radius: 12px; }
+            .icon-wrap img { width: 26px; height: 26px; }
+            .engine-dropdown {
+                min-width: 170px;
+                max-width: calc(100vw - 28px);
+            }
+            .engine-item { font-size: 14px; padding: 11px 12px; }
+            .engine-item .item-icon { width: 22px; height: 22px; }
+            .engine-item .item-icon img { width: 20px; height: 20px; }
+            .search-tips { gap: 6px; }
+            .search-tip { padding: 4px 11px; font-size: 11.5px; }
+            .tab { padding: 6px 13px; font-size: 12.5px; }
+        }
+
+        @media (max-width: 380px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+            .card { padding: 12px 4px 9px; }
+            .icon-wrap { width: 38px; height: 38px; border-radius: 10px; }
+            .icon-wrap img { width: 24px; height: 24px; }
+        }
+
+        /* 减少动画偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.15s !important; }
         }
     </style>
 </head>
-
-<body class="text-gray-100">
-    <!-- 浮动粒子背景 -->
-    <div class="floating-particles" id="particles"></div>
-    
-    <!-- 侧边栏遮罩 -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <!-- 简约侧边栏 -->
-    <aside class="sidebar" id="sidebar">
-        <div class="p-0 h-full flex flex-col">
-            <div class="sidebar-header">
-                <h2 class="sidebar-title">我的书签</h2>
-                <p class="sidebar-subtitle">快速访问常用网站</p>
-            </div>     
-            <!-- 侧边栏搜索 -->
-            <div class="sidebar-search">
-                <input type="text" id="sidebarSearch" placeholder="搜索书签...">
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="clock-area">
+                <div class="clock-block">
+                    <div class="clock" id="clock">00:00</div>
+                    <div class="date" id="date"></div>
+                </div>
+                <div class="greeting" id="greeting"></div>
             </div>
-            <!-- 书签列表 -->
-            <div class="bookmark-list" id="bookmarkList">
-                <!-- 书签项将通过JavaScript动态生成 -->
+            <div class="top-tools" id="topTools"></div>
+        </div>
+
+        <div class="hero">
+            <div class="search-wrap">
+                <div class="search-box" id="searchBox">
+                    <span class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </span>
+                    <button class="engine-selector" id="engineSelector" type="button" aria-label="选择搜索引擎" aria-haspopup="true">
+                        <span class="engine-icon-box" id="engineIconBox"></span>
+                        <span class="engine-caret">▼</span>
+                    </button>
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜索或输入网址，回车直达" autocomplete="off" enterkeyhint="search">
+                    <button class="search-btn" id="searchBtn" onclick="doSearch()" aria-label="搜索">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        搜索
+                    </button>
+                </div>
+                <div class="search-tips" id="searchTips"></div>
+            </div>
+
+            <div class="tabs-wrap">
+                <nav class="tabs" id="tabs">
+                    <button class="tab active" data-cat="all">全部</button>
+                    <button class="tab" data-cat="common">常用</button>
+                    <button class="tab" data-cat="work">工作</button>
+                    <button class="tab" data-cat="dev">开发</button>
+                    <button class="tab" data-cat="study">学习</button>
+                    <button class="tab" data-cat="fun">娱乐</button>
+                    <button class="tab" data-cat="life">生活</button>
+                </nav>
+
+                <div class="grid" id="grid"></div>
             </div>
         </div>
-    </aside>
-    
-    <!-- 简约侧边栏切换按钮 -->
-    <div class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bookmark"></i>
+
+        <footer class="footer">✨ 我的主页导航</footer>
     </div>
 
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- 简化后的搜索区域 -->
-        <div class="search-hero" id="searchHero">
-            <h1 class="search-title">53便签</h1>
-            
-            <div class="search-container">
-                <!-- 隐藏式引擎选择器 - 现在放在搜索框左侧 -->
-                <div class="engine-selector-container" id="engineSelector">
-                    <div class="current-engine">
-                        <i class="fas fa-dragon"></i>
-                        <span id="currentEngineName">百度</span>
-                        <i class="fas fa-chevron-down ml-2"></i>
-                    </div>
-                    <div class="engine-dropdown">
-                        <div class="engine-option active" data-engine="baidu">
-                            <i class="fas fa-dragon"></i>
-                            <span>百度</span>
-                        </div>
-                        <div class="engine-option" data-engine="sogou">
-                            <i class="fab fa-sogou"></i>
-                            <span>搜狗</span>
-                        </div>
-                        <div class="engine-option" data-engine="bing">
-                            <i class="fab fa-microsoft"></i>
-                            <span>必应</span>
-                        </div>
-                        <div class="engine-option" data-engine="github">
-                            <i class="fab fa-github"></i>
-                            <span>GitHub</span>
-                        </div>
-                        <div class="engine-option" data-engine="zhihu">
-                            <i class="fas fa-question-circle"></i>
-                            <span>知乎</span>
-                        </div>
-                        <div class="engine-option" data-engine="bilibili">
-                            <i class="fas fa-bilibili"></i>
-                            <span>bilibili</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 搜索框 -->
-                <div class="search-box">
-                    <form class="search-form" id="searchForm">
-                        <input type="text" id="searchInput" class="search-input" placeholder="输入关键词开始多引擎搜索..." autocomplete="off">
-                        <button type="submit" class="search-button">
-                            <i class="fas fa-search mr-2"></i>
-                            <span>搜索</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- 搜索状态 -->
-            <div class="search-status" id="searchStatus">当前使用百度搜索，点击上方切换其他引擎</div>
-        </div>
+    <!-- Engine dropdown: 直接放在 body 下，fixed 定位 -->
+    <div class="engine-dropdown" id="engineDropdown" role="menu"></div>
 
-        <!-- 快捷站点 - 初始隐藏，滚动后显示 -->
-        <div class="mb-16 content-section" id="quickSites">
-            <h2 class="text-2xl font-bold mb-8 section-title">快捷站点</h2>
-            <div class="site-list">
-                <a href="https://53wx.dpdns.org/2" target="_blank" class="site-item">
-                    <img src="https://image.quark.cn/s/uae/g/42/quarkhomepage/image/navi2.ico" alt="网址大全图标" class="site-icon">
-                    <span class="site-name">网址大全</span>
-                </a>
-                <a href="https://adzhp.cc/" target="_blank" class="site-item">
-                    <img src="https://adzhp.cc/favicon.ico" alt="爱达杂货铺图标" class="site-icon">
-                    <span class="site-name">爱达杂货铺</span>
-                </a>
-                <a href="https://yinghezhinan.com/" target="_blank" class="site-item">
-                    <img src="https://yinghezhinan.com/statics/images/favicon.webp" alt="硬核指南图标" class="site-icon">
-                    <span class="site-name">硬核指南</span>
-                </a>
-                <a href="https://www.wangzhiku.com/" target="_blank" class="site-item">
-                    <img src="https://www.wangzhiku.com/favicon.ico" alt="网址库图标" class="site-icon">
-                    <span class="site-name">网址库</span>
-                </a>
-                <a href="https://www.hybase.com/" target="_blank" class="site-item">
-                    <img src="https://www.hybase.com/favicon.ico" alt="黑域基地图标" class="site-icon">
-                    <span class="site-name">黑域基地</span>
-                </a>
-                <a href="https://github.com" target="_blank" class="site-item">
-                    <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub图标" class="site-icon">
-                    <span class="site-name">GitHub</span>
-                </a>
-                <a href="https://gitee.com/" target="_blank" class="site-item">
-                    <img src="https://gitee.com/favicon.ico" alt="gitee图标" class="site-icon">
-                    <span class="site-name">Gitee</span>
-                </a>
-                <a href="https://www.bilibili.com" target="_blank" class="site-item">
-                    <img src="https://www.bilibili.com/favicon.ico" alt="哔哩哔哩图标" class="site-icon">
-                    <span class="site-name">哔哩哔哩</span>
-                </a>
+    <!-- Add Modal -->
+    <div class="modal-mask" id="modal">
+        <div class="modal">
+            <h3>添加网站</h3>
+            <div class="form-group">
+                <label>网站名称</label>
+                <input type="text" id="f-name" placeholder="例如：知乎" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>网址</label>
+                <input type="text" id="f-url" placeholder="zhihu.com">
+                <div class="form-hint">会自动补全 https://</div>
+            </div>
+            <div class="form-group">
+                <label>分类</label>
+                <select id="f-cat">
+                    <option value="common">常用</option>
+                    <option value="work">工作</option>
+                    <option value="dev">开发</option>
+                    <option value="study">学习</option>
+                    <option value="fun">娱乐</option>
+                    <option value="life">生活</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="addSite()">添加</button>
             </div>
         </div>
-
-        <!-- 分类导航 - 初始隐藏，滚动后显示 -->
-        <div class="mb-12 content-section" id="categories">
-            <h2 class="text-xl font-semibold mb-6 section-title">常用分类</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- 推荐分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-star mr-2 text-yellow-400"></i>
-                        推荐
-                    </h3>
-                    <div class="sites">
-                        <a href="https://www.fenxm.com/" target="_blank" class="site-item">
-                            <img src="https://www.fenxm.com/zb_users/theme/suiranx_air/image/favicon.ico" alt="分享迷" class="site-icon">
-                            <span class="site-name">分享迷</span>
-                        </a>
-                        <a href="https://www.hybase.com/" target="_blank" class="site-item">
-                            <img src="https://www.hybase.com/favicon.ico" alt="黑域基地" class="site-icon">
-                            <span class="site-name">黑域基地</span>
-                        </a>
-                        <a href="https://bbs.leyuxyz.com/" target="_blank" class="site-item">
-                            <img src="https://bbs.leyuxyz.com/favicon.ico" alt="乐愚社区" class="site-icon">
-                            <span class="site-name">乐愚社区</span>
-                        </a>
-                        <a href="https://www.870q.com/" target="_blank" class="site-item">
-                            <img src="https://www.870q.com/favicon.ico" alt="百素网" class="site-icon">
-                            <span class="site-name">百素网</span>
-                        </a>
-                        <a href="https://www.52pojie.cn/" target="_blank" class="site-item">
-                            <img src="https://www.52pojie.cn/favicon.ico" alt="吾爱破解" class="site-icon">
-                            <span class="site-name">吾爱破解</span>
-                        </a>
-                        <a href="https://cxapk.com/" target="_blank" class="site-item">
-                            <img src="https://cxapk.com/favicon.ico" alt="辰夕小站" class="site-icon">
-                            <span class="site-name">辰夕小站</span>
-                        </a>
-                        <a href="https://www.hezipie.com/" target="_blank" class="site-item">
-                            <img src="https://www.hezipie.com/favicon.ico" alt="盒子派" class="site-icon">
-                            <span class="site-name">盒子派</span>
-                        </a>
-                        <a href="https://www.sixyin.com/" target="_blank" class="site-item">
-                            <img src="https://www.sixyin.com/favicon.ico" alt="六音软件" class="site-icon">
-                            <span class="site-name">六音软件</span>
-                        </a>
-                        <a href="https://www.haoruanmao.com/" target="_blank" class="site-item">
-                            <img src="https://www.haoruanmao.com/favicon.ico" alt="好软猫" class="site-icon">
-                            <span class="site-name">好软猫</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 娱乐分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-film mr-2 text-red-400"></i>
-                        娱乐
-                    </h3>
-                    <div class="sites">
-                        <a href="https://www.iqiyi.com/" target="_blank" class="site-item">
-                            <img src="https://www.iqiyi.com/favicon.ico" alt="爱奇艺" class="site-icon">
-                            <span class="site-name">爱奇艺</span>
-                        </a>
-                        <a href="https://v.qq.com/" target="_blank" class="site-item">
-                            <img src="https://v.qq.com/favicon.ico" alt="腾讯视频" class="site-icon">
-                            <span class="site-name">腾讯视频</span>
-                        </a>
-                        <a href="https://www.mgtv.com/" target="_blank" class="site-item">
-                            <img src="https://www.mgtv.com/favicon.ico" alt="芒果TV" class="site-icon">
-                            <span class="site-name">芒果TV</span>
-                        </a>
-                        <a href="https://www.youku.com/" target="_blank" class="site-item">
-                            <img src="https://www.youku.com/favicon.ico" alt="优酷网" class="site-icon">
-                            <span class="site-name">优酷网</span>
-                        </a>
-                        <a href="https://www.douyin.com/?recommend=1" target="_blank" class="site-item">
-                            <img src="https://www.douyin.com/favicon.ico" alt="抖音" class="site-icon">
-                            <span class="site-name">抖音</span>
-                        </a>
-                        <a href="https://www.kuaishou.com/new-reco" target="_blank" class="site-item">
-                            <img src="https://www.kuaishou.com/favicon.ico" alt="快手" class="site-icon">
-                            <span class="site-name">快手</span>
-                        </a>
-                        <a href="https://tv.cctv.com/" target="_blank" class="site-item">
-                            <img src="https://tv.cctv.com/favicon.ico" alt="央视网" class="site-icon">
-                            <span class="site-name">央视网</span>
-                        </a>
-                        <a href="https://www.pptv.com/" target="_blank" class="site-item">
-                            <img src="https://sr1.pplive.cn/mcms/nav/images/favicon.ico" alt="PP视频" class="site-icon">
-                            <span class="site-name">PP视频</span>
-                        </a>
-                        <a href="https://v.163.com/" target="_blank" class="site-item">
-                            <img src="https://v.163.com/favicon.ico" alt="网易视频" class="site-icon">
-                            <span class="site-name">网易视频</span>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- 导航分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-star mr-2 text-yellow-400"></i>
-                        导航
-                    </h3>
-                    <div class="sites">
-                        <a href="https://36kdh.com/" target="_blank" class="site-item">
-                            <img src="https://36kdh.com/wp-content/uploads/2022/07/36kdh.png" alt="36K" class="site-icon">
-                            <span class="site-name">36K</span>
-                        </a>
-                        <a href="https://ailongmiao.com/" target="_blank" class="site-item">
-                            <img src="https://media.ailongmiao.com/uploads/2021/09/favicon.png" alt="龙喵网" class="site-icon">
-                            <span class="site-name">龙喵网</span>
-                        </a>
-                        <a href="https://touduyu.com/" target="_blank" class="site-item">
-                            <img src="https://touduyu.com/favicon.ico" alt="偷渡鱼" class="site-icon">
-                            <span class="site-name">偷渡鱼</span>
-                        </a>
-                        <a href="https://www.8kmm.com/" target="_blank" class="site-item">
-                            <img src="https://www.8kmm.com/favicon.ico" alt="无峰导航" class="site-icon">
-                            <span class="site-name">无峰导航</span>
-                        </a>
-                        <a href="https://www.webjike.com/index.html" target="_blank" class="site-item">
-                            <img src="https://www.webjike.com/images/logo.png" alt="小呆导航" class="site-icon">
-                            <span class="site-name">小呆导航</span>
-                        </a>
-                        <a href="https://iitang.com/tv" target="_blank" class="site-item">
-                            <img src="https://iitang.com/favicon.ico" alt="一糖影视导航" class="site-icon">
-                            <span class="site-name">一糖影视导航</span>
-                        </a>
-                        <a href="https://morething.top/" target="_blank" class="site-item">
-                            <img src="https://morething.top/favicon.ico" alt="有点儿东西" class="site-icon">
-                            <span class="site-name">有点儿东西</span>
-                        </a>
-                        <a href="https://eeenav.com/" target="_blank" class="site-item">
-                            <img src="https://eeenav.com/wp-content/uploads/2025/07/1753080594-64x64-1.png" alt="E导航" class="site-icon">
-                            <span class="site-name">E导航</span>
-                        </a>
-                        <a href="https://93665.xin/" target="_blank" class="site-item">
-                            <img src="https://93665.xin/favicon.ico" alt="苦心ios导航" class="site-icon">
-                            <span class="site-name">苦心ios导航</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 应用分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-star mr-2 text-yellow-400"></i>
-                        应用
-                    </h3>
-                    <div class="sites">
-                        <a href="https://dl.hhkan0.com/" target="_blank" class="site-item">
-                            <img src="https://dl.hhkan0.com/hkan/01/images/favicon.ico" alt="好好看APP" class="site-icon">
-                            <span class="site-name">好好看APP</span>
-                        </a>
-                        <a href="https://juzhi666.app/" target="_blank" class="site-item">
-                            <img src="https://vip.123pan.cn/1848463092/%E6%89%A9%E5%B1%95%E9%A1%B5%E5%9B%BE%E6%A0%87/logo2.png" alt="橘汁APP" class="site-icon">
-                            <span class="site-name">橘汁APP</span>
-                        </a>
-                        <a href="https://iosapp.tv/" target="_blank" class="site-item">
-                            <img src="https://iosapp.tv/css/favicon.ico" alt="壳儿APP" class="site-icon">
-                            <span class="site-name">壳儿APP</span>
-                        </a>
-                        <a href="https://dl.keke1.app/" target="_blank" class="site-item">
-                            <img src="https://dl.keke1.app/kkdy/01/images/favicon.ico" alt="可可影视" class="site-icon">
-                            <span class="site-name">可可影视</span>
-                        </a>
-                        <a href="https://mac-cms.com/" target="_blank" class="site-item">
-                            <img src="https://mac-cms.com/favicon-dark.svg" alt="空壳影视" class="site-icon">
-                            <span class="site-name">空壳影视</span>
-                        </a>
-                        <a href="https://jsybox.com/" target="_blank" class="site-item">
-                            <img src="https://jsybox.com/img/jsylogo.png" alt="及时雨盒子" class="site-icon">
-                            <span class="site-name">及时雨盒子</span>
-                        </a>
-                        <a href="https://m.n13.club/" target="_blank" class="site-item">
-                            <img src="https://m.n13.club/favicon.ico" alt="超级商店" class="site-icon">
-                            <span class="site-name">超级商店</span>
-                        </a>
-                        <a href="https://www.easybox.pro/" target="_blank" class="site-item">
-                            <img src="https://www.easybox.pro/favicon.ico" alt="EasyBox" class="site-icon">
-                            <span class="site-name">EasyBox</span>
-                        </a>
-                        <a href="https://y977.com/tv/" target="_blank" class="site-item">
-                            <img src="https://y977.com/tv/images/icon.png" alt="小飞电视" class="site-icon">
-                            <span class="site-name">小飞电视</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 音乐分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-film mr-2 text-red-400"></i>
-                        音乐
-                    </h3>
-                    <div class="sites">
-                        <a href="https://www.qqmp3.vip/" target="_blank" class="site-item">
-                            <img src="https://www.qqmp3.vip/favicon.ico" alt="米兔音乐" class="site-icon">
-                            <span class="site-name">米兔音乐</span>
-                        </a>
-                        <a href="https://tonzhon.whamon.com/" target="_blank" class="site-item">
-                            <img src="https://tonzhon.whamon.com/assets/ico/favicon-b4GzuGy0.ico" alt="铜钟音乐" class="site-icon">
-                            <span class="site-name">铜钟音乐</span>
-                        </a>
-                        <a href="https://zz123.com/" target="_blank" class="site-item">
-                            <img src="https://zz123.com/favicon.ico" alt="种子音乐" class="site-icon">
-                            <span class="site-name">种子音乐</span>
-                        </a>
-                        <a href="https://mu-jie.cc/musicBox/#/" target="_blank" class="site-item">
-                            <img src="https://mu-jie.cc/musicBox/favicon.ico" alt="枫叶音乐盒" class="site-icon">
-                            <span class="site-name">枫叶音乐盒</span>
-                        </a>
-                        <a href="https://dy.guiguiya.com/yy/" target="_blank" class="site-item">
-                            <img src="https://dy.guiguiya.com/yy/favicon.ico" alt="鬼鬼音乐" class="site-icon">
-                            <span class="site-name">鬼鬼音乐</span>
-                        </a>
-                        <a href="http://mc.alger.fun/#/" target="_blank" class="site-item">
-                            <img src="http://mc.alger.fun/favicon.ico" alt="alger.fun" class="site-icon">
-                            <span class="site-name">alger.fun</span>
-                        </a>
-                        <a href="https://www.ximalaya.com/" target="_blank" class="site-item">
-                            <img src="https://www.ximalaya.com/favicon.ico" alt="喜马拉雅" class="site-icon">
-                            <span class="site-name">喜马拉雅</span>
-                        </a>
-                        <a href="https://y.qq.com/" target="_blank" class="site-item">
-                            <img src="https://y.qq.com/favicon.ico" alt="QQ音乐" class="site-icon">
-                            <span class="site-name">QQ音乐</span>
-                        </a>
-                        <a href="https://www.kugou.com/" target="_blank" class="site-item">
-                            <img src="https://www.kugou.com/favicon.ico" alt="酷狗音乐" class="site-icon">
-                            <span class="site-name">酷狗音乐</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 其它分类 -->
-                <div class="category-card neon-border">
-                    <h3 class="category-title flex items-center">
-                        <i class="fas fa-ellipsis-h mr-2 text-yellow-400"></i>
-                        其它
-                    </h3>
-                    <div class="sites">
-                        <a href="https://www.tampermonkey.net/" target="_blank" class="site-item">
-                            <img src="https://www.tampermonkey.net/favicon.ico" alt="篡改猴" class="site-icon">
-                            <span class="site-name">篡改猴</span>
-                        </a>
-                        <a href="https://gf.qytechs.cn/zh-CN/scripts" target="_blank" class="site-item">
-                            <img src="https://gf.qytechs.cn/vite/assets/blacklogo96-CxYTSM_T.png" alt="油猴插件" class="site-icon">
-                            <span class="site-name">油猴插件</span>
-                        </a>
-                        <a href="https://scriptcat.org/zh-CN" target="_blank" class="site-item">
-                            <img src="https://scriptcat.org/favicon.ico" alt="脚本猫" class="site-icon">
-                            <span class="site-name">脚本猫</span>
-                        </a>
-                        <a href="https://www.bejson.com/" target="_blank" class="site-item">
-                            <img src="https://www.bejson.com/favicon.ico" alt="bejson" class="site-icon">
-                            <span class="site-name">bejson</span>
-                        </a>
-                        <a href="https://www.wepe.com.cn/" target="_blank" class="site-item">
-                            <img src="https://www.wepe.com.cn/favicon.ico" alt="微PE工具箱" class="site-icon">
-                            <span class="site-name">微PE工具箱</span>
-                        </a>
-                        <a href="https://alistgo.com/zh/guide/" target="_blank" class="site-item">
-                            <img src="https://alistgo.com/favicon.ico" alt="alistgo" class="site-icon">
-                            <span class="site-name">alistgo</span>
-                        </a>
-                        <a href="https://legado.aoaostar.com/" target="_blank" class="site-item">
-                            <img src="https://dy.miaogongzi.cc/favicon.ico" alt="阅读" class="site-icon">
-                            <span class="site-name">阅读</span>
-                        </a>
-                        <a href="https://www.youxiaohou.com/" target="_blank" class="site-item">
-                            <img src="https://www.youxiaohou.com/favicon.ico" alt="油小猴" class="site-icon">
-                            <span class="site-name">油小猴</span>
-                        </a>
-                        <a href="https://www.crxsoso.com/" target="_blank" class="site-item">
-                            <img src="https://www.crxsoso.com/favicon.ico" alt="Crx搜搜" class="site-icon">
-                            <span class="site-name">Crx搜搜</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 页脚 -->
-        <footer class="text-center text-gray-400 text-sm mt-12">
-            <p>© 2025 53便签 | 探索无限可能</p>
-            <p class="mt-2">让您的网络导航更高效、更便捷</p>
-        </footer>
     </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
     <script>
-        // 创建浮动粒子背景
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 20; // 减少粒子数量提高性能
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                // 随机位置
-                const left = Math.random() * 100;
-                const delay = Math.random() * 12;
-                const duration = 12 + Math.random() * 8;
-                
-                particle.style.left = `${left}%`;
-                particle.style.animationDelay = `${delay}s`;
-                particle.style.animationDuration = `${duration}s`;
-                
-                particlesContainer.appendChild(particle);
-            }
-        }
-        
-        // 搜索引擎配置
-        const engines = {
-            baidu: { 
-                name: '百度', 
-                url: 'https://www.baidu.com/s?wd=',
-                icon: 'fas fa-dragon',
-                color: '#2932e1'
-            },
-            sogou: { 
-                name: '搜狗', 
-                url: 'https://www.sogou.com/web?query=',
-                icon: 'fab fa-sogou',
-                color: '#4285f4'
-            },
-            bing: { 
-                name: '必应', 
-                url: 'https://www.bing.com/search?q=',
-                icon: 'fab fa-microsoft',
-                color: '#008373'
-            },
-            github: { 
-                name: 'GitHub', 
-                url: 'https://github.com/search?q=',
-                icon: 'fab fa-github',
-                color: '#333'
-            },
-            zhihu: { 
-                name: '知乎', 
-                url: 'https://www.zhihu.com/search?type=content&q=',
-                icon: 'fas fa-question-circle',
-                color: '#0084ff'
-            },
-            bilibili: { 
-                name: 'bilibili', 
-                url: 'https://search.bilibili.com/all?keyword=',
-                icon: 'fas fa-bilibili',
-                color: '#de5833'
-            }
+    (function(){
+        'use strict';
+
+        // ===== Data =====
+        const DEFAULT_SITES = [
+            { n:'百度', u:'https://www.baidu.com', c:'common' },
+            { n:'知乎', u:'https://www.zhihu.com', c:'common' },
+            { n:'微博', u:'https://weibo.com', c:'common' },
+            { n:'B站', u:'https://www.bilibili.com', c:'fun' },
+            { n:'抖音', u:'https://www.douyin.com', c:'fun' },
+
+            { n:'喜马拉雅', u:'https://www.ximalaya.com/', c:'fun' },
+            { n:'网易云音乐', u:'https://music.163.com', c:'fun' },
+            { n:'QQ音乐', u:'https://y.qq.com', c:'fun' },
+            { n:'腾讯视频', u:'https://v.qq.com', c:'fun' },
+            { n:'爱奇艺', u:'https://www.iqiyi.com', c:'fun' },
+            { n:'优酷', u:'https://www.youku.com', c:'fun' },
+            { n:'芒果', u:'https://www.mgtv.com', c:'fun' },
+            { n:'豆瓣', u:'https://www.douban.com', c:'fun' },
+            { n:'YouTube', u:'https://www.youtube.com', c:'fun' },
+
+            { n:'GitHub', u:'https://github.com', c:'dev' },
+            { n:'Stack Overflow', u:'https://stackoverflow.com', c:'dev' },
+            { n:'MDN', u:'https://developer.mozilla.org', c:'dev' },
+            { n:'掘金', u:'https://juejin.cn', c:'dev' },
+            { n:'npm', u:'https://www.npmjs.com', c:'dev' },
+            { n:'V2EX', u:'https://www.v2ex.com', c:'dev' },
+
+            { n:'飞书', u:'https://www.feishu.cn', c:'work' },
+            { n:'钉钉', u:'https://www.dingtalk.com', c:'work' },
+            { n:'腾讯会议', u:'https://meeting.tencent.com', c:'work' },
+            { n:'企业微信', u:'https://work.weixin.qq.com', c:'work' },
+            { n:'Notion', u:'https://www.notion.so', c:'work' },
+            { n:'石墨文档', u:'https://shimo.im', c:'work' },
+
+            { n:'语雀', u:'https://www.yuque.com', c:'study' },
+            { n:'Coursera', u:'https://www.coursera.org', c:'study' },
+            { n:'中国大学MOOC', u:'https://www.icourse163.org', c:'study' },
+            { n:'W3School', u:'https://www.w3school.com.cn', c:'study' },
+            { n:'知网', u:'https://www.cnki.net', c:'study' },
+            { n:'极客时间', u:'https://time.geekbang.org', c:'study' },
+
+            { n:'淘宝', u:'https://www.taobao.com', c:'life' },
+            { n:'京东', u:'https://www.jd.com', c:'life' },
+            { n:'美团', u:'https://www.meituan.com', c:'life' },
+            { n:'携程', u:'https://www.ctrip.com', c:'life' },
+        ];
+
+        const TOOLS = [
+            { add:true },
+            { n:'图像处理', u:'https://53wx.dpdns.org/图像处理工具集' },
+            { n:'抠图', u:'https://53wx.dpdns.org/抠图' },
+            { n:'证件照', u:'https://53wx.dpdns.org/证件照工具' },
+            { n:'小白音乐', u:'https://53wx.dpdns.org/小白音乐' },
+            { n:'拾光音乐', u:'https://53wx.dpdns.org/拾光音乐会所' },
+            { n:'翻译', u:'https://fanyi.baidu.com' },
+            { n:'邮箱', u:'https://mail.qq.com' },
+            { n:'GitHub', u:'https://github.com' },
+            { n:'天气', u:'https://www.weather.com.cn' },
+            { n:'地图', u:'https://ditu.amap.com' },
+            { n:'网盘', u:'https://pan.baidu.com' },
+            { n:'笔记', u:'https://note.youdao.com' },
+        ];
+
+        // ===== Engines =====
+        const ENGINE_ORDER = ['baidu','google','bing','zhihu','bilibili','github'];
+        const ENGINES = {
+            baidu:   { name:'百度',   domain:'baidu.com',    url:'https://www.baidu.com/s?wd=',                    ico:'百度' },
+            google:  { name:'Google', domain:'google.com',   url:'https://www.google.com/search?q=',               ico:'谷歌' },
+            bing:    { name:'必应',   domain:'bing.com',     url:'https://www.bing.com/search?q=',                 ico:'必应' },
+            zhihu:   { name:'知乎',   domain:'zhihu.com',    url:'https://www.zhihu.com/search?q=',                ico:'知乎' },
+            bilibili:{ name:'B站',    domain:'bilibili.com', url:'https://search.bilibili.com/all?keyword=',       ico:'B站' },
+            github:  { name:'GitHub', domain:'github.com',   url:'https://github.com/search?q=',                   ico:'GitHub' },
         };
-        
-        // 当前选中的搜索引擎
-        let currentEngine = 'baidu';
-        
-        // 搜索功能
-        const searchForm = document.getElementById('searchForm');
-        const searchInput = document.getElementById('searchInput');
-        const searchStatus = document.getElementById('searchStatus');
-        const currentEngineName = document.getElementById('currentEngineName');
-        
-        // 执行搜索
-        function performSearch() {
-            const query = searchInput.value.trim();
-            if (query === '') {
-                showSearchStatus('请输入搜索关键词');
+
+        // Favicon 多源 — 增加了更稳定的 i.j2e.com 与 unavatar 作为备选
+        function getFaviconUrls(domain) {
+            return [
+                `https://favicon.im/${domain}`,
+                `https://unavatar.io/${domain}?fallback=false`,
+                `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+                `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+                `https://i.j2e.com/?url=${domain}`,
+                `https://${domain}/favicon.ico`
+            ];
+        }
+
+        function extractDomain(url) {
+            try { return new URL(url).hostname; } catch(e) { return ''; }
+        }
+
+        const COLORS = ['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#db2777','#0891b2','#ea580c','#4f46e5','#0d9488','#ca8a04','#65a30d'];
+        function colorFor(name) {
+            let h = 0;
+            for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) & 0xffff;
+            return COLORS[h % COLORS.length];
+        }
+
+        // ===== Toast =====
+        let toastTimer = null;
+        function showToast(msg, dur) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), dur || 1800);
+        }
+
+        // ===== State =====
+        let sites = [];
+        let currentCat = 'all';
+        let currentEngine = localStorage.getItem('nav_engine') || 'baidu';
+        let dropdownOpen = false;
+
+        function loadSites() {
+            const customs = JSON.parse(localStorage.getItem('nav_sites') || '[]');
+            sites = [...DEFAULT_SITES, ...customs];
+        }
+
+        function saveCustom(list) {
+            localStorage.setItem('nav_sites', JSON.stringify(list));
+        }
+
+        function getCustoms() {
+            return JSON.parse(localStorage.getItem('nav_sites') || '[]');
+        }
+
+        // 简单图片加载缓存（同一域名不重复尝试）
+        const imgCache = new Map(); // domain -> 'ok' | 'fail'
+
+        function createIcon(name, url, size) {
+            size = size || 30;
+            const wrap = document.createElement('div');
+            wrap.className = 'icon-wrap';
+
+            const domain = extractDomain(url);
+            const letter = (name[0] || '?').toUpperCase();
+            const bg = colorFor(name + domain);
+
+            const fallback = document.createElement('div');
+            fallback.className = 'icon-fallback';
+            fallback.style.background = bg;
+            fallback.textContent = letter;
+            wrap.appendChild(fallback);
+
+            if (domain) {
+                // 缓存命中直接用
+                if (imgCache.get(domain) === 'fail') {
+                    // 已失败过，保留fallback
+                } else {
+                    tryLoadImg(wrap, getFaviconUrls(domain), 0, fallback, size, domain);
+                }
+            }
+            return wrap;
+        }
+
+        function tryLoadImg(wrap, urls, idx, fallback, size, cacheKey) {
+            if (idx >= urls.length) {
+                if (cacheKey) imgCache.set(cacheKey, 'fail');
                 return;
             }
-            
-            const engine = engines[currentEngine];
-            const url = engine.url + encodeURIComponent(query);
-            
-            // 显示搜索状态
-            showSearchStatus(`正在使用 ${engine.name} 搜索"${query}"...`);
-            
-            // 在新标签页中打开搜索结果
-            window.open(url, '_blank');
-            
-            // 显示搜索完成状态
-            setTimeout(() => {
-                showSearchStatus(`搜索完成！已在 ${engine.name} 中搜索"${query}"`);
-            }, 1000);
+            const img = new Image();
+            img.decoding = 'async';
+            img.referrerPolicy = 'no-referrer';
+            img.onload = function() {
+                if (cacheKey) imgCache.set(cacheKey, 'ok');
+                wrap.innerHTML = '';
+                img.style.width = size + 'px';
+                img.style.height = size + 'px';
+                img.style.objectFit = 'contain';
+                img.style.display = 'block';
+                wrap.appendChild(img);
+                wrap.style.background = 'transparent';
+            };
+            img.onerror = function() {
+                tryLoadImg(wrap, urls, idx+1, fallback, size, cacheKey);
+            };
+            img.src = urls[idx];
         }
-        
-        // 显示搜索状态
-        function showSearchStatus(message) {
-            searchStatus.textContent = message;
+
+        function loadEngineIconInto(container, engineKey, iconSize) {
+            const info = ENGINES[engineKey];
+            if (!info) return;
+            container.innerHTML = '';
+            const size = iconSize || 22;
+            const fb = document.createElement('div');
+            fb.style.cssText = `width:${size}px;height:${size}px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:${Math.max(9, size-12)}px;font-weight:600;color:white;background:${colorFor(info.name)}`;
+            fb.textContent = (info.ico || info.name)[0];
+            container.appendChild(fb);
+
+            if (imgCache.get('engine_'+engineKey) === 'fail') return;
+
+            const urls = getFaviconUrls(info.domain);
+            const tryOne = (i) => {
+                if (i >= urls.length) { imgCache.set('engine_'+engineKey, 'fail'); return; }
+                const img = new Image();
+                img.decoding = 'async';
+                img.referrerPolicy = 'no-referrer';
+                img.onload = function() {
+                    container.innerHTML = '';
+                    img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;display:block`;
+                    container.appendChild(img);
+                };
+                img.onerror = () => tryOne(i+1);
+                img.src = urls[i];
+            };
+            tryOne(0);
         }
-        
-        // 切换搜索引擎
-        function switchEngine(engineId) {
-            currentEngine = engineId;
-            const engine = engines[engineId];
-            
-            // 更新当前引擎显示
-            currentEngineName.textContent = engine.name;
-            
-            // 更新下拉菜单中的活动项
-            document.querySelectorAll('.engine-option').forEach(option => {
-                if (option.dataset.engine === engineId) {
-                    option.classList.add('active');
-                } else {
-                    option.classList.remove('active');
+
+        function updateEngineIcon(engine) {
+            loadEngineIconInto(document.getElementById('engineIconBox'), engine, 22);
+        }
+
+        // ===== Engine dropdown =====
+        const dropdownEl = document.getElementById('engineDropdown');
+
+        function positionDropdown() {
+            const anchor = document.getElementById('engineSelector');
+            if (!anchor) return;
+            const rect = anchor.getBoundingClientRect();
+            // 先复位以测量真实宽度
+            dropdownEl.style.visibility = 'hidden';
+            dropdownEl.style.left = '-9999px';
+            dropdownEl.style.top = '-9999px';
+            dropdownEl.classList.add('show');
+            const ddWidth = dropdownEl.offsetWidth || 200;
+            dropdownEl.classList.remove('show');
+            dropdownEl.style.visibility = '';
+
+            let left = rect.left;
+            // 右边界检测
+            if (left + ddWidth > window.innerWidth - 12) {
+                left = window.innerWidth - ddWidth - 12;
+            }
+            if (left < 12) left = 12;
+            dropdownEl.style.left = left + 'px';
+            dropdownEl.style.top = (rect.bottom + 8) + 'px';
+            dropdownEl.style.width = 'auto';
+            dropdownEl.style.minWidth = Math.max(180, rect.width + 20) + 'px';
+        }
+
+        function renderDropdown() {
+            dropdownEl.innerHTML = '';
+
+            ENGINE_ORDER.forEach((key) => {
+                const info = ENGINES[key];
+                if (!info) return;
+                const item = document.createElement('div');
+                item.className = 'engine-item' + (key === currentEngine ? ' active' : '');
+                item.dataset.engine = key;
+                item.setAttribute('role', 'menuitem');
+
+                const ico = document.createElement('span');
+                ico.className = 'item-icon';
+                item.appendChild(ico);
+
+                const name = document.createElement('span');
+                name.textContent = info.name;
+                item.appendChild(name);
+
+                const check = document.createElement('span');
+                check.className = 'item-check';
+                check.innerHTML = '✓';
+                item.appendChild(check);
+
+                loadEngineIconInto(ico, key, 20);
+
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectEngine(key, true);
+                    closeEngineDropdown();
+                    document.getElementById('searchInput').focus();
+                    showToast('已切换到 ' + info.name);
+                });
+
+                dropdownEl.appendChild(item);
+            });
+
+            const hint = document.createElement('div');
+            hint.className = 'dropdown-hint';
+            hint.textContent = '选择你要使用的搜索引擎';
+            dropdownEl.appendChild(hint);
+        }
+
+        function openEngineDropdown() {
+            renderDropdown();
+            // 下一帧定位，确保已渲染
+            requestAnimationFrame(() => {
+                positionDropdown();
+                dropdownEl.getBoundingClientRect();
+                dropdownEl.classList.add('show');
+                document.getElementById('engineSelector').classList.add('open');
+                dropdownOpen = true;
+            });
+        }
+
+        function closeEngineDropdown() {
+            dropdownEl.classList.remove('show');
+            document.getElementById('engineSelector').classList.remove('open');
+            dropdownOpen = false;
+        }
+
+        function toggleEngineDropdown(e) {
+            if (e) { e.stopPropagation(); e.preventDefault(); }
+            if (dropdownOpen) closeEngineDropdown();
+            else openEngineDropdown();
+        }
+
+        function selectEngine(key, remember) {
+            if (!ENGINES[key]) return;
+            currentEngine = key;
+            if (remember) localStorage.setItem('nav_engine', key);
+            updateEngineIcon(key);
+        }
+
+        function repositionOrClose() {
+            if (dropdownOpen) {
+                positionDropdown();
+            }
+        }
+        window.addEventListener('scroll', repositionOrClose, { passive: true, capture: true });
+        window.addEventListener('resize', repositionOrClose);
+        window.addEventListener('orientationchange', repositionOrClose);
+
+        // ===== Render grid =====
+        function render() {
+            const grid = document.getElementById('grid');
+            const filtered = currentCat === 'all' ? sites : sites.filter(s => s.c === currentCat);
+
+            grid.innerHTML = '';
+            const customs = getCustoms();
+
+            filtered.forEach((site, i) => {
+                const a = document.createElement('a');
+                a.className = 'card';
+                const isCustom = customs.some(c => c.u === site.u && c.n === site.n);
+                if (isCustom) a.classList.add('custom');
+                a.href = site.u;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.animationDelay = Math.min(i * 18, 280) + 'ms';
+
+                a.appendChild(createIcon(site.n, site.u));
+
+                const name = document.createElement('span');
+                name.className = 'card-name';
+                name.textContent = site.n;
+                name.title = site.n;
+                a.appendChild(name);
+
+                if (isCustom) {
+                    const del = document.createElement('button');
+                    del.className = 'card-del';
+                    del.innerHTML = '×';
+                    del.title = '删除';
+                    del.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (confirm('删除「' + site.n + '」？')) {
+                            const updated = customs.filter(c => !(c.u === site.u && c.n === site.n));
+                            saveCustom(updated);
+                            loadSites();
+                            render();
+                            showToast('已删除');
+                        }
+                    };
+                    a.appendChild(del);
                 }
-            });
-            
-            // 更新搜索状态
-            showSearchStatus(`已切换到 ${engine.name}，输入关键词开始搜索`);
-        }
-        
-        // 事件监听
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            performSearch();
-        });
-        
-        // 键盘导航
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-        
-        // 引擎选择器事件
-        document.querySelectorAll('.engine-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const engineId = option.dataset.engine;
-                switchEngine(engineId);
-            });
-        });
 
-        // 侧边栏功能
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const body = document.body;
-        
-        // 切换侧边栏
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            sidebarOverlay.classList.toggle('active');
-            body.classList.toggle('sidebar-open');
+                grid.appendChild(a);
+            });
         }
-        
-        // 事件监听
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-        
-        // ESC键关闭侧边栏
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-                toggleSidebar();
-            }
-        });
 
-        // 侧边栏搜索功能
-        const sidebarSearch = document.getElementById('sidebarSearch');
-        sidebarSearch.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const bookmarkItems = document.querySelectorAll('.bookmark-item');
-            
-            bookmarkItems.forEach(item => {
-                const text = item.querySelector('.bookmark-text').textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+        // ===== Render top tools =====
+        function renderTools() {
+            const tg = document.getElementById('topTools');
+            tg.innerHTML = '';
+
+            TOOLS.forEach(t => {
+                if (t.add) {
+                    const btn = document.createElement('button');
+                    btn.className = 'top-tool add-btn';
+                    btn.onclick = openModal;
+                    btn.title = '添加网站';
+                    btn.innerHTML = '+<span class="tip">添加网站</span>';
+                    tg.appendChild(btn);
+                    return;
                 }
-            });
-        });
+                const a = document.createElement('a');
+                a.className = 'top-tool';
+                a.href = t.u;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.title = t.n;
 
-        // 添加卡片悬停效果
-        document.querySelectorAll('.category-card, .site-item').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-        
-        // 滚动显示内容功能
-        function handleScroll() {
-            const contentSections = document.querySelectorAll('.content-section');
-            const triggerBottom = window.innerHeight * 0.8;
-            
-            contentSections.forEach(section => {
-                const sectionTop = section.getBoundingClientRect().top;
-                
-                if (sectionTop < triggerBottom) {
-                    section.classList.add('visible');
+                const fb = document.createElement('div');
+                fb.className = 'tool-fallback';
+                fb.style.background = colorFor(t.n);
+                fb.textContent = t.n[0];
+                a.appendChild(fb);
+
+                const domain = extractDomain(t.u);
+                if (domain) {
+                    tryLoadTopToolImg(a, getFaviconUrls(domain), 0, fb, 'tool_'+domain);
                 }
-            });
-            
-            // 检测是否滚动到顶部
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (scrollTop < 100) {
-                body.classList.add('scrolled-to-top');
-            } else {
-                body.classList.remove('scrolled-to-top');
-            }
-        }
-        
-        // 使用节流优化滚动事件
-        let scrollTimeout;
-        function throttleScroll() {
-            if (!scrollTimeout) {
-                scrollTimeout = setTimeout(() => {
-                    scrollTimeout = null;
-                    handleScroll();
-                }, 16); // 约60fps
-            }
-        }
-        
-        // 初始化滚动监听
-        window.addEventListener('scroll', throttleScroll);
-        
-        // 初始化粒子背景
-        createParticles();
-        
-        // 页面加载后检查是否需要显示内容
-        window.addEventListener('load', handleScroll);
-        
-        // 书签数据
-        const bookmarks = [
-                       
-            { name: "图像处理工具集", url: "https://53wx.dpdns.org/图像处理工具集"},
-            { name: "签到平台", url: "https://53wx.dpdns.org/签到平台"},
-            { name: "音乐会所", url: "https://53wx.dpdns.org/拾光音乐会所"},
-            { name: "小白音乐", url: "https://53wx.dpdns.org/小白音乐"},
 
-            { name: "分享有趣的项目", url: "http://ffgithub.com/"}
-        ];
-        
-        // 渲染书签列表
-        function renderBookmarks() {
-            const bookmarkList = document.getElementById('bookmarkList');
-            bookmarkList.innerHTML = '';
-            
-            bookmarks.forEach(bookmark => {
-                const bookmarkItem = document.createElement('div');
-                bookmarkItem.className = 'bookmark-item';
-                bookmarkItem.innerHTML = `
-                    <div class="bookmark-content">
-                        <div class="bookmark-icon">
-                            <i class="fas fa-link"></i>
-                        </div>
-                        <a href="${bookmark.url}" target="_blank" class="bookmark-text">${bookmark.name}</a>
-                    </div>
-                    <div class="bookmark-actions">
-                        <button class="bookmark-action" title="编辑">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="bookmark-action" title="删除">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                bookmarkList.appendChild(bookmarkItem);
+                const tip = document.createElement('span');
+                tip.className = 'tip';
+                tip.textContent = t.n;
+                a.appendChild(tip);
+
+                tg.appendChild(a);
             });
         }
-        
-        // 初始化书签列表
-        renderBookmarks();
+
+        function tryLoadTopToolImg(wrap, urls, idx, fallback, cacheKey) {
+            if (idx >= urls.length) {
+                if (cacheKey) imgCache.set(cacheKey, 'fail');
+                return;
+            }
+            if (imgCache.get(cacheKey) === 'fail') return;
+            const img = new Image();
+            img.decoding = 'async';
+            img.referrerPolicy = 'no-referrer';
+            img.onload = function() {
+                if (cacheKey) imgCache.set(cacheKey, 'ok');
+                const tip = wrap.querySelector('.tip');
+                wrap.innerHTML = '';
+                img.style.width = '20px';
+                img.style.height = '20px';
+                img.style.objectFit = 'contain';
+                img.style.display = 'block';
+                wrap.appendChild(img);
+                if (tip) wrap.appendChild(tip);
+            };
+            img.onerror = function() {
+                tryLoadTopToolImg(wrap, urls, idx+1, fallback, cacheKey);
+            };
+            img.src = urls[idx];
+        }
+
+        function renderTips() {
+            const box = document.getElementById('searchTips');
+            box.innerHTML = '';
+            const tips = [
+                { txt:'今日新闻', val:'今日新闻' },
+                { txt:'百度热搜', val:'百度热搜' },
+                { txt:'天气预报', val:'本地天气预报' },
+                { txt:'GitHub Trending', val:'GitHub Trending' },
+                { txt:'B站热门', val:'B站热门' },
+            ];
+            tips.forEach(t => {
+                const el = document.createElement('span');
+                el.className = 'search-tip';
+                el.textContent = t.txt;
+                el.onclick = function() {
+                    const inp = document.getElementById('searchInput');
+                    inp.value = t.val;
+                    inp.focus();
+                };
+                box.appendChild(el);
+            });
+        }
+
+        // ===== Clock =====
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2,'0');
+            const m = String(now.getMinutes()).padStart(2,'0');
+            document.getElementById('clock').textContent = h + ':' + m;
+
+            const days = ['周日','周一','周二','周三','周四','周五','周六'];
+            document.getElementById('date').textContent =
+                now.getMonth()+1 + '月' + now.getDate() + '日 · ' + days[now.getDay()];
+
+            const hr = now.getHours();
+            let g = '你好';
+            if (hr<6) g='夜深了，注意休息';
+            else if (hr<9) g='早上好，新的一天';
+            else if (hr<12) g='上午好，工作顺利';
+            else if (hr<14) g='中午好，记得吃饭';
+            else if (hr<18) g='下午好，继续加油';
+            else if (hr<22) g='晚上好，放松一下';
+            else g='夜深了，早点休息';
+            document.getElementById('greeting').textContent = g;
+        }
+
+        // ===== Search =====
+        const searchInput = document.getElementById('searchInput');
+        const engineSelector = document.getElementById('engineSelector');
+
+        engineSelector.addEventListener('click', toggleEngineDropdown);
+
+        // 点击外部关闭
+        document.addEventListener('click', function(e) {
+            if (!dropdownOpen) return;
+            if (engineSelector.contains(e.target)) return;
+            if (dropdownEl.contains(e.target)) return;
+            closeEngineDropdown();
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doSearch();
+            if (e.key === 'Escape' && dropdownOpen) closeEngineDropdown();
+        });
+
+        function doSearch() {
+            const q = searchInput.value.trim();
+            if (!q) { searchInput.focus(); return; }
+
+            // 识别 URL
+            if (/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/.*)?$/.test(q) && !/\s/.test(q) && !q.includes('　')) {
+                let url = q;
+                if (!/^https?:/.test(url)) url = 'https://' + url;
+                window.open(url, '_blank', 'noopener');
+                searchInput.value = '';
+                return;
+            }
+
+            const eng = ENGINES[currentEngine];
+            if (eng) {
+                window.open(eng.url + encodeURIComponent(q), '_blank', 'noopener');
+            }
+        }
+
+        // Tabs
+        document.getElementById('tabs').addEventListener('click', function(e) {
+            const tab = e.target.closest('.tab');
+            if (!tab) return;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentCat = tab.dataset.cat;
+            render();
+        });
+
+        // ===== Modal =====
+        const modal = document.getElementById('modal');
+        function openModal() { modal.classList.add('show'); setTimeout(()=>document.getElementById('f-name').focus(), 50); }
+        function closeModal() { modal.classList.remove('show'); resetForm(); }
+
+        function resetForm() {
+            document.getElementById('f-name').value = '';
+            document.getElementById('f-url').value = '';
+            document.getElementById('f-cat').value = 'common';
+        }
+
+        function addSite() {
+            const name = document.getElementById('f-name').value.trim();
+            let url = document.getElementById('f-url').value.trim();
+            const cat = document.getElementById('f-cat').value;
+
+            if (!name) { showToast('请填写网站名称'); document.getElementById('f-name').focus(); return; }
+            if (!url) { showToast('请填写网址'); document.getElementById('f-url').focus(); return; }
+            if (!/^https?:/.test(url)) url = 'https://' + url;
+
+            // URL 合法性简单校验
+            try { new URL(url); } catch(e) { showToast('网址格式不正确'); return; }
+
+            const customs = getCustoms();
+            // 重复检测
+            if (customs.some(c => c.u === url) || DEFAULT_SITES.some(s => s.u === url)) {
+                showToast('该网站已存在');
+                return;
+            }
+            customs.push({n:name, u:url, c:cat});
+            saveCustom(customs);
+            loadSites();
+            render();
+            closeModal();
+            showToast('添加成功');
+        }
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        // Enter 键在表单提交
+        document.getElementById('f-name').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('f-url').focus(); });
+        document.getElementById('f-url').addEventListener('keydown', e => { if(e.key==='Enter') addSite(); });
+
+        // ===== Keyboard shortcuts =====
+        document.addEventListener('keydown', function(e) {
+            // / 键聚焦搜索框（非输入态）
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && !modal.classList.contains('show')) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape') {
+                if (dropdownOpen) { closeEngineDropdown(); return; }
+                if (modal.classList.contains('show')) { closeModal(); return; }
+                searchInput.blur();
+            }
+        });
+
+        // 暴露给全局
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.addSite = addSite;
+        window.doSearch = doSearch;
+
+        // ===== Init =====
+        loadSites();
+        render();
+        renderTools();
+        renderTips();
+        updateEngineIcon(currentEngine);
+        updateClock();
+        setInterval(updateClock, 30000); // 每30秒更新一次，省资源
+
+        // 判断是否触屏设备：触屏不自动聚焦（避免弹键盘），桌面才自动聚焦
+        const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+        if (!isTouch) {
+            setTimeout(() => searchInput.focus(), 150);
+        }
+    })();
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3510064ef6f942429ea8db2107c72c5e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
+<!--28254656282573747210091913-->
