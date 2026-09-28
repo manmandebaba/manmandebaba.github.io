@@ -1,4 +1,4 @@
-﻿﻿{"spider":"./jar/aidaox.jar",
+﻿{"spider":"./jar/fm.jar",
   "sites": [
 {"key":"csp_jar_CCTV","name":"央视丨大全","type":3,"api":"csp_CCTV","jar":"./jar/lengri.jar"},
 {"key":"csp_jar_QQTV","name":"腾讯丨视频","type":3,"api":"csp_qq","jar":"./jar/G.jar","searchable":1,"filterable":1,"changeable":1},
@@ -44,17 +44,11 @@
 {"key":"php_新浪资源","name":"新浪丨资源ᵖʰᵖ","type":1,"api":"https://api.xinlangapi.com/xinlangapi.php/provide/vod/","searchable":1,"quickSearch":1,"filterable":1,"playerType":2,"categories":["大陆剧","短剧","港澳剧","台湾剧","韩剧","欧美剧","日剧","泰剧","动作片","喜剧片","爱情片","科幻片","恐怖片","剧情片","战争片","纪录片","动漫电影","体育","电影","电视剧","综艺","动漫"]},
 {"key":"php_优质资源","name":"优质丨资源ᵖʰᵖ","type":1,"api":"https://api.yzzy-api.com/inc/apijson.php","searchable":1,"quickSearch":1,"filterable":1,"playerType":2,"categories":["国产剧","香港剧","台湾剧","动作片","喜剧片","科幻片","恐怖片","爱情片","剧情片","战争片","记录片","动画片","欧美剧","韩国剧","日本剧","海外剧","泰国剧","国产动漫","日韩动漫","欧美动漫","港台动漫","海外动漫","大陆综艺","港台综艺","日韩综艺","欧美综艺"]},
 {"key":"php_索尼资源","name":"索尼丨资源ᵖʰᵖ","type":1,"api":"https://suoniapi.com/api.php/provide/vod/","searchable":1,"quickSearch":1,"changeable":1,"categories":["国产剧","爽文短剧","港剧","台剧","韩剧","欧美剧","日剧","海外剧","泰剧","大陆综艺","港台综艺","日韩综艺","欧美综艺","动画片","国产动漫","日韩动漫","欧美动漫","港台动漫","海外动漫","动作片","喜剧片","爱情片","科幻片","恐怖片","剧情片","战争片","纪录片","足球","篮球","演员","影视解说","演唱会","4K电影","预告片"]},
-{"key":"php_淘片资源","name":"淘片丨资源ᵖʰᵖ","type":1,"api":"https://taopianapi.com/cjapi/mc/vod/json.html"},
-
-
-{"key":"jar_综合设置","name":"综合｜配置","type":3,"api":"csp_PanSettings","searchable":0,"changeable":0,"indexs":0,"style":{"type":"rect","ratio":1.597}},
-{"key":"jar_文件应用","name":"文件｜应用","type":3,"api":"csp_Local","searchable":0,"changeable":0,"indexs":0,"filterable":1,"ext":"./ext/share.json","style":{"type":"list"}},
-{"key":"jar_资源配置","name":"资源｜配置","type":3,"api":"csp_ResMgr","searchable":0,"quickSearch":0,"filterable":1,"changeable":0,"timeout":60,"style":{"type":"grid","ratio":0.75}},
-{"key":"jar_环境配置","name":"环境｜配置","type":3,"api":"csp_BinMarket","searchable":0,"changeable":0,"indexs":0,"filterable":0,"ext":"./ext/lab.json","style":{"type":"rect","ratio":1.0}},
-{"key":"jar_落雪音乐","name":"落雪｜音乐","type":3,"api":"csp_XueLuo","searchable":0,"quickSearch":0,"filterable":0,"changeable":0,"indexs":0,"style":{"type":"list"}}
-
+{"key":"php_淘片资源","name":"淘片丨资源ᵖʰᵖ","type":1,"api":"https://taopianapi.com/cjapi/mc/vod/json.html"}
  ],
+  "lives": [
 
+  ],
 "parses": [
 {"name":"J1","url":"https://kalbim.xatut.top/kalbim2025/781718/play/video_player.php?url=","type":1,"header":{"User-Agent":"Mozilla/5.0"}},
 {"name":"虾米","url":"https://jx.xmflv.com/?url=","type":0},
