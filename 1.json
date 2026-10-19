@@ -24,8 +24,6 @@
 {"key":"py_韩剧巴士","name":"韩剧｜巴士ᵖʸ","type":3,"api":"./py/韩剧巴士.py","searchable":1,"changeable":1,"quickSearch":1},
 {"key":"py_耐看点播","name":"耐看｜点播ᵖʸ","type":3,"api":"./py/耐看点播.py","searchable":1,"changeable":1,"quickSearch":1},
 {"key":"py_看剧AI源","name":"看剧｜AI源ᵖʸ","type":3,"api":"./py/看剧AI.py","searchable":1,"changeable":1,"quickSearch":1},
-{"key":"py_枫叶菠菜","name":"枫叶丨菠菜ᵖʸ","type":3,"api":"./py/枫叶菠菜.py","searchable":1,"changeable":1,"quickSearch":1},
-{"key":"py_枫叶影视","name":"枫叶丨影视ᵖʸ","type":3,"api":"./py/枫叶影视.py","searchable":1,"changeable":1,"quickSearch":1},
 {"key":"py_共青春","name":"共青春丨影视ᵖʸ","type":3,"api":"./py/共青春.py","searchable":1,"changeable":1,"quickSearch":1},
 {"key":"py_鱼塘社","name":"鱼塘社丨影视ᵖʸ","type":3,"api":"./py/鱼塘社.py","searchable":1,"changeable":1,"quickSearch":1},
 
