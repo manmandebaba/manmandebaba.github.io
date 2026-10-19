@@ -12,7 +12,6 @@
 {"key":"cat_五源合一","name":"五源丨合一ᶜᵃᵗ","type":3,"api":"./cat/五源合一.js","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"cat_华数视频","name":"华数丨视频ᶜᵃᵗ","type":3,"api":"./cat/华数视频.js","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"cat_哔站影视","name":"哔站丨影视ᶜᵃᵗ","type":3,"api":"./cat/B站[官].js","searchable":1,"quickSearch":0,"filterable":1},
-{"key":"cat_哔哩哔哩","name":"哔哩丨哔哩ᶜᵃᵗ","type":3,"api":"./cat/哔哩哔哩.js","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"cat_金牌影视","name":"金牌丨影视ᶜᵃᵗ","type":3,"api":"./cat/金牌影视.js","searchable":1,"quickSearch":0,"filterable":1,"ext":""},
 {"key":"cat_荐片影视","name":"荐片丨影视ᶜᵃᵗ","type":3,"api":"./cat/荐片影视.js","searchable":1,"quickSearch":0,"filterable":1},
 {"key":"py_歪比影视","name":"歪比丨影视ᵖʸ","type":3,"api":"./py/歪比影视.py","filterable":1,"quickSearch":1,"searchable":1},
